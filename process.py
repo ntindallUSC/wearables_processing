@@ -12,8 +12,8 @@ import tkinter as tk
 from tkinter import filedialog
 import os.path
 import subprocess
-from Apple_Proccesor import apple_process
-from Garmin_Processor import garmin_process
+from processing_scripts.Apple_Proccesor import apple_process
+from processing_scripts.Garmin_Processor import garmin_process
 
 # ---------------------------------------------------------------------------------------------------------------------
 # This first section of code prompts the user to select the participant folder. This folder will house all of the raw
