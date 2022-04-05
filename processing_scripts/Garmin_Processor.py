@@ -7,12 +7,13 @@
 # <br><br> The purpose of this script is to upack the Garmin Acceleration Data. Initially the Garmin Accleration data is has 25 readings in one cell corresponding to 1 timestamp. This script unpacks that cell and instead has 1 acceleration reading per row.
 
 # In[2]:
-
+import datetime
 
 import pandas as pd
 import numpy as np
 import xlrd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 
 # In[3]:
@@ -83,10 +84,12 @@ def garmin_process(participant_num, garmin_path, csv_data):
 
     # initialize variables to help find 8pm and 6am in the data set.
     # I need these time values so I can write a summary on the data for this time set.
-    sleep_start = np.timedelta64(20, 'h')
+    #               Year                                Month                       Day
+    date = (int("20"+participant_num[-2:]), int(participant_num[-6:-4]), int(participant_num[-4:-2]))
+    sleep_start = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=20)
     start_found = False
     start_index = 0
-    sleep_end = np.timedelta64(6, 'h')
+    sleep_end = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=8) + datetime.timedelta(days=1)
     end_found = False
     end_index = 0
 
@@ -94,12 +97,13 @@ def garmin_process(participant_num, garmin_path, csv_data):
     # Iterate through the Garmin array
     for readings in xyz_numpy:  # Check to see if the xyz data is empty
         # print(xlrd.xldate_as_datetime(readings[0], 0).hour)
-        if (xlrd.xldate_as_datetime(readings[0], 0).hour == sleep_start or xlrd.xldate_as_datetime(readings[0], 0).hour > sleep_start) and start_found is False:
+        if xlrd.xldate_as_datetime(readings[0], 0) >= sleep_start and start_found is False:
             start_index = counter
             start_found = True
-        if xlrd.xldate_as_datetime(readings[0], 0).hour == sleep_end and end_found is False:
+        if start_found is True and xlrd.xldate_as_datetime(readings[0], 0) <= sleep_end and end_found is False:
             end_index = counter
-            end_found = True
+            if xlrd.xldate_as_datetime(readings[0], 0) == sleep_end :
+                end_found = True
 
         if pd.isna(readings[1]):
             unpack_xyz[counter, 0] = readings[0]
@@ -170,12 +174,14 @@ def garmin_process(participant_num, garmin_path, csv_data):
     plt.plot(sleep_df['Time'], sleep_df['Y'], label="Y")
     plt.plot(sleep_df['Time'], sleep_df['Z'], label="Z")
     plt.legend()
+    plt.xlim([sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_xyz.png")
 
     plt.figure(figsize=(25, 15))
     # Need to drop the readings without a heart rate before plotting
     thin_time = sleep_df[['Time', 'Heart Rate']].dropna(axis=0)
     plt.plot(thin_time['Time'], thin_time['Heart Rate'])
+    plt.xlim([sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
 
     final_df.to_csv(garmin_path + "\\Processed Data\\" + participant_num + "garmin_data.csv", index=False)

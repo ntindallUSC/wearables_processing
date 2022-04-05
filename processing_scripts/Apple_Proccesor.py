@@ -11,6 +11,7 @@
 
 import numpy as np
 from datetime import datetime
+from datetime import timedelta
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -152,10 +153,13 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     j = 0
 
     # Create two variables to help determine the indices where 8 pm and 6 am occur.
-    sleep_start = None
-    s_start_time = np.timedelta64(20, 'h')
-    sleep_end = None
-    s_end_time = np.timedelta64(6, 'h')
+    date = (int("20"+participant_num[-2:]), int(participant_num[-6:-4]), int(participant_num[-4:-2]))
+    sleep_start = False
+    s_start_time = datetime(year=date[0], month=date[1], day=date[2], hour=20)
+    start_index = 0
+    sleep_end = False
+    s_end_time = datetime(year=date[0], month=date[1], day=date[2], hour=8) + timedelta(days=1)
+    end_index = 0
 
     # Create a variable to keep track of abnomral heart rates:
     abnormal_counter = 0
@@ -185,12 +189,16 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
         merged[j, 1:4] = accel_np[i, 2:5]
 
         # Use these if statements to check if the time is 8pm
-        if accel_np[i, 0].hour == s_start_time and sleep_start is None:
+        if accel_np[i, 0] >= s_start_time and sleep_start is False:
             # print(accel_np[i,0])
-            sleep_start = j
-        if accel_np[i, 0].hour == s_end_time and sleep_end is None:
+            sleep_start = True
+            start_index = j
+
+        if sleep_start is True and accel_np[i,0] <= s_end_time and sleep_end is False:
             # print(accel_np[i,0])
-            sleep_end = j
+            end_index = j
+            if accel_np[i,0] == s_end_time:
+                sleep_end = True
 
         # Checks to see if heart rate should be added from previous comparison
         if flag == 1:
@@ -263,7 +271,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     final_df['Z'] = pd.to_numeric(final_df['Z'])
 
     # Here I write general statistics about the data to a summary file.
-    final_sleep = final_df.iloc[sleep_start:sleep_end]
+    final_sleep = final_df.iloc[start_index:end_index]
     final_sum = final_sleep.describe()
     summary.write(f"\nNumber of abnormal heart rate readings: {abnormal_counter}")
     summary.write("\n8PM TO 6PM STATISTICS \n\n")
@@ -294,6 +302,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     plt.plot(final_sleep['Time'], final_sleep['Y'], label="Y")
     plt.plot(final_sleep['Time'], final_sleep['Z'], label="Z")
     plt.legend()
+    plt.xlim([s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_xyz.png")
 
     plt.figure(figsize=(25, 15))
@@ -301,6 +310,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     thin_time = final_sleep[['Time', 'Heart Rate']].dropna(axis=0)
     plt.plot(thin_time['Time'], thin_time['Heart Rate'])
     # plt.show()
+    plt.xlim([s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_hr.png")
     print("APPLE PROCESSING FINISHED")
 
