@@ -63,7 +63,7 @@ if os.path.isdir(garmin_path):
     i = 0
     for path in fit_file:
         # Run the jar file to convert a fit file to a csv
-        jar_path = 'C:\\Users\\Nick\\Watch_Extraction\\Garmin\\FIT_SDK\\java\\FitCSVTool.jar'
+        jar_path = 'FitCSVTool.jar'
         # jar_path = 'V:/"ACOI"/"R01 - W4K"/"2_Shaker project"/FitSDK/java/FitCSVTool.jar'
         garmin_csv = garmin_path + "\\" + participant_num + "_Garmin_" + str(i) + ".csv"
         subprocess.call(['java', '-jar', jar_path, '-b', path, garmin_csv, '--data', 'record'])
