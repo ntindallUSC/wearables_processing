@@ -28,15 +28,19 @@ def garmin_process(participant_num, garmin_path, csv_data):
     gaps = []
     num_files = 0
     for file in csv_data:
+        # Checks if the file being read in is the first file
         if num_files == 0:
             data = pd.read_csv(file)
         else:
+            # read in next file
             temp = pd.read_csv(file)
+            # Find the gap start and end, then convert to time and store in gaps list
             gap_start = (data.iloc[-1,0] / 60 / 60 / 24) + 32872.79166666670
             gap_start = xlrd.xldate_as_datetime(gap_start, 0)
             gap_end = (temp.iloc[0,0] / 60 / 60 / 24) + 32872.79166666670
             gap_end = xlrd.xldate_as_datetime(gap_end, 0)
             gaps.append(f"Gap found between {gap_start} and {gap_end}\n")
+            # combine two files
             data = pd.concat([data, temp], ignore_index=True)
         num_files += 1
 
@@ -57,6 +61,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     rows, columns = xyz_numpy.shape
     start = xlrd.xldate_as_datetime(data.iloc[0,0], 0)
     end = xlrd.xldate_as_datetime(data.iloc[-1,0], 0)
+    # Write start tiem and end time and number of rows to summary file
     summary.write(f"Start Time: {start} \nEnd Time: {end}\n")
     summary.write(f"The Garmin data intially had {rows} rows of data.\n" +
                   "Each row of data should have 1 heart rate reading and 25 accelerometer readings.\n" +
@@ -70,13 +75,14 @@ def garmin_process(participant_num, garmin_path, csv_data):
 
     # In[13]:
 
-    # Intialize counter to keep track of my place in the merged array.
+    # Initialize counter to keep track of my place in the merged array.
     counter = 0
-    # Intialize total to keep track of the total amount of readings in the array
+    # Initialize total to keep track of the total amount of readings in the array
     total = 0
     accel_index = np.arange(1, 51)
 
-    # Iterate through the Garmin array
+    # initialize variables to help find 8pm and 6am in the data set.
+    # I need these time values so I can write a summary on the data for this time set.
     sleep_start = np.timedelta64(20, 'h')
     start_found = False
     start_index = 0
@@ -85,6 +91,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     end_index = 0
 
     abnormal_hr = 0
+    # Iterate through the Garmin array
     for readings in xyz_numpy:  # Check to see if the xyz data is empty
         # print(xlrd.xldate_as_datetime(readings[0], 0).hour)
         if (xlrd.xldate_as_datetime(readings[0], 0).hour == sleep_start or xlrd.xldate_as_datetime(readings[0], 0).hour > sleep_start) and start_found is False:
@@ -142,6 +149,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     final_row,final_column = final_df.shape
 
     # In[15]:
+    # Write a summary of the 8pm to 6am data.
     if end_found:
         sleep_df = final_df.iloc[start_index:end_index]
         summary.write("\n8PM TO 6AM Statistics" +
@@ -152,8 +160,6 @@ def garmin_process(participant_num, garmin_path, csv_data):
         summary.write("\nData ends before 6AM." +
                       f"\nSummary will run from 8pm to {sleep_df.iloc[-1,0].hour}\n" +
                       f"You should expect {(8 - int(sleep_df.iloc[-1,0].hour)) * 25 * 60 *60} accelerometer readings\n")
-
-
 
     summary.write(sleep_df.describe().to_string())
 
