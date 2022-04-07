@@ -54,7 +54,7 @@ if os.path.isdir(apple_path):
 apple_process(participant_num, apple_path, sensor_log, auto_health)
 
 # CHECK IF THERE IS GARMIN DATA
-"""
+
 garmin_path = participant_path + "\\Garmin"
 fit_file = []
 if os.path.isdir(garmin_path):
@@ -82,6 +82,6 @@ fitbit_path = participant_path + "\\FitBit"
 fitbit_file = []
 if os.path.isdir(fitbit_path):
     NotImplemented
-"""
+
 
 # ----------------------------------------------------------------------------------------------------------------------
