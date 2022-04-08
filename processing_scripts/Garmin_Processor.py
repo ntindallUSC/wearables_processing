@@ -184,7 +184,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     plt.xlim([sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
 
-    final_df.to_csv(garmin_path + "\\Processed Data\\" + participant_num + "garmin_data.csv", index=False)
+    final_df.to_csv(garmin_path + "\\Processed Data\\" + participant_num + "_garmin_data.csv", index=False)
     print("GARMIN PROCESSING FINISHED")
     summary.close()
 
