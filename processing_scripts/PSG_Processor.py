@@ -16,7 +16,6 @@ import numpy as np
 # In[9]:
 
 def psg_process(participant_num, psg_path, psg_summary, psg_data):
-    # TODO get filepath
 
     # Just try to read in the PSG file for now.
     file_path = psg_data
