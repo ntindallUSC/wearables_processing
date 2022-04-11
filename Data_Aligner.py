@@ -89,13 +89,14 @@ acti_summ.write(f"End Time: {end_time}\n")
 total_time = end_time - start_time
 acti_summ.write(f"Total Time Ran: {total_time}\n")
 
+
 # Calculate sample rate and compare to known sample rate.
 readings_num = actigraph.shape[0]
 time_interval = total_time / readings_num
+acti_summ.write(f"The total number of readings is {readings_num[0]}\n")
 acti_summ.write(f"The interval between each reading is {time_interval}\n")
 acti_summ.close()
 # ----------------------------------------------------------------------------------------------------------------------
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -162,7 +163,8 @@ while garmin_np[c_gar, 0] < start_time :
 # columns to the output.
 # I will be outputting all of this alligned data to a numpy array. Here I will intialize the output array
 # and the counter of the array.
-output = np.zeros([r_act, 15], dtype=object)
+# output = np.zeros([r_act, 15], dtype=object)
+output = np.zeros([r_act, 19], dtype=object)
 # Here I initalize a row counter for the ouput array
 c_out = 0
 
@@ -185,7 +187,7 @@ while c_act < r_act :
     
     # Adds the actigraph reading to the row. Because this is the finest grain data this should
     # be added each row.
-    for column in actigraph_np[c_act] :
+    for column in actigraph_np[c_act]:
         row.append(column)
     
     
@@ -193,14 +195,16 @@ while c_act < r_act :
     # If the apple reading time less than or equal to the actigraph reading time then it should be added. 
     if c_app < r_app and apple_np[c_app, 0] <= actigraph_time_convert(actigraph_np[c_act, 0]) :
         # Use the for loop to append each data entry (besides the time) from apple row
-        for column in apple_np[c_app, 1:] :
+        # for column in apple_np[c_app, 1:]:
+        for column in apple_np[c_app, 0:]:
             row.append(column)
         # After adding the row increment the row counter
         c_app += 1
     # If an apple reading doesn't belong on the row, I then fill the row with nan values
     else :
         # I use range of 4 here because I add 4 Apple entries to each row.
-        for empty in range(4) :
+        # for empty in range(4):
+        for empty in range(5) :
             row.append(np.nan)
         
     # Check if the Garmin reading should be added to the row in the same manner as the apple data.
@@ -208,27 +212,31 @@ while c_act < r_act :
     # are added to 25 consecutive actigraph readings
     if c_gar < r_gar and garmin_np[c_gar, 0] <= actigraph_time_convert(actigraph_np[c_act, 0]) :
         # Use a for loop to add each data entry (besides the time) from the garmin row
-        for column in garmin_np[c_gar, 2:] :
+        # for column in garmin_np[c_gar, 2:]:
+        for column in garmin_np[c_gar, 0:]:
             row.append(column)
         # After adding the data from the garmin row increment row count
         c_gar += 1
     # This else will add nan values to the row if a garmin reading hasn't occured
     else :
         # 4 is used here again because each row should have 4 garmin readings
-        for i in range(4) :
+        # for i in range(4):
+        for i in range(6):
             row.append(np.nan)
     
     # Check if the PSG reading should be added to the row.
     if c_psg < r_psg and psg_np[c_psg,0] <= actigraph_time_convert(actigraph_np[c_act, 0]) :
         # Add all data entries in the psg row except time
-        for column in psg_np[c_psg, 1:] :
+        # for column in psg_np[c_psg, 1:]:
+        for column in psg_np[c_psg, 0:]:
             row.append(column)
         # Increment the psg row counter
         c_psg += 1
     # This will add nan values if a psg reading hasn't occured
     else :
         # The range is in 3 because thats how many psg values are added to the row
-        for i in range(3) :
+        # for i in range(3):
+        for i in range(4):
             row.append(np.nan)
 
     
@@ -241,22 +249,14 @@ while c_act < r_act :
     
 print(f"Alignment took {time.time() - begin} seconds to execute")
     
-
-
-# In[22]:
-
-
-headers = ['Time', 'ACTIGRAPH_X', 'ACTIGRAPH_Y', 'ACTIGRAPH_Z', 'APPLE_X', 'APPLE_Y', 'APPLE_Z', 'APPLE_HR', 'GARMIN_X', 'GARMIN_Y', 'GARMIN_Z', 'GARMIN_HR', 'PSG_EPOCH', 'PSG_BP', 'PSG_STG']
-aligned_df = pd.DataFrame(output, columns = headers)
+# Output the data to a csv
+# headers = ['Time', 'ACTIGRAPH_X', 'ACTIGRAPH_Y', 'ACTIGRAPH_Z', 'APPLE_X', 'APPLE_Y', 'APPLE_Z', 'APPLE_HR', 'GARMIN_X', 'GARMIN_Y', 'GARMIN_Z', 'GARMIN_HR', 'PSG_EPOCH', 'PSG_BP', 'PSG_STG']
+headers = ['Time', 'ACTIGRAPH_X', 'ACTIGRAPH_Y', 'ACTIGRAPH_Z', 'Apple_Time', 'APPLE_X', 'APPLE_Y', 'APPLE_Z', 'APPLE_HR','Garmin_Time', 'Reading_Num', 'GARMIN_X', 'GARMIN_Y', 'GARMIN_Z', 'GARMIN_HR', 'PSG_Time', 'PSG_EPOCH', 'PSG_BP', 'PSG_STG']
+aligned_df = pd.DataFrame(output, columns=headers)
 aligned_df.drop(aligned_df.iloc[c_out:].index, inplace=True)
 
 
-# In[29]:
-
-
-aligned_df.to_csv(participant_path +"/" + participant_num + "_aligned_data.csv", index=False)
-
-
-# In[ ]:
+# aligned_df.to_csv(participant_path +"/" + participant_num + "_aligned_data.csv", index=False)
+aligned_df.to_csv(participant_path +"/" + participant_num + "_aligned_data_time.csv", index=False)
 
 
