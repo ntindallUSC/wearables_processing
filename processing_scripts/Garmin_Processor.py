@@ -89,7 +89,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     sleep_start = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=20)
     start_found = False
     start_index = 0
-    sleep_end = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=8) + datetime.timedelta(days=1)
+    sleep_end = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=6) + datetime.timedelta(days=1)
     end_found = False
     end_index = 0
 
