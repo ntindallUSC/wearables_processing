@@ -14,6 +14,7 @@ import os.path
 import subprocess
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
+from processing_scripts.Actigraph_Processor import actigraph_process
 
 # ---------------------------------------------------------------------------------------------------------------------
 # This first section of code prompts the user to select the participant folder. This folder will house all of the raw
@@ -83,5 +84,13 @@ fitbit_file = []
 if os.path.isdir(fitbit_path):
     NotImplemented
 
+
+# CHECK IF THERE IS ACTIGRAPH DATA:
+acti_path = participant_path + "\\ActiGraph\\csv"
+acti_file = []
+if os.path.isdir(acti_path):
+    acti_file = glob.glob(acti_path + "\\*_acti.csv")
+    print(f"Actigraph File Path: {acti_file}")
+    actigraph_process(participant_num, acti_path, acti_file)
 
 # ----------------------------------------------------------------------------------------------------------------------

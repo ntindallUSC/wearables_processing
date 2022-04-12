@@ -75,31 +75,6 @@ def actigraph_time_convert(aTime):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Give a brief summary of the actigraph data
-# Write start of actigraph data
-acti_summ = open(acti_path + participant_num + "_Data_Summary.txt", 'w')
-start_time = actigraph_time_convert(actigraph.iloc[0, 0])
-acti_summ.write(f"Start Time: {start_time}\n")
-
-# Write end of actigraph data
-end_time = actigraph_time_convert(actigraph.iloc[-1, 0])
-acti_summ.write(f"End Time: {end_time}\n")
-
-# Write total length of time measured
-total_time = end_time - start_time
-acti_summ.write(f"Total Time Ran: {total_time}\n")
-
-
-# Calculate sample rate and compare to known sample rate.
-readings_num = actigraph.shape[0]
-time_interval = total_time / readings_num
-acti_summ.write(f"The total number of readings is {readings_num[0]}\n")
-acti_summ.write(f"The interval between each reading is {time_interval}\n")
-acti_summ.close()
-# ----------------------------------------------------------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 # # Read in Apple Watch Data
 # This subsection of code reads in the processed Apple Watch Data. The path is hard coded in for now.
 apple_path = participant_path + "/Apple Watch/Processed Data/"
@@ -257,6 +232,6 @@ aligned_df.drop(aligned_df.iloc[c_out:].index, inplace=True)
 
 
 # aligned_df.to_csv(participant_path +"/" + participant_num + "_aligned_data.csv", index=False)
-aligned_df.to_csv(participant_path +"/" + participant_num + "_aligned_data_time.csv", index=False)
+aligned_df.to_csv(participant_path +"/" + participant_num + "_aligned_data.csv", index=False)
 
 
