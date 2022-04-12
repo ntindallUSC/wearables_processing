@@ -40,7 +40,7 @@ print(f"Participant Number: \n{participant_num}")
 # I will check if a folder exists for each device. If a folder does exist I will then get the file paths to the
 # raw data.
 
-
+"""
 # CHECK IF THERE IS APPLE DATA
 # The condition of this if statement is true if their is a folder named Apple Watch in the particpant's folder.
 apple_path = participant_path + "\\Apple Watch"
@@ -83,14 +83,15 @@ fitbit_path = participant_path + "\\FitBit"
 fitbit_file = []
 if os.path.isdir(fitbit_path):
     NotImplemented
-
+"""
 
 # CHECK IF THERE IS ACTIGRAPH DATA:
-acti_path = participant_path + "\\ActiGraph\\csv"
+acti_path = participant_path + "\\ActiGraph\\"
 acti_file = []
 if os.path.isdir(acti_path):
-    acti_file = glob.glob(acti_path + "\\*_acti.csv")
+    acti_data_path = acti_path + "csv"
+    acti_file = glob.glob(acti_data_path + "\\*_acti.csv")
     print(f"Actigraph File Path: {acti_file}")
-    actigraph_process(participant_num, acti_path, acti_file)
+    actigraph_process(participant_num, acti_data_path, acti_file, acti_path)
 
 # ----------------------------------------------------------------------------------------------------------------------

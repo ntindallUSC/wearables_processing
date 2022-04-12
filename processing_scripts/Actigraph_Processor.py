@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+import os
 
 
-def actigraph_process(participant_num, acti_path, acti_data):
+def actigraph_process(participant_num, acti_path, acti_data, acti_folder):
     print("BEGIN ACTIGRAPH PROCESSING")
     # Read in the actigraph data
     actigraph = pd.read_csv(acti_data[0], skiprows=10)
@@ -15,11 +16,14 @@ def actigraph_process(participant_num, acti_path, acti_data):
     def actigraph_time_convert(aTime):
         a = datetime.datetime.strptime(aTime, '%m/%d/%Y %H:%M:%S.%f')
         return a
+    output_path = os.path.join(acti_folder, "Processed Data")
+    os.mkdir(output_path)
+
 
     # ----------------------------------------------------------------------------------------------------------------
     # Give a brief summary of the actigraph data
     # Write start of actigraph data
-    acti_summ = open(acti_path + "\\" + participant_num + "_Data_Summary.txt", 'w')
+    acti_summ = open(output_path + "\\" + participant_num + "_Data_Summary.txt", 'w')
     start_time = actigraph_time_convert(actigraph.iloc[0, 0])
     acti_summ.write(f"Start Time: {start_time}\n")
 
@@ -68,6 +72,7 @@ def actigraph_process(participant_num, acti_path, acti_data):
     over_night['Time'] = over_night["Time"].apply(lambda x: actigraph_time_convert(x))
     over_night['Time'] = pd.to_datetime(over_night["Time"])
 
+
     print("BEGIN PLOTTING")
     plt.figure(figsize=(25, 15))
     plt.plot(over_night['Time'], over_night['X'], label="X")
@@ -75,7 +80,7 @@ def actigraph_process(participant_num, acti_path, acti_data):
     plt.plot(over_night['Time'], over_night['Z'], label="Z")
     plt.legend()
     plt.xlim([over_night.iloc[0, 0], over_night.iloc[-1, 0]])
-    plt.savefig(acti_path + "\\" + participant_num + "_xyz.png")
+    plt.savefig(output_path + "\\" + participant_num + "_xyz.png")
 
     acti_summ.write("\n8PM to 6AM Summary: \n\n")
     acti_summ.write(over_night.loc[:, ["X","Y","Z"]].describe().to_string())
