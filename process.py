@@ -51,8 +51,8 @@ if os.path.isdir(apple_path):
     print(f"Sensor Log Files: \n{sensor_log}")
     auto_health = glob.glob(apple_path + "/*_hr.*")
     print(f"Auto Health Files: \n{auto_health}")
-
-apple_process(participant_num, apple_path, sensor_log, auto_health)
+    if len(sensor_log) != 0 or len(auto_health) != 0 :
+        apple_process(participant_num, apple_path, sensor_log, auto_health)
 
 # CHECK IF THERE IS GARMIN DATA
 
@@ -75,7 +75,8 @@ if os.path.isdir(garmin_path):
     # Get the path of the data csv
     garmin_data = glob.glob(garmin_path + "\\*Garmin*data.csv")
     print(f"Garmin Data CSV: \n{garmin_data}")
-    garmin_process(participant_num, garmin_path, garmin_data)
+    if len(garmin_data) != 0:
+        garmin_process(participant_num, garmin_path, garmin_data)
 
 
 # CHECK IF THERE IS FITBIT DATA
@@ -91,6 +92,7 @@ if os.path.isdir(acti_path):
     acti_data_path = acti_path + "csv"
     acti_file = glob.glob(acti_data_path + "\\*_acti.csv")
     print(f"Actigraph File Path: {acti_file}")
-    actigraph_process(participant_num, acti_data_path, acti_file, acti_path)
+    if len(acti_file) != 0:
+        actigraph_process(participant_num, acti_data_path, acti_file, acti_path)
 
 # ----------------------------------------------------------------------------------------------------------------------
