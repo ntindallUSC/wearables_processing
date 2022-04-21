@@ -73,7 +73,7 @@ if os.path.isdir(garmin_path):
 
 
     # Get the path of the data csv
-    garmin_data = glob.glob(garmin_path + "\\*data.csv")
+    garmin_data = glob.glob(garmin_path + "\\*Garmin*data.csv")
     print(f"Garmin Data CSV: \n{garmin_data}")
     garmin_process(participant_num, garmin_path, garmin_data)
 
