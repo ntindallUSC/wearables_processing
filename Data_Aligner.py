@@ -122,13 +122,13 @@ c_gar = 0
 r_gar, col_gar = garmin_np.shape
 
 # First I will go each array and get rid of any readings that began before the start of the PSG
-while actigraph_time_convert(actigraph_np[c_act, 0]) < start_time :
+while c_act < r_act and actigraph_time_convert(actigraph_np[c_act, 0]) < start_time :
     c_act += 1
 # print(f"Actigraph Counter: {c_act}")
-while apple_np[c_app, 0] < start_time :
+while c_app < r_app and apple_np[c_app, 0] < start_time :
     c_app += 1
 # print(f"Apple Counter: {c_app}")
-while garmin_np[c_gar, 0] < start_time :
+while c_gar < r_gar and garmin_np[c_gar, 0] < start_time :
     c_gar += 1
 # print(f"Garmin Counter: {c_gar}")
 # print("Done")
