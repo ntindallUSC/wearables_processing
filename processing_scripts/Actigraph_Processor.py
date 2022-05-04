@@ -17,8 +17,8 @@ def actigraph_process(participant_num, acti_path, acti_data, acti_folder):
         a = datetime.datetime.strptime(aTime, '%m/%d/%Y %H:%M:%S.%f')
         return a
     output_path = os.path.join(acti_folder, "Processed Data")
-    os.mkdir(output_path)
-
+    if os.path.isdir(output_path) is False:
+        os.mkdir(output_path)
 
     # ----------------------------------------------------------------------------------------------------------------
     # Give a brief summary of the actigraph data
