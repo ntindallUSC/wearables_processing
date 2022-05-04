@@ -80,6 +80,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
 
     # Here I convert the data type in time column in the heart rate data to a timestamp
     heart['Date/Time'] = pd.to_datetime(heart['Date/Time'])
+    # print(heart)
 
     # In[ ]:
 
@@ -137,6 +138,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     # Iterate through heart file until we've reached a reading that corresponds with the first accelerometer reading
     a_reading = accel_np[0]
     h_reading = heart_np[h_counter]
+    h_counter += 1
 
     while h_reading[0] < a_reading[0]:
         h_reading = heart_np[h_counter]
@@ -163,7 +165,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
 
     # Create a variable to keep track of abnomral heart rates:
     abnormal_counter = 0
-
+    # print(f"Beginning Heartrate: {h_reading[0]} \nBeginning Accelerometer {a_reading[0]} \nBegin H counter {h_counter}\n")
     summary.write("\nAcceleration Gaps:\n")
     while i < a_row - 2:
 
@@ -176,7 +178,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
             while accel_np[i + 1, 0] > h_reading[0] and h_counter < h_row:
                 if 40 > h_reading[1] or 150 < h_reading[1]:
                     abnormal_counter += 1
-                # print(f"{h_reading[0]} is in the gap")
+                #print(f"{h_reading[0]} is in the gap")
                 merged[j, :] = [h_reading[0], np.nan, np.nan, np.nan, h_reading[1]]
                 j += 1
 
@@ -212,13 +214,14 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
             else:
                 h_reading = heart_np[h_counter]
                 h_counter += 1
+                # print(f"Next heartrate time {h_reading[0]} \nNext H_counter {h_counter}\n")
 
         # Compare accel times
         if h_counter < h_row and (accel_np[i, 0] <= h_reading[0] < accel_np[i + 1, 0]):
             if 40 > h_reading[1] or 150 < h_reading[1]:
                 abnormal_counter += 1
-
-            # print(f"Current reading: {h_reading[1]}")
+            # print(f"Current accel {accel_np[i,0]} \nNext accel {accel_np[i+1,0]}")
+            # print(f"Current reading: {h_reading[0]}\n")
 
             # Get the absolute difference between the 2 accel times and heart time
             diff1 = abs(accel_np[i, 0] - h_reading[0])
