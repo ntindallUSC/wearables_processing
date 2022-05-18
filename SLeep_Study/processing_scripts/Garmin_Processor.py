@@ -66,7 +66,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
                           'record.developer.0.SensorAccelerationZ_HD[mgn]', 'record.heart_rate[bpm]']]
     # Convert that dataframe to a numpy array for faster iteration
     xyz_numpy = xyz_df.to_numpy()
-    print(f"Dtype of xyz_numpy: {xyz_numpy.dtype}")
+    # print(f"Dtype of xyz_numpy: {xyz_numpy.dtype}")
     rows, columns = xyz_numpy.shape
     start = data.iloc[0, 0]
     end = data.iloc[-1, 0]
@@ -80,7 +80,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     # The garmin device records more than 25 readings in a  second. I assume here that it would not record any more than
     # 50 readings.
     unpack_xyz = np.zeros((rows * 50, columns + 1), dtype="O")
-    print(f"Dtype of unpack_xyz: {unpack_xyz.dtype}")
+    # print(f"Dtype of unpack_xyz: {unpack_xyz.dtype}")
 
     # In[13]:
 
