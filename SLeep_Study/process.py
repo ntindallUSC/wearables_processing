@@ -44,6 +44,7 @@ print(f"Participant Number: \n{participant_num}")
 
 # CHECK IF THERE IS APPLE DATA
 # The condition of this if statement is true if their is a folder named Apple Watch in the particpant's folder.
+
 apple_path = participant_path + "\\Apple Watch"
 sensor_log = []
 auto_health = []

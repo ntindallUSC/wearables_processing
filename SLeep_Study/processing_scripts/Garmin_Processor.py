@@ -32,7 +32,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     garmin_found = datetime(year=1989, month=12, day=31)
     # The US is awesome and follows daylight savings time, so in order to convert to EST we need to ask the user
     # if at the time of recording the data, if daylight savings was active.
-    daylight = input("Did the recording happen during Daylight Savings Time? Please respond yes or no.")
+    daylight = input("Did the recording happen during Daylight Savings Time? Please respond yes or no. ")
     offset = timedelta(hours=5)
     if 'yes' == daylight.lower():
         offset = timedelta(hours=4)
@@ -66,6 +66,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
                           'record.developer.0.SensorAccelerationZ_HD[mgn]', 'record.heart_rate[bpm]']]
     # Convert that dataframe to a numpy array for faster iteration
     xyz_numpy = xyz_df.to_numpy()
+    print(f"Dtype of xyz_numpy: {xyz_numpy.dtype}")
     rows, columns = xyz_numpy.shape
     start = data.iloc[0, 0]
     end = data.iloc[-1, 0]
@@ -78,7 +79,8 @@ def garmin_process(participant_num, garmin_path, csv_data):
     # Pre allocate an unpacked array. The reason that it has 50 * the amount of rows than the xyz array is in case
     # The garmin device records more than 25 readings in a  second. I assume here that it would not record any more than
     # 50 readings.
-    unpack_xyz = np.zeros((rows * 50, columns + 1))
+    unpack_xyz = np.zeros((rows * 50, columns + 1), dtype="O")
+    print(f"Dtype of unpack_xyz: {unpack_xyz.dtype}")
 
     # In[13]:
 
@@ -92,10 +94,10 @@ def garmin_process(participant_num, garmin_path, csv_data):
     # I need these time values so I can write a summary on the data for this time set.
     #               Year                                Month                       Day
     date = (int("20" + participant_num[-2:]), int(participant_num[-6:-4]), int(participant_num[-4:-2]))
-    sleep_start = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=20)
+    sleep_start = datetime(year=date[0], month=date[1], day=date[2], hour=20)
     start_found = False
     start_index = 0
-    sleep_end = datetime.datetime(year=date[0], month=date[1], day=date[2], hour=6) + datetime.timedelta(days=1)
+    sleep_end = datetime(year=date[0], month=date[1], day=date[2], hour=6) + timedelta(days=1)
     end_found = False
     end_index = 0
 
@@ -143,6 +145,8 @@ def garmin_process(participant_num, garmin_path, csv_data):
 
     final_df = pd.DataFrame(unpack_xyz[0:total], columns=['Time', 'Reading #', 'X', 'Y', 'Z', 'Heart Rate'])
     final_df["Heart Rate"] = final_df["Heart Rate"].replace(['0', 0], np.nan)
+    # pd.to_numeric(final_df['X'])
+    final_df = final_df.astype({"Time": object, "Reading #": int, "X": float, "Y": float, 'Z': float, "Heart Rate": float })
 
     # Write the total amount of rows
     summary.write(f"The data has {final_df.shape[0]} rows of data\n\nGAPS FOUND: \n\n")
@@ -152,16 +156,19 @@ def garmin_process(participant_num, garmin_path, csv_data):
     # Write a summary of the 8pm to 6am data.
     final_row, final_column = final_df.shape
     if end_found:
-        sleep_df = final_df.iloc[start_index:end_index]
+        sleep_df = final_df.loc[start_index:end_index]
         summary.write("\n8PM TO 6AM Statistics" +
                       "\nFrom 8 to 6 with a 25 samples a second, there should be 900,000 accelerometer readings\n" +
                       "There should be 36,000 heart rate readings from 8 to 6\n")
     else:
-        sleep_df = final_df.iloc[start_index:final_row - 1]
+        sleep_df = final_df.loc[start_index:final_row - 1]
         summary.write("\nData ends before 6AM." +
                       f"\nSummary will run from 8pm to {sleep_df.iloc[-1, 0].hour}\n" +
                       f"You should expect {(8 - int(sleep_df.iloc[-1, 0].hour)) * 25 * 60 * 60} accelerometer readings\n")
 
+    # sleep_df['X'] = sleep_df['X'].apply(lambda x: float(x))
+    # sleep_df['Y'] = sleep_df['Y'].apply(lambda x: float(x))
+    # sleep_df['Z'] = sleep_df['Z'].apply(lambda x: float(x))
     summary.write(sleep_df.describe().to_string())
 
     # Plotting the the acceleration readings versus time
