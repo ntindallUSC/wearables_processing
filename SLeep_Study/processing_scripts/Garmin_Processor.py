@@ -45,8 +45,8 @@ def garmin_process(participant_num, garmin_path, csv_data):
             # read in next file
             temp = pd.read_csv(file)
             # Find the gap start and end, then convert to time and store in gaps list
-            gap_start = timedelta(seconds=data.iloc[-1, 0]) + garmin_found - offset
-            gap_end = timedelta(temp.iloc[0, 0]) + garmin_found - offset
+            gap_start = timedelta(seconds=int(data.iloc[-1, 0])) + garmin_found - offset
+            gap_end = timedelta(seconds=int(temp.iloc[0, 0])) + garmin_found - offset
             gaps.append(f"Gap found between {gap_start} and {gap_end}\n")
             # combine two files
             data = pd.concat([data, temp], ignore_index=True)
@@ -163,8 +163,8 @@ def garmin_process(participant_num, garmin_path, csv_data):
     else:
         sleep_df = final_df.loc[start_index:final_row - 1]
         summary.write("\nData ends before 6AM." +
-                      f"\nSummary will run from 8pm to {sleep_df.iloc[-1, 0].hour}\n" +
-                      f"You should expect {(8 - int(sleep_df.iloc[-1, 0].hour)) * 25 * 60 * 60} accelerometer readings\n")
+                      f"\nSummary runs from 20:00 to {sleep_df.iloc[-1, 0].hour}:{sleep_df.iloc[-1, 0].minute}\n" +
+                      f"For a full night you would expect 900,000 accelerometer readings\n" + "For a full night you would expect 36,000 Heart Rate Readings\n")
 
     # sleep_df['X'] = sleep_df['X'].apply(lambda x: float(x))
     # sleep_df['Y'] = sleep_df['Y'].apply(lambda x: float(x))

@@ -44,7 +44,7 @@ print(f"Participant Number: \n{participant_num}")
 
 # CHECK IF THERE IS APPLE DATA
 # The condition of this if statement is true if their is a folder named Apple Watch in the particpant's folder.
-
+"""
 apple_path = participant_path + "\\Apple Watch"
 sensor_log = []
 auto_health = []
@@ -55,7 +55,7 @@ if os.path.isdir(apple_path):
     print(f"Auto Health Files: \n{auto_health}")
     if len(sensor_log) != 0 or len(auto_health) != 0 :
         apple_process(participant_num, apple_path, sensor_log, auto_health)
-
+"""
 # CHECK IF THERE IS GARMIN DATA
 
 garmin_path = participant_path + "\\Garmin"
@@ -80,7 +80,7 @@ if os.path.isdir(garmin_path):
     if len(garmin_data) != 0:
         garmin_process(participant_num, garmin_path, garmin_data)
 
-
+"""
 # CHECK IF THERE IS FITBIT DATA
 fitbit_path = participant_path + "\\FitBit"
 fitbit_file = []
@@ -98,3 +98,4 @@ if os.path.isdir(acti_path):
         actigraph_process(participant_num, acti_data_path, acti_file, acti_path)
 
 # ----------------------------------------------------------------------------------------------------------------------
+"""
