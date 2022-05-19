@@ -12,9 +12,9 @@ import tkinter as tk
 from tkinter import filedialog
 import os.path
 import subprocess
-from Sleep_Study.processing_scripts.Apple_Proccesor import apple_process
-from Sleep_Study.processing_scripts.Garmin_Processor import garmin_process
-from Sleep_Study.processing_scripts.Actigraph_Processor import actigraph_process
+from processing_scripts.Apple_Proccesor import apple_process
+from processing_scripts.Garmin_Processor import garmin_process
+from processing_scripts.Actigraph_Processor import actigraph_process
 
 # ---------------------------------------------------------------------------------------------------------------------
 # This first section of code prompts the user to select the participant folder. This folder will house all of the raw

@@ -12,7 +12,7 @@ import glob
 import tkinter as tk
 from tkinter import filedialog
 import os.path
-from Sleep_Study.processing_scripts.PSG_Processor import psg_process
+from processing_scripts.PSG_Processor import psg_process
 
 # ## Read in the PSG Data
 # This subsection of code reads in the sample PSG file. Right now I have the explicit path hard coded in. Later once we have a real version I'll replace it.
