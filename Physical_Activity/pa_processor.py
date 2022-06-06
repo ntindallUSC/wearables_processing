@@ -12,6 +12,7 @@ from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
 from processing_scripts.k5_processer import process_k5
+from processing_scripts.
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -121,6 +122,9 @@ actigraph_path = pa_path + '/ActiGraph data/csv'
 if os.path.isdir(actigraph_path):
     actigraph_data = glob.glob(actigraph_path + "/*acti.csv")
     print(f"Actigraph Path: {actigraph_data}")
+
+# Align Data
+
 
 
 
