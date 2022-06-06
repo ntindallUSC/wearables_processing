@@ -101,6 +101,7 @@ For the K5 processing the files must be:
 2. Timestamped
 3. Labeled by activity (Activity labels come from a separate file)
 """
+"""
 k5_path = pa_path + "/K5 data"
 activity_path = pa_path + "/Survey and Protocol documents"
 if os.path.isdir(k5_path) and os.path.isdir(activity_path):
@@ -109,5 +110,18 @@ if os.path.isdir(k5_path) and os.path.isdir(activity_path):
     print(f"K5 files {k5_files} \nActivity Log file {log_file[0]}")
     # Process k5 data
     k5_data = process_k5(k5_files, log_file, k5_path, particpant_num)
+"""
+"""
+ALIGNMENT
+Now that all of the data has been processed it must be aligned. There are 2 steps to aligning the data:
+1. Get path to actigraph data
+2. Pass actigraph path and the data frames to the alignment script
+"""
+actigraph_path = pa_path + '/ActiGraph data/csv'
+if os.path.isdir(actigraph_path):
+    actigraph_data = glob.glob(actigraph_path + "/*acti.csv")
+    print(f"Actigraph Path: {actigraph_data}")
+
+
 
 
