@@ -12,7 +12,7 @@ from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
 from processing_scripts.k5_processer import process_k5
-from processing_scripts.
+from processing_scripts.pa_aligner import align
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -28,7 +28,7 @@ print(f'Participant Number {particpant_num}')
 
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
-"""
+
 apple_path = pa_path + '/Apple Data'
 apple_data = None
 # Apple Watch has 2 types of data output files: Accelerometer and Heart rate. Need to grab both
@@ -42,7 +42,8 @@ if os.path.isdir(apple_path):
     print("Begin Apple Watch Processing")
     apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num)
     print("Finished")
-"""
+
+
 
 """
 GARMIN PROCESSING
@@ -51,7 +52,7 @@ The garmin devices output a fit file. The processing of the garmin device involv
 2. Convert garmin timestamps to time
 3. Unpack garmin acceleration data into 1 reading a row
 """
-"""
+
 # First get the path of the Garmin data folder
 garmin_path = pa_path + '\\Garmin data'
 # Check if folder exists:
@@ -64,8 +65,9 @@ if os.path.isdir(garmin_path):
     # Get paths of csv
     csv_files = glob.glob(garmin_path + '/*data.csv')
     print(f"CSVs: \n{csv_files}")
+    print("BEGIN GARMIN PROCESSING")
     garmin_data = process_garmin(csv_files, garmin_path, particpant_num)
-"""
+    print("FINISHED")
 
 
 """
@@ -76,7 +78,7 @@ file contains raw ecg and accelerometer data. The processing of the file is brok
 2. Timestamp all of the data
 3. Align the data
 """
-"""
+
 actiheart_path = pa_path + "/ActiHeart data"
 if os.path.isdir(actiheart_path):
     # Get the path to the ECG and Accelerometer data
@@ -92,8 +94,10 @@ if os.path.isdir(actiheart_path):
     hr_data = glob.glob(actiheart_path + "/*per*sec*")
     print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
     # Process the actiheart data
+    print("BEGIN ACTIHEART PROCESSING")
     actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num)
-"""
+    print("FINISHED")
+
 """
 K5 PROCESSING
 The K5 can output multiple files all formatted the same way. 
@@ -102,7 +106,7 @@ For the K5 processing the files must be:
 2. Timestamped
 3. Labeled by activity (Activity labels come from a separate file)
 """
-"""
+
 k5_path = pa_path + "/K5 data"
 activity_path = pa_path + "/Survey and Protocol documents"
 if os.path.isdir(k5_path) and os.path.isdir(activity_path):
@@ -110,8 +114,10 @@ if os.path.isdir(k5_path) and os.path.isdir(activity_path):
     log_file = glob.glob(activity_path + "/*log*")
     print(f"K5 files {k5_files} \nActivity Log file {log_file[0]}")
     # Process k5 data
+    print("BEGIN K5 PROCESSING")
     k5_data = process_k5(k5_files, log_file, k5_path, particpant_num)
-"""
+    print("FINISHED")
+
 """
 ALIGNMENT
 Now that all of the data has been processed it must be aligned. There are 2 steps to aligning the data:
@@ -124,8 +130,9 @@ if os.path.isdir(actigraph_path):
     print(f"Actigraph Path: {actigraph_data}")
 
 # Align Data
-
-
-
+print("BEGIN ALIGNMENT")
+label = "Break"
+align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num)
+print("Finished")
 
 

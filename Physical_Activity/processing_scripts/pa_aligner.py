@@ -21,13 +21,23 @@ import math
 # 5. K5 (Sampled about every 5 seconds)
 
 # In[2]:
+# Function that replaces nan activities with label
+label = "Break"
+def label_swap(aLabel):
+    global label
+    if pd.isnull(aLabel):
+        aLabel = label
+    else:
+        label = aLabel
+    return label
+
 
 def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num):
     # Read in actigraph data
     # First define a date parser. This parser allows the actigraph date format to be converted to pandas timestamp
     acti_date_parser  = lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f')
     # Read in file and store it as a dataframe.
-    actigraph_data = pd.read_csv(actigraph_path, skiprows=10, parse_dates=['Timestamp'], date_parser=acti_date_parser)
+    actigraph_data = pd.read_csv(actigraph_path[0], skiprows=10, parse_dates=['Timestamp'], date_parser=acti_date_parser)
     sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
     actigraph_data.insert(1, 'Second Fraction', sec_frac)
 
@@ -178,15 +188,6 @@ def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, fold
     out_df.drop(columns='K5 Activity', inplace=True)
     out_df.insert(0,'Activity',activity)
 
-    # Function that replaces nan activities with label
-    label = "Break"
-    def label_swap(aLabel) :
-        global label
-        if not pd.isnull(aLabel) :
-            aLabel = label
-        else:
-            label = aLabel
-        return label
     out_df['Activity'] = out_df['Activity'].apply(lambda x : label_swap(x))
 
     # Output File

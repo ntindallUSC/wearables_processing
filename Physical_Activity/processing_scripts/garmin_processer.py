@@ -110,5 +110,6 @@ def process_garmin(data_path, garmin_path, participant_num):
 
     out_path = output_path + "/" + participant_num + "_garmin.csv"
     final_df.to_csv(out_path, index=False)
+    final_df['Time'] = pd.to_datetime(final_df['Time'])
     return final_df
 
