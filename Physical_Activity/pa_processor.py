@@ -10,7 +10,7 @@ import os
 import glob
 import subprocess
 from processing_scripts.apple_processer import process_apple
-from processing_scripts.garmin_processer import fit_to_csv
+from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -49,17 +49,21 @@ The garmin devices output a fit file. The processing of the garmin device involv
 2. Convert garmin timestamps to time
 3. Unpack garmin acceleration data into 1 reading a row
 """
+"""
 # First get the path of the Garmin data folder
 garmin_path = pa_path + '\\Garmin data'
 # Check if folder exists:
 if os.path.isdir(garmin_path):
     # Get path of all fit files
     fit_files = glob.glob(garmin_path + '/*.fit')
+    print(f"Fit Files: \n{fit_files}")
     # Convert fit files to csv
     fit_to_csv(fit_files, garmin_path, particpant_num)
-    # Timestamp and unpack csv
-
-
+    # Get paths of csv
+    csv_files = glob.glob(garmin_path + '/*data.csv')
+    print(f"CSVs: \n{csv_files}")
+    garmin_data = process_garmin(csv_files, garmin_path, particpant_num)
+"""
 
 
 
