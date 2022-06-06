@@ -37,7 +37,7 @@ if os.path.isdir(apple_path):
     accel_files = glob.glob(apple_path + '/*_sl*.csv')
     print(f"Apple Sensor log Files :\n{accel_files}")
     # Get list of heart rate files
-    hr_files = glob.glob(apple_path + '/*_hr.csv')
+    hr_files = glob.glob(apple_path + '/*_hr*.csv')
     print(f"Cardiogram Files :\n{hr_files}")
     print("Begin Apple Watch Processing")
     apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num)
