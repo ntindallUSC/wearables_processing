@@ -10,7 +10,7 @@ import os
 import glob
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
-from processing_scripts.actiheart_processer import data_split, processing_actiheart
+from processing_scripts.actiheart_processer import data_split, process_actiheart
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -90,7 +90,7 @@ if os.path.isdir(actiheart_path):
     hr_data = glob.glob(actiheart_path + "/*per*sec*")
     print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
     # Process the actiheart data
-    actiheart_data = processing_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num)
+    actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num)
 """
 """
 K5 PROCESSING

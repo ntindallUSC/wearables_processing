@@ -65,7 +65,7 @@ def data_split(data, out_path, participant_number) :
     return start_time
 
 
-def processing_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, participant_num):
+def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, participant_num):
     # Function used to parse dates to datetime
     custom_date_parser = lambda x : start_time + timedelta(seconds=float(x))
 
