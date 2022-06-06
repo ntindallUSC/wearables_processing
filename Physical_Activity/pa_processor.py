@@ -74,6 +74,7 @@ file contains raw ecg and accelerometer data. The processing of the file is brok
 2. Timestamp all of the data
 3. Align the data
 """
+"""
 actiheart_path = pa_path + "/ActiHeart data"
 if os.path.isdir(actiheart_path):
     # Get the path to the ECG and Accelerometer data
@@ -90,6 +91,21 @@ if os.path.isdir(actiheart_path):
     print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
     # Process the actiheart data
     actiheart_data = processing_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num)
-
+"""
+"""
+K5 PROCESSING
+The K5 can output multiple files all formatted the same way. 
+For the K5 processing the files must be:
+1. Read in
+2. Timestamped
+3. Labeled by activity (Activity labels come from a separate file)
+"""
+k5_path = pa_path + "/K5 data"
+activity_path = pa_path + "/Survey and Protocol documents"
+if os.path.isdir(k5_path) and os.path.isdir(activity_path):
+    k5_files = glob.glob(k5_path + "/*_K5*")
+    log_file = glob.glob(activity_path + "/*log*")
+    print(f"K5 files {k5_files} \nActivity Log file {log_file[0]}")
+    # Process k5 data
 
 
