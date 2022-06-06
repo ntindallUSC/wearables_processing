@@ -11,6 +11,7 @@ import glob
 import subprocess
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
+from processing_scripts.actiheart_processer import data_split
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -65,6 +66,30 @@ if os.path.isdir(garmin_path):
     garmin_data = process_garmin(csv_files, garmin_path, particpant_num)
 """
 
+
+"""
+ACTIHEART PROCESSING
+The actiheart device outputs 2 files of interest. One file contains the heart rate and rotation for every second. The other
+file contains raw ecg and accelerometer data. The processing of the file is broken into 3 steps:
+1. Split the ecg and accelerometer data
+2. Timestamp all of the data
+3. Align the data
+"""
+actiheart_path = pa_path + "/ActiHeart data"
+if os.path.isdir(actiheart_path):
+    # Get the path to the ECG and Accelerometer data
+    ecg_accel = glob.glob(actiheart_path + "/*ECG_accel*")
+    print(f"Raw ECG and Acceleration path: {ecg_accel}")
+    # Split the ecg and acceleration files. Also grab start time of actiheart data collection
+    start = data_split(ecg_accel, actiheart_path, particpant_num)
+    # Get the path to the ECG data
+    ecg_data = glob.glob(actiheart_path + "/*ecg_split*")
+    # Get the path to the acceleration data
+    accel_data = glob.glob(actiheart_path + "/*accel_split*")
+    # Grab the heart rate and rotation data
+    hr_data = glob.glob(actiheart_path + "/*per*sec*")
+    print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
+    # Process the actiheart data
 
 
 

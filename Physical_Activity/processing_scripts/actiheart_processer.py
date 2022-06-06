@@ -23,67 +23,49 @@ from datetime import datetime, time, timedelta
 # In[2]:
 
 
-# Intialize tk dialog. This is needed to ask user to select files
-root = tk.Tk()
-root.winfo_toplevel().title("Select csv files")
-root.withdraw()
-
-# Get path to folder of actiheart data
-actiheart_path = filedialog.askdirectory()
-actiheart_path
 
 
-# # Original File Structure
-# The original file can be broken into three parts:
-# 1. Header containing meta data about the device and wearer. Followed by blank line.
-# 2. Table containing ECG data sampled at 256 Hz. Followed by blank line.
-# 3. Table containing Accelerometer data sampled at 50 Hz
-# <br>
-# I will use this knowledge of the file structure to separate the file into 3 sections
+def data_split(data, out_path, participant_number) :
+    # Need to read through data
+    ecg_accel = open(data[0], 'r')
+    # This variable is used to determine which section I'm currently iterating through
+    section = 1
+    # This variable represents the start time of the trial
+    start_time = None
+    # Create two output files, ecg and acceleration
+    ecg = open(out_path + "/" + participant_number + "_ecg_split.csv", "w")
+    accel = open(out_path + "/" + participant_number + "_accel_split.csv", "w")
+    # Variables created to signify if file is open
+    ecg_open = True
 
-# In[3]:
+    for line in ecg_accel:
+        # print(f"{section} : {line}")
+        if section == 1: # Checks if iterating through section 1
+            if line[:7].lower() == 'started' :
+                start_time = datetime.strptime(line[8:-1], "%d-%b-%Y %H:%M")
+                print(start_time)
+        elif section == 2 : # Checks if iterating through section 2
+            ecg.write(line)
+        elif section == 3 : # Checks if 3 section of file is reached
+            # Closes ECG file
+            if ecg_open :
+                ecg.close()
+                ecg_open = False
 
+            accel.write(line)
 
-# Read in original output file
-ecg_accel = open(actiheart_path + "/962_ECG_accel.csv", 'r')
-# This variable is used to deterimne which section I'm currently iterating through
-section = 1
-# This variable represents the start time of the trial
-start_time = None
-# Create two output files, ecg and acceleration
-ecg = open(actiheart_path + "/962_ecg_split.csv", "w")
-accel = open(actiheart_path + "/962_accel_split.csv", "w")
-# Variables created to signify if file is open
-ecg_open = True
+        # Looks for blank line. If found it indicates that a section has ended
+        if line == "\n" :
+            section += 1
 
-for line in ecg_accel:
-    # print(f"{section} : {line}")
-    if section == 1: # Checks if iterating through section 1
-        if line[:7].lower() == 'started' :
-            start_time = datetime.strptime(line[8:-1], "%d-%b-%Y %H:%M")
-            print(start_time)
-    elif section == 2 : # Checks if iterating through section 2
-        ecg.write(line)
-    elif section == 3 : # Checks if 3 section of file is reached
-        # Closes ECG file
-        if ecg_open :
-            ecg.close()
-            ecg_open = False
-            
-        accel.write(line)
-    
-    # Looks for blank line. If found it indicates that a section has ended
-    if line == "\n" :
-        section += 1 
-        
-# Close files
-if ecg_open :
-    ecg.close()
-    ecg_open = False
-accel.close()
-ecg_accel.close()
+    # Close files
+    if ecg_open :
+        ecg.close()
+    accel.close()
+    ecg_accel.close()
+    return start_time
 
-
+"""
 # In[4]:
 
 
@@ -262,44 +244,6 @@ out_df
 out_df.to_csv(actiheart_path + "/Processed Data/962_actiheart.csv", index=False)
 
 
-# In[16]:
-
-
-heart_test = out_df["Heart Rate"].dropna()
-if not (hr_rows - 100 <= heart_test.count() <= hr_rows + 100) :
-    print("Error Detected Check data. Missing Heartrate values")
-heart_test
-
-
-# In[17]:
-
-
-heart_test.count()
-
-
-# In[18]:
-
-
-accel_test = out_df["X"].dropna()
-if not (accel_rows - 200 <= accel_test.count() <= accel_rows + 200) :
-    print("Error Detected Check data. Missing Acceleration values")
-accel_test
-
-
-# In[19]:
-
-
-accel_test.count()
-
-
-# In[20]:
-
-
-accel_rows
-
-
-# In[ ]:
-
-
+"""
 
 
