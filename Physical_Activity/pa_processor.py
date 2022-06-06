@@ -11,6 +11,7 @@ import glob
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
+from processing_scripts.k5_processer import process_k5
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -107,5 +108,6 @@ if os.path.isdir(k5_path) and os.path.isdir(activity_path):
     log_file = glob.glob(activity_path + "/*log*")
     print(f"K5 files {k5_files} \nActivity Log file {log_file[0]}")
     # Process k5 data
+    k5_data = process_k5(k5_files, log_file, k5_path, particpant_num)
 
 
