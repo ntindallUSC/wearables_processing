@@ -15,9 +15,8 @@
 
 import pandas as pd
 import numpy as np
-import tkinter as tk
-from tkinter import filedialog
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
+import os
 
 
 # In[2]:
@@ -65,185 +64,148 @@ def data_split(data, out_path, participant_number) :
     ecg_accel.close()
     return start_time
 
-"""
-# In[4]:
+
+def processing_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, participant_num):
+    # Function used to parse dates to datetime
+    custom_date_parser = lambda x : start_time + timedelta(seconds=float(x))
 
 
-# Function used to parse dates to datetime
-custom_date_parser = lambda x : start_time + timedelta(seconds=float(x))
+    # Now read in ECG File and combine the Date, Time, and Second Fraction into 1 column
+    ecg_data = pd.read_csv(ecg_data[0], parse_dates = ['Total Seconds'],
+                           date_parser = custom_date_parser)
+    ecg_data.drop(columns=["Date", "Time"], inplace=True)
+    ecg_data.rename(columns={"Total Seconds": "ECG Time"}, inplace=True)
+    sec_frac = ecg_data.pop('Second Fraction')
+    ecg_data.insert(1, 'Second Fraction', sec_frac)
 
+    # Read in the Accel File and combine The Date, Time, and Second Fraction Column to one column called DateTime
+    accel_data = pd.read_csv(accel_data[0], parse_dates=['Total Seconds'],
+                             date_parser= custom_date_parser)
+    accel_data.drop(columns=['Date', 'Time', 'Second Fraction'], inplace=True)
+    accel_data.rename(columns={"Total Seconds": "Accel Time"}, inplace = True)
 
-# In[6]:
+    # # Heart Rate and Rotation
+    # The second file output by the actiheart device contains heartrate and rotation data sampled at a frequency of 1 hz.
+    # Read in file
+    heart_data = pd.read_csv(hr_data[0], sep='\t', skiprows=5, index_col=False)
+    # Drop unwanted columns
+    heart_data.drop(columns={'Movement', 'Status'}, inplace=True)
+    # Add date to Time column
+    date = accel_data.iloc[0,0].to_pydatetime() # Get date from acceleration
+    # Add hour, minute and seconds to date
+    heart_data['Time'] = heart_data["Time"].apply(lambda x: date.replace(hour=int(x[:2]),
+                                                                         minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
+    heart_data.sort_values(by=["Time"])
 
+    # # Align ECG, Acceleration, and Heart Rate
+    # Iterate through each file and order all of the readings by time in one dataframe. Since ECG is the finest grain data I will align the rest of the data to ECG
 
-# Now read in ECG File and combine the Date, Time, and Second Fraction into 1 column
-ecg_data = pd.read_csv(actiheart_path + "/962_ecg_split.csv", parse_dates = ['Total Seconds'], 
-                       date_parser = custom_date_parser)
-ecg_data.drop(columns=["Date", "Time"], inplace=True)
-ecg_data.rename(columns={"Total Seconds": "ECG Time"}, inplace=True)
-sec_frac = ecg_data.pop('Second Fraction')
-ecg_data.insert(1, 'Second Fraction', sec_frac)
-ecg_data
+    # First convert 3 data frames to numpy arrays. This is needed because iterating through numpy arrays is much faster than
+    # iterating through dataframes.
+    ecg_np = ecg_data.to_numpy()
+    accel_np = accel_data.to_numpy()
+    hr_np = heart_data.to_numpy()
 
+    # Get shape of each array
+    ecg_rows, ecg_col = ecg_np.shape
+    accel_rows, accel_col = accel_np.shape
+    hr_rows, hr_col = hr_np.shape
 
-# In[7]:
+    # Calculate number of columns needed for output array
+    out_col = ecg_col + accel_col + hr_col
 
+    # Initialize output array
+    out_np = np.zeros([ecg_rows, out_col], dtype="O")
+    # Initialize variables to represent the current row of each numpy array
+    ecg_iter = 0
+    accel_iter = 0
+    hr_iter = 0
+    out_iter = 0
+    # Next I iterate through the heart rate and acceleration data until none of there readings occur before the start of the ecg
+    while accel_np[accel_iter, 0] > ecg_np[ecg_iter, 0] :
+        accel_iter += 1
 
-# Read in the Accel File and combine The Date, Time, and Second Fraction Column to one column called DateTime
-accel_data = pd.read_csv(actiheart_path + "/962_accel_split.csv", parse_dates=['Total Seconds'], 
-                         date_parser= custom_date_parser)
-accel_data.drop(columns=['Date', 'Time', 'Second Fraction'], inplace=True)
-accel_data.rename(columns={"Total Seconds": "Accel Time"}, inplace = True)
-accel_data
+    while hr_np[hr_iter, 0] > ecg_np[ecg_iter, 0] :
+        hr_iter += 1
 
-
-# # Heart Rate and Rotation
-# The second file output by the actiheart device contains heartrate and rotation data sampled at a frequency of 1 hz.
-
-# In[9]:
-
-
-# Read in file
-heart_data = pd.read_csv(actiheart_path + "/962_persec.txt", sep='\t', skiprows=5, index_col=False)
-# Drop unwanted columns
-heart_data.drop(columns={'Movement', 'Status'}, inplace=True)
-# Add date to Time column
-date = accel_data.iloc[0,0].to_pydatetime() # Get date from acceleration
-# Add hour, minute and seconds to date
-heart_data['Time'] = heart_data["Time"].apply(lambda x: date.replace(hour=int(x[:2]), 
-                                                                     minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
-heart_data.sort_values(by=["Time"])
-heart_data
-
-
-# # Align ECG, Acceleration, and Heart Rate
-# Iterate through each file and order all of the readings by time in one dataframe. Since ECG is the finest grain data I will align the rest of the data to ECG
-
-# In[10]:
-
-
-# First convert 3 data frames to numpy arrays. This is needed because iterating through numpy arrays is much faster than 
-# iterating through dataframes.
-ecg_np = ecg_data.to_numpy()
-accel_np = accel_data.to_numpy()
-hr_np = heart_data.to_numpy()
-
-# Get shape of each array
-ecg_rows, ecg_col = ecg_np.shape
-accel_rows, accel_col = accel_np.shape
-hr_rows, hr_col = hr_np.shape
-
-# Calculate number of columns needed for output array
-out_col = ecg_col + accel_col + hr_col
-
-
-# In[11]:
-
-
-# Intialize output array
-out_np = np.zeros([ecg_rows, out_col], dtype="O")
-# Initialize variables to represent the current row of each numpy array
-ecg_iter = 0
-accel_iter = 0
-hr_iter = 0
-out_iter = 0
-# Next I iterate through the heart rate and accelration data until none of there readings occure before the start of the ecg
-while accel_np[accel_iter, 0] > ecg_np[ecg_iter, 0] :
-    accel_iter += 1
-
-while hr_np[hr_iter, 0] > ecg_np[ecg_iter, 0] :
-    hr_iter += 1
-
-
-# In[12]:
-
-
-# Iterate through ecg, acceleration, and heart rate. An ecg reading will be added to out_np each time, and acceleration
-# and heart rate are added as they occur.
-max_jump = timedelta(seconds=1)
-out_row = []
-while ecg_iter < ecg_rows - 1:
+    # Iterate through ecg, acceleration, and heart rate. An ecg reading will be added to out_np each time, and acceleration
+    # and heart rate are added as they occur.
+    max_jump = timedelta(seconds=1)
     out_row = []
-    # Add ECG to output
+    while ecg_iter < ecg_rows - 1:
+        out_row = []
+        # Add ECG to output
+        for value in ecg_np[ecg_iter, :] :
+            out_row.append(value)
+
+        # Check if acceleration occurred
+        if accel_iter < accel_rows and (ecg_np[ecg_iter, 0] <= accel_np[accel_iter, 0] < ecg_np[ecg_iter + 1, 0]):
+            # Add Acceleration values to output
+            for value in accel_np[accel_iter, :]:
+                out_row.append(value)
+
+            # Check if next reading is valid:
+            if accel_iter < accel_rows -1 and accel_np[accel_iter+1,0] - accel_np[accel_iter, 0] >= max_jump :
+                print(f"Bogus reading at {accel_iter+1}")
+                accel_iter += 1
+
+            accel_iter += 1
+        else: # Reading hasn't occurred
+            for i in range(accel_col):
+                out_row.append(np.nan)
+
+        # Check if Heart Rate Occured
+        if hr_iter < hr_rows and ecg_np[ecg_iter, 0] <= hr_np[hr_iter, 0] < ecg_np[ecg_iter + 1, 0]:
+            # Add Acceleration values to output
+            # print(f"Heart Iter: {hr_iter} \nHeart Values{hr_np[hr_iter,:]}")
+            for value in hr_np[hr_iter, :]:
+                out_row.append(value)
+            hr_iter += 1
+        else: # Reading hasn't occured
+            for i in range(hr_col):
+                out_row.append(np.nan)
+
+        out_np[out_iter, :] = out_row
+
+        ecg_iter += 1
+        out_iter += 1
+
+    # Add last row of ecg
+    out_row = []
+    # Add Ecg
     for value in ecg_np[ecg_iter, :] :
         out_row.append(value)
-    
-    # Check if Acceleration Occured
-    if accel_iter < accel_rows and (ecg_np[ecg_iter, 0] <= accel_np[accel_iter, 0] < ecg_np[ecg_iter + 1, 0]):
-        # Add Acceleration values to output
-        for value in accel_np[accel_iter, :]:
-            out_row.append(value)
-        
-        # Check if next reading is valid:
-        if accel_iter < accel_rows -1 and accel_np[accel_iter+1,0] - accel_np[accel_iter, 0] >= max_jump :
-            print(f"Bogus reading at {accel_iter+1}")
-            accel_iter += 1
-         
-        accel_iter += 1
-    else: # Reading hasn't occured
-        for i in range(accel_col):
-            out_row.append(np.nan)
-
-    
-    # Check if Heart Rate Occured
-    if hr_iter < hr_rows and ecg_np[ecg_iter, 0] <= hr_np[hr_iter, 0] < ecg_np[ecg_iter + 1, 0]:
-        # Add Acceleration values to output
-        # print(f"Heart Iter: {hr_iter} \nHeart Values{hr_np[hr_iter,:]}")
-        for value in hr_np[hr_iter, :]:
-            out_row.append(value)
-        hr_iter += 1
-    else: # Reading hasn't occured
-        for i in range(hr_col):
-            out_row.append(np.nan)
-
-
-
+    # Add nan for rest
+    for i in range(accel_col + hr_col):
+        out_row.append(np.nan)
+    # Add to output
     out_np[out_iter, :] = out_row
-    
-    ecg_iter += 1
-    out_iter += 1
 
-# Add last row of ecg
-out_row = []
-# Add Ecg
-for value in ecg_np[ecg_iter, :] :
-    out_row.append(value)
-# Add nan for rest
-for i in range(accel_col + hr_col):
-    out_row.append(np.nan)
-# Add to output
-out_np[out_iter, :] = out_row
+    # Get column names
+    new_cols = []
+    for name in ecg_data.columns :
+        new_cols.append(name)
+    for name in accel_data.columns :
+        new_cols.append(name)
+    for name in heart_data.columns :
+        new_cols.append(name)
 
+    # Convert output to dataframe
+    out_df = pd.DataFrame(out_np, columns=new_cols)
+    out_df.drop(columns = out_df.columns[3], inplace=True)
+    out_df.drop(columns = out_df.columns[6], inplace=True)
 
-# In[13]:
+    # Write output to a csv
+    output_path = os.path.join(folder_path, "Processed Data")
+    if os.path.isdir(output_path) is False:
+        os.mkdir(output_path)
 
+    output_file = output_path + '/' + participant_num + '_actiheart.csv'
+    out_df.to_csv(output_file, index=False)
 
-# Get column names
-new_cols = []
-for name in ecg_data.columns :
-    new_cols.append(name)
-for name in accel_data.columns :
-    new_cols.append(name)
-for name in heart_data.columns :
-    new_cols.append(name)
+    return out_df
 
 
-# In[14]:
 
-
-# Convert output to dataframe
-out_df = pd.DataFrame(out_np, columns=new_cols)
-out_df.drop(columns = out_df.columns[3], inplace=True)
-out_df.drop(columns = out_df.columns[6], inplace=True)
-out_df
-
-
-# In[15]:
-
-
-out_df.to_csv(actiheart_path + "/Processed Data/962_actiheart.csv", index=False)
-
-
-"""
 
 
