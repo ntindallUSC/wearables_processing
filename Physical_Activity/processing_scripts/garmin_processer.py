@@ -15,33 +15,16 @@ import tkinter as tk
 from tkinter import filedialog
 from datetime import datetime
 from datetime import timedelta
-import xlrd
 import subprocess
 
 
-# In[3]:
 
-
-# Intialize GUI interface to select file
-root = tk.Tk()
-root.winfo_toplevel().title("Select csv files")
-root.withdraw()
-#
-print("Please select fit file")
-input_path = filedialog.askdirectory()
-input_path
 
 
 # In[4]:
 
 
-# Convert fit file to csv
-jar_path = "C:\\Users\\Nick\\Watch_Extraction\\Garmin\\FIT_SDK\\java\\FitCSVTool.jar"
-fit_path = input_path + "/962.fit"
-csv_path = input_path + "/962_raw.csv"
-subprocess.call(['java', '-jar', jar_path, '-b', fit_path, csv_path, '--data', 'record'])
-
-
+"""
 # In[5]:
 
 
@@ -131,6 +114,6 @@ final_df.to_csv(filepath + "\\962_garmin.csv", index=False)
 
 # In[ ]:
 
-
+"""
 
 
