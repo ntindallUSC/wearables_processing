@@ -53,13 +53,12 @@ The garmin devices output a fit file. The processing of the garmin device involv
 garmin_path = pa_path + '\\Garmin data'
 # Check if folder exists:
 if os.path.isdir(garmin_path):
+    # Get path of all fit files
     fit_files = glob.glob(garmin_path + '/*.fit')
-    jar_path = ".\\processing_scripts\\FitCSVTool.jar"
-    count = 0
-    for file in fit_files:
-        csv_path = garmin_path + "\\" + particpant_num + "_" + str(count) + "_raw.csv"
-        subprocess.call(['java', '-jar', jar_path, '-b', file, csv_path, '--data', 'record'])
-        count += 1
+    # Convert fit files to csv
+    fit_to_csv(fit_files, garmin_path, particpant_num)
+    # Timestamp and unpack csv
+
 
 
 
