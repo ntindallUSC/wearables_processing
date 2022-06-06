@@ -59,7 +59,7 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
     accel.drop(columns="CMSensorRecorderAccelerometerTimestamp_sinceReboot(s)", inplace=True)
 
     # Read in the heart rate file
-    heart = pd.read_csv(heart_rate)
+    heart = pd.read_csv(heart_rate[0])
     # Here I convert the data type in time column in the heart rate data to a timestamp
     heart['Date/Time'] = pd.to_datetime(heart['Date/Time'])
 
@@ -91,9 +91,9 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
 
     def reading_check(device_np, device_iter, device_rows, device_cols):
         # Get out_row, and actiheart info
-        global out_row
-        global accel_np
-        global a_iter
+        out_row
+        accel_np
+        a_iter
 
         #   Boundary Checking          Check if current device reading occurs between 2 consecutive acceleration readings
         if device_iter < device_rows and (accel_np[a_iter, 0] <= device_np[device_iter, 0] < accel_np[a_iter + 1, 0]

@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import glob
+from processing_scripts.apple_processer import process_apple
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -24,15 +25,19 @@ print(f'Participant Number {particpant_num}')
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
 apple_path = pa_path + '/Apple Data'
-
+apple_data = None
 # Apple Watch has 2 types of data output files: Accelerometer and Heart rate. Need to grab both
 if os.path.isdir(apple_path):
     # Get list of acceleration files
-    accel_files = glob.glob(apple_path + '/*_sl.csv')
-    print(f"Apple Sensorlog Files :\n{accel_files}")
+    accel_files = glob.glob(apple_path + '/*_sl*.csv')
+    print(f"Apple Sensor log Files :\n{accel_files}")
     # Get list of heart rate files
     hr_files = glob.glob(apple_path + '/*_hr.csv')
     print(f"Cardiogram Files :\n{hr_files}")
+    print("Begin Apple Watch Processing")
+    apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num)
+    print("Finished")
+
 
 
 
