@@ -54,11 +54,10 @@ if os.path.isdir(apple_path):
     print(f"Sensor Log Files: \n{sensor_log}")
     auto_health = glob.glob(apple_path + "/*_hr.*")
     print(f"Auto Health Files: \n{auto_health}")
-    if len(sensor_log) != 0 or len(auto_health) != 0 :
+    if len(sensor_log) != 0 or len(auto_health) != 0:
         apple_process(participant_num, apple_path, sensor_log, auto_health)
 
 # CHECK IF THERE IS GARMIN DATA
-
 garmin_path = participant_path + "\\Garmin"
 fit_file = []
 if os.path.isdir(garmin_path):

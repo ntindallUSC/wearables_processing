@@ -192,12 +192,12 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
 
         # Use these if statements to check if the time is 8pm
         if accel_np[i, 0] >= s_start_time and sleep_start is False:
-            # print(accel_np[i,0])
+            # print(accel_np[i, 0])
             sleep_start = True
             start_index = j
 
-        if sleep_start is True and accel_np[i,0] <= s_end_time and sleep_end is False:
-            # print(accel_np[i,0])
+        if sleep_start is True and accel_np[i, 0] <= s_end_time and sleep_end is False:
+            #print(accel_np[i,0])
             end_index = j
             if accel_np[i,0] == s_end_time:
                 sleep_end = True
@@ -275,6 +275,9 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
 
     # Here I write general statistics about the data to a summary file.
     final_sleep = final_df.iloc[start_index:end_index]
+    # print(f"Start index : {start_index} \nEnd index : {end_index}")
+    # print(f"Final Sleep {final_sleep}")
+    # print(f"Sleep start {final_sleep.iloc[0,0]} \nSleep end{final_sleep.iloc[-1,0]}")
     final_sum = final_sleep.describe()
     summary.write(f"\nNumber of abnormal heart rate readings: {abnormal_counter}")
     summary.write("\n8PM TO 6PM STATISTICS \n\n")

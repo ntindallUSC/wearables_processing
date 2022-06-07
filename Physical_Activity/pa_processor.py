@@ -112,7 +112,7 @@ activity_path = pa_path + "/Survey and Protocol documents"
 if os.path.isdir(k5_path) and os.path.isdir(activity_path):
     k5_files = glob.glob(k5_path + "/*_K5*")
     log_file = glob.glob(activity_path + "/*log*")
-    print(f"K5 files {k5_files} \nActivity Log file {log_file[0]}")
+    print(f"K5 files {k5_files} \nActivity Log file {log_file}")
     # Process k5 data
     print("BEGIN K5 PROCESSING")
     k5_data = process_k5(k5_files, log_file, k5_path, particpant_num)
