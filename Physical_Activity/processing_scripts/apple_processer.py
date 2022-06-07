@@ -124,7 +124,6 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
                 out_row.append(value)
             # Check if heart rate value should be added
             if accel_np[a_iter, 0] > heart_np[h_iter, 0]:
-                out_row[0] = heart_np[h_iter, 0]
                 out_row.append(heart_np[h_iter, 1])
                 h_iter += 1
             else:
@@ -135,7 +134,7 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
             a_iter += 1
             # Add heart rates that fall into the gap
             while h_iter < h_row and accel_np[a_iter, 0] > heart_np[h_iter, 0]:
-                out_row = [np.nan, np.nan, np.nan, np.nan, heart_np[h_iter, 1]]
+                out_row = [heart_np[h_iter, 0], np.nan, np.nan, np.nan, heart_np[h_iter, 1]]
                 out_np[out_iter, :] = out_row
                 h_iter += 1
                 out_iter += 1
