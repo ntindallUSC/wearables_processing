@@ -84,7 +84,9 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
 
         # Here I insert a column into my K5 data.
         # This column will hold the names of activities
-        temp.insert(1, "Activity", "Break", True)
+        temp.insert(1, "Activity", "Transistion", True)
+        data.loc[(data['t'] < activities['1'][1]), "t"] = "Before Protocol"
+        data.loc[(data['t'] >= activities[str(len(activities))][2]), "t"] = "After Protocol"
 
         # Here I iterate through my dictionary, accessing each activity
         for acti in activities:
