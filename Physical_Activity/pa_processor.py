@@ -115,7 +115,7 @@ if os.path.isdir(k5_path) and os.path.isdir(activity_path):
     print(f"K5 files {k5_files} \nActivity Log file {log_file}")
     # Process k5 data
     print("BEGIN K5 PROCESSING")
-    k5_data = process_k5(k5_files, log_file, k5_path, particpant_num)
+    k5_data, activities = process_k5(k5_files, log_file, k5_path, particpant_num)
     print("FINISHED")
 
 """
@@ -132,7 +132,7 @@ if os.path.isdir(actigraph_path):
 # Align Data
 print("BEGIN ALIGNMENT")
 label = "Break"
-align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num)
+align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num, activites)
 print("Finished")
 
 

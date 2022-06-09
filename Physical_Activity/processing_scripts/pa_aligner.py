@@ -22,17 +22,9 @@ import math
 
 # In[2]:
 # Function that replaces nan activities with label
-label = "Break"
-def label_swap(aLabel):
-    global label
-    if pd.isnull(aLabel):
-        aLabel = label
-    else:
-        label = aLabel
-    return label
 
 
-def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num):
+def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num, activities):
     # Read in actigraph data
     # First define a date parser. This parser allows the actigraph date format to be converted to pandas timestamp
     acti_date_parser  = lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f')
@@ -172,6 +164,19 @@ def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, fold
 
     out_df = pd.DataFrame(out_np, columns=new_cols)
     out_df = out_df.iloc[:out_iter, :]
+
+    # Add Label to all data
+    out_df.loc[(out_df['Actiheart ECG Time'] < activities['1'][1]), "Activity"] = "Before Protocol"
+    out_df.loc[(out_df['Actiheart ECG Time'] >= activities[str(len(activities))][2]), "Activity"] = "After Protocol"
+
+    # Here I iterate through my dictionary, accessing each activity
+    for acti in activities:
+        # Get the tuple of activity information
+        acti = activities[acti]
+        # Select each row from data who's timestamp falls during and activity and then change the activity column to that
+        # activity name
+        #       **************Selecting Rows******************  Grab a column -> Set equal to name
+        out_df.loc[(out_df['Actiheart ECG Time'] >= acti[1]) & (out_df['Actiheart ECG Time'] < acti[2]), 'Activity'] = acti[0]
 
     # Remove microsecond from timestamps
     def micro_remove(aTime) :
