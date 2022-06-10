@@ -165,18 +165,6 @@ def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, fold
     out_df = pd.DataFrame(out_np, columns=new_cols)
     out_df = out_df.iloc[:out_iter, :]
 
-    # Add Label to all data
-    out_df.loc[(out_df['Actiheart ECG Time'] < activities['1'][1]), "Activity"] = "Before Protocol"
-    out_df.loc[(out_df['Actiheart ECG Time'] >= activities[str(len(activities))][2]), "Activity"] = "After Protocol"
-
-    # Here I iterate through my dictionary, accessing each activity
-    for acti in activities:
-        # Get the tuple of activity information
-        acti = activities[acti]
-        # Select each row from data who's timestamp falls during and activity and then change the activity column to that
-        # activity name
-        #       **************Selecting Rows******************  Grab a column -> Set equal to name
-        out_df.loc[(out_df['Actiheart ECG Time'] >= acti[1]) & (out_df['Actiheart ECG Time'] < acti[2]), 'Activity'] = acti[0]
 
     # Remove microsecond from timestamps
     def micro_remove(aTime) :
@@ -191,9 +179,22 @@ def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, fold
     # Move activity label to the first column
     activity = out_df['K5 Activity']
     out_df.drop(columns='K5 Activity', inplace=True)
-    out_df.insert(0,'Activity',activity)
+    out_df.insert(0,'Activity','Transition', True)
 
-    out_df['Activity'] = out_df['Activity'].apply(lambda x : label_swap(x))
+    # Add Label to all data
+    out_df.loc[(out_df['Actiheart ECG Time'] < activities['1'][1]), "Activity"] = "Before Protocol"
+    out_df.loc[(out_df['Actiheart ECG Time'] >= activities[str(len(activities))][2]), "Activity"] = "After Protocol"
+
+    # Here I iterate through my dictionary, accessing each activity
+    for acti in activities:
+        # Get the tuple of activity information
+        acti = activities[acti]
+        # Select each row from data who's timestamp falls during and activity and then change the activity column to that
+        # activity name
+        #       **************Selecting Rows******************  Grab a column -> Set equal to name
+        out_df.loc[(out_df['Actiheart ECG Time'] >= acti[1]) & (out_df['Actiheart ECG Time'] < acti[2]), 'Activity'] = acti[0]
+
+
 
     # Output File
     output_file = folder_path + "/" + participant_num + "_aligned.csv"

@@ -132,7 +132,7 @@ if os.path.isdir(actigraph_path):
 # Align Data
 print("BEGIN ALIGNMENT")
 label = "Break"
-align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num, activites)
+align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num, activities)
 print("Finished")
 
 
