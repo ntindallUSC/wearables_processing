@@ -250,6 +250,11 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     merged[j, 1:4] = accel_np[a_row - 1, 2:5]
     if flag == 1:
         merged[j, 4] = h_reading[h_counter, 1]
+    j += 1
+    while h_counter < h_row :
+        merged[j, :] = [heart_np[h_counter, 0], np.nan, np.nan, np.nan, heart_np[h_counter, 1]]
+        j += 1
+        h_counter += 1
 
     # In[ ]:
 
@@ -313,7 +318,8 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
 
     plt.figure(figsize=(25, 15))
     # Need to drop the readings without a heart rate before plotting
-    thin_time = final_sleep[['Time', 'Heart Rate']].dropna(axis=0)
+    heart_plot_df = final_df.loc[(final_df['Time'] >= s_start_time) & (final_df['Time'] <= s_end_time), ['Time', 'Heart Rate']]
+    thin_time = heart_plot_df[['Time', 'Heart Rate']].dropna(axis=0)
     plt.plot(thin_time['Time'], thin_time['Heart Rate'])
     # plt.show()
     plt.xlim([s_start_time, s_end_time])
