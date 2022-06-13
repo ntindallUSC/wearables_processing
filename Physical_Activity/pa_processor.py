@@ -82,7 +82,7 @@ file contains raw ecg and accelerometer data. The processing of the file is brok
 actiheart_path = pa_path + "/ActiHeart data"
 if os.path.isdir(actiheart_path):
     # Get the path to the ECG and Accelerometer data
-    ecg_accel = glob.glob(actiheart_path + "/*ECG_accel*")
+    ecg_accel = glob.glob(actiheart_path + "/*combined*")
     print(f"Raw ECG and Acceleration path: {ecg_accel}")
     # Split the ecg and acceleration files. Also grab start time of actiheart data collection
     start = data_split(ecg_accel, actiheart_path, particpant_num)
@@ -91,7 +91,7 @@ if os.path.isdir(actiheart_path):
     # Get the path to the acceleration data
     accel_data = glob.glob(actiheart_path + "/*accel_split*")
     # Grab the heart rate and rotation data
-    hr_data = glob.glob(actiheart_path + "/*per*sec*")
+    hr_data = glob.glob(actiheart_path + "/*hr.txt")
     print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
     # Process the actiheart data
     print("BEGIN ACTIHEART PROCESSING")

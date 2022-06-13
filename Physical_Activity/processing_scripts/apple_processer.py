@@ -86,7 +86,7 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
 
     # Initialize Heart Rate iterator
     h_iter = 0
-    while heart_np[h_iter, 0] < accel_np[a_iter, 0]:
+    while h_iter < h_row and heart_np[h_iter, 0] < accel_np[a_iter, 0]:
         h_iter += 1
 
     def reading_check(device_np, device_iter, device_rows, device_cols):
@@ -117,7 +117,7 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
         out_row = []
 
         # Checks for gaps in accelerometer
-        if accel_np[a_iter + 1, 0] - accel_np[a_iter, 0] > timedelta(seconds=1):
+        if h_iter < h_row and accel_np[a_iter + 1, 0] - accel_np[a_iter, 0] > timedelta(seconds=1):
             # print(f"Gap found between {accel_np[a_iter, 0]} and {accel_np[a_iter + 1, 0]}")
             # Add acceleration value
             for value in accel_np[a_iter, :]:
