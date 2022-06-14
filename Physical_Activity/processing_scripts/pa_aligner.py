@@ -24,15 +24,7 @@ import math
 # Function that replaces nan activities with label
 
 
-def align(actigraph_path, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num, activities):
-    # Read in actigraph data
-    # First define a date parser. This parser allows the actigraph date format to be converted to pandas timestamp
-    acti_date_parser  = lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f')
-    # Read in file and store it as a dataframe.
-    actigraph_data = pd.read_csv(actigraph_path[0], skiprows=10, parse_dates=['Timestamp'], date_parser=acti_date_parser)
-    sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
-    actigraph_data.insert(1, 'Second Fraction', sec_frac)
-
+def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num, activities):
     # # Align Data
     # Now that the data has been read in the next step is to align the all of the data. Here are the steps to do this:
     # 1. Convert all the dataframes to numpy arrays for faster iteration

@@ -8,11 +8,14 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import glob
+from datetime import datetime
+import pandas as pd
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
 from processing_scripts.k5_processer import process_k5
 from processing_scripts.pa_aligner import align
+from processing_scripts.data_summary import summarize
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -26,9 +29,33 @@ print(f'Participant Number {particpant_num}')
 
 # Now that the path of the director I need to read in and process the following devices:
 
+"""
+K5 PROCESSING
+The K5 can output multiple files all formatted the same way. 
+For the K5 processing the files must be:
+1. Read in
+2. Timestamped
+3. Labeled by activity (Activity labels come from a separate file)
+"""
+
+k5_path = pa_path + "/K5 data"
+activity_path = pa_path + "/Survey and Protocol documents"
+if os.path.isdir(k5_path) and os.path.isdir(activity_path):
+    k5_files = glob.glob(k5_path + "/*_K5*")
+    log_file = glob.glob(activity_path + "/*log*")
+    print(f"K5 files {k5_files} \nActivity Log file {log_file}")
+    # Process k5 data
+    print("BEGIN K5 PROCESSING")
+    k5_data, activities = process_k5(k5_files, log_file, k5_path, particpant_num)
+    print("FINISHED")
+
+# Grab start and end time of trial
+trial_start = activities['1'][1]
+trial_end = activities[str(len(activities))][2]
+print(f"Trial Start: {trial_start} \nTrial End: {trial_end}")
+
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
-
 apple_path = pa_path + '/Apple Data'
 apple_data = None
 # Apple Watch has 2 types of data output files: Accelerometer and Heart rate. Need to grab both
@@ -41,6 +68,9 @@ if os.path.isdir(apple_path):
     print(f"Cardiogram Files :\n{hr_files}")
     print("Begin Apple Watch Processing")
     apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num)
+    print("Writing Apple Summary")
+    output_path = apple_path + "/Processed Data/" + particpant_num
+    summarize(2, output_path, apple_data, trial_start, trial_end)
     print("Finished")
 
 
@@ -67,6 +97,9 @@ if os.path.isdir(garmin_path):
     print(f"CSVs: \n{csv_files}")
     print("BEGIN GARMIN PROCESSING")
     garmin_data = process_garmin(csv_files, garmin_path, particpant_num)
+    print("Writing Garmin Summary")
+    output_path = garmin_path + "/Processed Data/" + particpant_num
+    summarize(3, output_path, garmin_data, trial_start, trial_end)
     print("FINISHED")
 
 
@@ -96,26 +129,9 @@ if os.path.isdir(actiheart_path):
     # Process the actiheart data
     print("BEGIN ACTIHEART PROCESSING")
     actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num)
-    print("FINISHED")
-
-"""
-K5 PROCESSING
-The K5 can output multiple files all formatted the same way. 
-For the K5 processing the files must be:
-1. Read in
-2. Timestamped
-3. Labeled by activity (Activity labels come from a separate file)
-"""
-
-k5_path = pa_path + "/K5 data"
-activity_path = pa_path + "/Survey and Protocol documents"
-if os.path.isdir(k5_path) and os.path.isdir(activity_path):
-    k5_files = glob.glob(k5_path + "/*_K5*")
-    log_file = glob.glob(activity_path + "/*log*")
-    print(f"K5 files {k5_files} \nActivity Log file {log_file}")
-    # Process k5 data
-    print("BEGIN K5 PROCESSING")
-    k5_data, activities = process_k5(k5_files, log_file, k5_path, particpant_num)
+    print("Writing Actiheart Summary")
+    output_path = actiheart_path + "/Processed Data/" + particpant_num
+    summarize(1, output_path, actiheart_data, trial_start, trial_end)
     print("FINISHED")
 
 """
@@ -126,8 +142,21 @@ Now that all of the data has been processed it must be aligned. There are 2 step
 """
 actigraph_path = pa_path + '/ActiGraph data/csv'
 if os.path.isdir(actigraph_path):
-    actigraph_data = glob.glob(actigraph_path + "/*acti.csv")
-    print(f"Actigraph Path: {actigraph_data}")
+    actigraph_path_list = glob.glob(actigraph_path + "/*acti.csv")
+    # Read in actigraph data
+    print("READING IN ACTIGRAPH")
+    # First define a date parser. This parser allows the actigraph date format to be converted to pandas timestamp
+    acti_date_parser = lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f')
+    # Read in file and store it as a dataframe.
+    actigraph_data = pd.read_csv(actigraph_path_list[0], skiprows=10, parse_dates=['Timestamp'], date_parser=acti_date_parser)
+    sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
+    actigraph_data.insert(1, 'Second Fraction', sec_frac)
+    print("Writing Actigraph Summary")
+    output_path = actigraph_path[:-4] + "/Processed Data/" + particpant_num
+    if os.path.isdir(output_path[:-5]) is False:
+        os.mkdir(output_path[:-5])
+    summarize(0, output_path, actigraph_data, trial_start, trial_end)
+
 
 # Align Data
 print("BEGIN ALIGNMENT")
