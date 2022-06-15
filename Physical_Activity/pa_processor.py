@@ -61,7 +61,7 @@ plt.figure(figsize=(25, 15))
 plt.plot(k5_data['t'], k5_data['VO2/Kg'], label="VO2/Kg")
 plt.legend()
 plt.xlim([trial_start, trial_end])
-plt.savefig(k5_path + '/Processed_Data/' + particpant_num + "_v02.png")
+plt.savefig(k5_path + '/Processed Data/' + particpant_num + "_v02.png")
 plt.clf()
 
 # APPLE WATCH Processing
