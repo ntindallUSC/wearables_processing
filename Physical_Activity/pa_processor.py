@@ -10,6 +10,7 @@ import os
 import glob
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
@@ -53,6 +54,15 @@ if os.path.isdir(k5_path) and os.path.isdir(activity_path):
 trial_start = activities['1'][1]
 trial_end = activities[str(len(activities))][2]
 print(f"Trial Start: {trial_start} \nTrial End: {trial_end}")
+
+# Plot V02/Kg vs Time
+data_to_plot = k5_data.loc[(k5_data['t'] >= trial_start) & (k5_data['t'] <= trial_end), ['t', 'VO2/Kg']]
+plt.figure(figsize=(25, 15))
+plt.plot(k5_data['t'], k5_data['VO2/Kg'], label="VO2/Kg")
+plt.legend()
+plt.xlim([trial_start, trial_end])
+plt.savefig(k5_path + '/Processed_Data/' + particpant_num + "_v02.png")
+plt.clf()
 
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
