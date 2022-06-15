@@ -41,10 +41,10 @@ def summarize(device, path, data, start, end):
             f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
             + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds()}"
             + f" Heart rate readings\n\n")
-    elif device == 1 :
+    elif device == 1:
         summary.write(
             f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
-            + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds()//5}"
+            + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds() // 5}"
             + f" Heart rate readings\n\n")
     else:
         summary.write(
@@ -66,8 +66,9 @@ def summarize(device, path, data, start, end):
 
     if device >= 1:
         trial.loc[:, 'Heart Rate'] = pd.to_numeric(trial['Heart Rate'])
-        summary.write(trial.loc[:, ["Time", "X", "Y", "Z", "Heart Rate"]].describe(datetime_is_numeric=True).to_string())
-    else :
+        summary.write(
+            trial.loc[:, ["Time", "X", "Y", "Z", "Heart Rate"]].describe(datetime_is_numeric=True).to_string())
+    else:
         summary.write(
             trial.loc[:, ["Time", "X", "Y", "Z"]].describe(datetime_is_numeric=True).to_string())
 
@@ -89,6 +90,7 @@ def summarize(device, path, data, start, end):
         plt.plot(hr['Time'], hr['Heart Rate'], label="Heart Rate")
         plt.legend()
         plt.xlim([start, end])
+        plt.ylim([60, 220])
         plt.savefig(path + "_hr.png")
         plt.clf()
 
