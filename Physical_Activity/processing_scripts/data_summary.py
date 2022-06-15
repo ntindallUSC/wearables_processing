@@ -36,10 +36,15 @@ def summarize(device, path, data, start, end):
     length = (end - start)  # Length of trial
     accel_num = stats[device][1] * length.total_seconds()  # Sample Rate * Length of Trial in Seconds
     # Write to information to file
-    if device >= 1:
+    if device > 1:
         summary.write(
             f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
             + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds()}"
+            + f" Heart rate readings\n\n")
+    elif device == 1 :
+        summary.write(
+            f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
+            + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds()//5}"
             + f" Heart rate readings\n\n")
     else:
         summary.write(
