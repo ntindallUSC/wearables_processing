@@ -30,6 +30,7 @@ def fit_to_csv(fit_path, out_path, part_num):
     for file in fit_path :
         csv_path = out_path + "\\" + part_num + "_" + str(count) + "_raw.csv"
         subprocess.call(['java', '-jar', jar_path, '-b', file, csv_path, '--data', 'record'])
+        count += 1
 
 def process_garmin(data_path, garmin_path, participant_num):
     # Read file into a Pandas dataframe
