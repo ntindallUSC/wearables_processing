@@ -171,14 +171,6 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
     # Insert Second Fraction into df
     final_df.insert(1, "Second Fraction", sec_frac)
 
-    # # Sanity check
-    # The next 2 lines of code gets the number of heart rate readings in the output df and the number of heart rate readings from the orignal file that occur during the acceleration detection. These values should be the same
-
-    out_count = final_df["Heart Rate"].count()
-    print(f"Output heartrate count: {out_count}")
-    orig_count = heart.loc[(heart["Date/Time"] >= accel.iloc[0, 0]) & (heart["Date/Time"] <= accel.iloc[-1, 0]), "Min (count/min)"].count()
-    print(f"Original heartrate count: {orig_count}")
-
     # Create a Processed Data folder and then write the data as a csv to it
     output_path = os.path.join(folder_path, "Processed Data")
     if os.path.isdir(output_path) is False:
