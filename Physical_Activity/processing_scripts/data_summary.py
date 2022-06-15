@@ -87,7 +87,7 @@ def summarize(device, path, data, start, end):
 
     if device >= 1:
         plt.figure(figsize=(25, 15))
-        hr = trial[['Time', 'Heart Rate']].dropna(axis=0)
+        hr = trial.loc[:, ['Time', 'Heart Rate']].dropna(axis=0)
         hr["Heart Rate"] = hr["Heart Rate"].replace(['0', 0], np.nan)
         plt.plot(hr['Time'], hr['Heart Rate'], label="Heart Rate")
         plt.legend()
