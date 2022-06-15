@@ -11,6 +11,7 @@ The function then counts the amount of sensor readings, outputs it to a text fil
 """
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # 0 Actigraph : Timestamp,Accelerometer X,Accelerometer Y,Accelerometer Z
 # 1 Actiheart : ECG Time,Second Fraction,ECG (uV),X,Y,Z,Heart Rate,Upright Angle,Roll Angle
@@ -87,6 +88,7 @@ def summarize(device, path, data, start, end):
     if device >= 1:
         plt.figure(figsize=(25, 15))
         hr = trial[['Time', 'Heart Rate']].dropna(axis=0)
+        hr["Heart Rate"] = hr["Heart Rate"].replace(['0', 0], np.nan)
         plt.plot(hr['Time'], hr['Heart Rate'], label="Heart Rate")
         plt.legend()
         plt.xlim([start, end])
