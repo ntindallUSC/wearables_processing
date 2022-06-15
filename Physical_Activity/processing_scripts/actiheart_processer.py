@@ -131,7 +131,7 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
     # Iterate through ecg, acceleration, and heart rate. An ecg reading will be added to out_np each time, and acceleration
     # and heart rate are added as they occur.
     max_jump = timedelta(seconds=1)
-    out_row = []
+    bad_bpm = []
     while ecg_iter < ecg_rows - 1:
         out_row = []
         # Add ECG to output
@@ -158,10 +158,17 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
         if hr_iter < hr_rows and ecg_np[ecg_iter, 0] <= hr_np[hr_iter, 0] < ecg_np[ecg_iter + 1, 0]:
             # Add Acceleration values to output
             # print(f"Heart Iter: {hr_iter} \nHeart Values{hr_np[hr_iter,:]}")
+            # Checks if heart rate falls within acceptable range. If it doesn't flag it.
+            if hr_np[hr_iter, 1] < 60 or hr_np[hr_iter, 1] > 220:
+                bad_bpm.append(1)
+            else:
+                bad_bpm.append(0)
+            # Add values to row
             for value in hr_np[hr_iter, :]:
                 out_row.append(value)
             hr_iter += 1
         else: # Reading hasn't occured
+            bad_bpm.append(np.nan)
             for i in range(hr_col):
                 out_row.append(np.nan)
 
@@ -180,6 +187,7 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
         out_row.append(np.nan)
     # Add to output
     out_np[out_iter, :] = out_row
+    bad_bpm.append(np.nan)
 
     # Get column names
     new_cols = []
@@ -194,6 +202,7 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
     out_df = pd.DataFrame(out_np, columns=new_cols)
     out_df.drop(columns = out_df.columns[3], inplace=True)
     out_df.drop(columns = out_df.columns[6], inplace=True)
+    out_df.insert(7, 'BPM Flag', bad_bpm, True)
 
     # Write output to a csv
     output_path = os.path.join(folder_path, "Processed Data")

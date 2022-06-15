@@ -37,16 +37,17 @@ def summarize(device, path, data, start, end):
     length = (end - start)  # Length of trial
     accel_num = stats[device][1] * length.total_seconds()  # Sample Rate * Length of Trial in Seconds
     # Write to information to file
-    if device > 1:
+    if device == 2:
+        summary.write(
+            f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
+            + f"readings for this trial. \nIf the device produces a heart rate reading every 5 seconds there should be {length.total_seconds() // 5}"
+            + f" Heart rate readings\n\n")
+
+    elif device >= 1:
         summary.write(
             f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
             + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds()}"
-            + f" Heart rate readings\n\n")
-    elif device == 1:
-        summary.write(
-            f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} "
-            + f"readings for this trial. \nIf the device produces a heart rate reading each second there should be {length.total_seconds() // 5}"
-            + f" Heart rate readings\n\n")
+            + f" Heart rate readings.\n\n")
     else:
         summary.write(
             f"Trial Length {length}\n\nThe device collects at {str(stats[device][1])} hz. There should be {accel_num} " +
@@ -64,6 +65,11 @@ def summarize(device, path, data, start, end):
     trial.loc[:, 'X'] = pd.to_numeric(trial['X'])
     trial.loc[:, 'Y'] = pd.to_numeric(trial['Y'])
     trial.loc[:, 'Z'] = pd.to_numeric(trial['Z'])
+    # Report number of Flags found in actiheart
+    if device == 1 :
+        flags = trial.loc[trial['BPM Flag'] == 1, 'BPM Flag'] .dropna(axis=0)
+
+        summary.write(f"{len(flags)} Heart Rate readings either below 60 or above 220\n\n")
 
     if device >= 1:
         trial.loc[:, 'Heart Rate'] = pd.to_numeric(trial['Heart Rate'])
