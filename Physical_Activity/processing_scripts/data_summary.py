@@ -103,3 +103,29 @@ def summarize(device, path, data, start, end):
         plt.clf()
 
     summary.close()
+
+def plot_hr(data, start, end, path) :
+    # Grab the actiheart data
+    acti_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
+                       ["Actiheart ECG Time", "Actiheart Heart Rate"]].dropna(axis=0)
+    # Grab the apple data
+    apple_hr = data.loc[(data['Apple Time'] >= start) & (data['Apple Time'] <= end),
+                        ["Apple Time", "Apple Heart Rate"]].dropna(axis=0)
+    # Grab the Garmin data
+    garmin_hr = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] <= end),
+                         ["Garmin Time", "Garmin Heart Rate"]].dropna(axis=0)
+
+    # Create figure
+    plt.figure(figsize=(25, 15))
+    # Plot Actigraph Data
+    acti_hr["Actiheart Heart Rate"] = acti_hr["Actiheart Heart Rate"].replace(['0', 0], np.nan)
+    plt.plot(acti_hr['Actiheart ECG Time'], acti_hr['Actiheart Heart Rate'], label="ACTI Heart")
+    # Plot Apple Data
+    plt.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
+    # Plot Garmin Data
+    plt.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
+    plt.legend(fontsize="xx-large")
+    plt.xlim([start, end])
+    plt.ylim([60, 220])
+    plt.savefig(path + "_hr_fig.png")
+    plt.clf()

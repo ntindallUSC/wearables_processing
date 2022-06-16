@@ -191,3 +191,4 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     # Output File
     output_file = folder_path + "/" + participant_num + "_aligned.csv"
     out_df.to_csv(output_file, index=False)
+    return out_df
