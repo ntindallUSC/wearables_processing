@@ -161,7 +161,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
                       "\nFrom 8 to 6 with a 25 samples a second, there should be 900,000 accelerometer readings\n" +
                       "There should be 36,000 heart rate readings from 8 to 6\n")
     else:
-        sleep_df = final_df.loc[start_index:final_row - 1]
+        sleep_df = final_df.loc[start_index:end_index]
         summary.write("\nData ends before 6AM." +
                       f"\nSummary runs from 20:00 to {sleep_df.iloc[-1, 0].hour}:{sleep_df.iloc[-1, 0].minute}\n" +
                       f"For a full night you would expect 900,000 accelerometer readings\n" + "For a full night you would expect 36,000 Heart Rate Readings\n")
