@@ -11,6 +11,7 @@ import glob
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
@@ -24,7 +25,7 @@ root.winfo_toplevel().title("Select csv files")
 root.withdraw()
 
 print("PLease select the PA Participant you wish to process")
-pa_path = filedialog.askdirectory() # This line gets the path of the directory
+pa_path = filedialog.askdirectory()  # This line gets the path of the directory
 particpant_num = pa_path[-4:]
 print(f'Participant Number {particpant_num}')
 
@@ -57,12 +58,19 @@ print(f"Trial Start: {trial_start} \nTrial End: {trial_end}")
 
 # Plot V02/Kg vs Time
 data_to_plot = k5_data.loc[(k5_data['t'] >= trial_start) & (k5_data['t'] <= trial_end), ['t', 'VO2/Kg']]
-plt.figure(figsize=(25, 15))
-plt.plot(k5_data['t'], k5_data['VO2/Kg'], label="VO2/Kg")
-plt.legend()
-plt.xlim([trial_start, trial_end])
-plt.savefig(k5_path + '/Processed Data/' + particpant_num + "_v02.png")
-plt.clf()
+fig, ax = plt.subplots(figsize=(25, 15))
+ax.plot(k5_data['t'].to_numpy(), k5_data['VO2/Kg'].to_numpy(), label="VO2/Kg")
+ax.legend()
+ax.set(xlim=([trial_start, trial_end]))
+# annotate figure with activity names
+for key in activities:
+    ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                xytext=(mdates.date2num(activities[key][1]), -7), textcoords='data', annotation_clip=False, horizontalalignment='center')
+
+# for key in activities:
+# ax.annotate(activities[key][0], xy=(0, activities[key][1]), xycoords='data', xytext=(50, activities[key][1]), textcoords='axes fraction')
+fig.savefig(k5_path + '/Processed Data/' + particpant_num + "_v02_test.png")
+fig.clf()
 
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
@@ -82,8 +90,6 @@ if os.path.isdir(apple_path):
     output_path = apple_path + "/Processed Data/" + particpant_num
     summarize(2, output_path, apple_data, trial_start, trial_end)
     print("Finished")
-
-
 
 """
 GARMIN PROCESSING
@@ -111,7 +117,6 @@ if os.path.isdir(garmin_path):
     output_path = garmin_path + "/Processed Data/" + particpant_num
     summarize(3, output_path, garmin_data, trial_start, trial_end)
     print("FINISHED")
-
 
 """
 ACTIHEART PROCESSING
@@ -158,7 +163,8 @@ if os.path.isdir(actigraph_path):
     # First define a date parser. This parser allows the actigraph date format to be converted to pandas timestamp
     acti_date_parser = lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f')
     # Read in file and store it as a dataframe.
-    actigraph_data = pd.read_csv(actigraph_path_list[0], skiprows=10, parse_dates=['Timestamp'], date_parser=acti_date_parser)
+    actigraph_data = pd.read_csv(actigraph_path_list[0], skiprows=10, parse_dates=['Timestamp'],
+                                 date_parser=acti_date_parser)
     sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
     actigraph_data.insert(1, 'Second Fraction', sec_frac)
     print("Writing Actigraph Summary")
@@ -167,11 +173,11 @@ if os.path.isdir(actigraph_path):
         os.mkdir(output_path[:-5])
     summarize(0, output_path, actigraph_data, trial_start, trial_end)
 
-
 # Align Data
 print("BEGIN ALIGNMENT")
 label = "Break"
-aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num, activities)
+aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num,
+                   activities)
 print("Plotting HR")
 plot_hr(aligned_df, trial_start, trial_end, pa_path + "/" + particpant_num)
 print("Plotting Accelerometers")
@@ -179,5 +185,3 @@ plot_accel(aligned_df, trial_start, trial_end, "X", pa_path + "/" + particpant_n
 plot_accel(aligned_df, trial_start, trial_end, "Y", pa_path + "/" + particpant_num)
 plot_accel(aligned_df, trial_start, trial_end, "Z", pa_path + "/" + particpant_num)
 print("Finished")
-
-
