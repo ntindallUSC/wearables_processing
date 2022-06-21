@@ -16,7 +16,7 @@ from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
 from processing_scripts.k5_processer import process_k5
 from processing_scripts.pa_aligner import align
-from processing_scripts.data_summary import summarize, plot_hr
+from processing_scripts.data_summary import summarize, plot_hr, plot_accel
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -174,6 +174,10 @@ label = "Break"
 aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num, activities)
 print("Plotting HR")
 plot_hr(aligned_df, trial_start, trial_end, pa_path + "/" + particpant_num)
+print("Plotting Accelerometers")
+plot_accel(aligned_df, trial_start, trial_end, "X", pa_path + "/" + particpant_num)
+plot_accel(aligned_df, trial_start, trial_end, "Y", pa_path + "/" + particpant_num)
+plot_accel(aligned_df, trial_start, trial_end, "Z", pa_path + "/" + particpant_num)
 print("Finished")
 
 
