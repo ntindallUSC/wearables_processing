@@ -205,7 +205,7 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
     out_df.insert(7, 'BPM Flag', bad_bpm, True)
 
     # Write output to a csv
-    output_path = os.path.join(folder_path, "Processed Data")
+    output_path = os.path.join(folder_path, "Processed Data/")
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
 
