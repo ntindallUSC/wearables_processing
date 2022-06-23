@@ -11,6 +11,7 @@ The function then counts the amount of sensor readings, outputs it to a text fil
 """
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import numpy as np
 
 # 0 Actigraph : Timestamp,Accelerometer X,Accelerometer Y,Accelerometer Z
@@ -110,7 +111,7 @@ def summarize(device, path, data, start, end):
 # The aligned dataframe, produced from pa_aligner.py
 # The start and end time of the trial
 # and a path to store the plot.
-def plot_hr(data, start, end, path):
+def plot_hr(data, start, end, activities, path):
     # Grab the actiheart data
     acti_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
                        ["Actiheart ECG Time", "Actiheart Heart Rate"]].dropna(axis=0)
@@ -122,26 +123,30 @@ def plot_hr(data, start, end, path):
                          ["Garmin Time", "Garmin Heart Rate"]].dropna(axis=0)
 
     # Create figure
-    plt.figure(figsize=(25, 15))
+    fig, ax = plt.subplots(figsize=(25, 15))
     # Plot Actigraph Data
     acti_hr["Actiheart Heart Rate"] = acti_hr["Actiheart Heart Rate"].replace(['0', 0], np.nan)
-    plt.plot(acti_hr['Actiheart ECG Time'], acti_hr['Actiheart Heart Rate'], label="ACTI Heart")
+    ax.plot(acti_hr['Actiheart ECG Time'], acti_hr['Actiheart Heart Rate'], label="ACTI Heart")
     # Plot Apple Data
-    plt.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
+    ax.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
     # Plot Garmin Data
-    plt.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
-    plt.legend(fontsize="xx-large")
-    plt.xlim([start, end])
-    plt.ylim([60, 220])
-    plt.savefig(path + "_hr_fig.png")
-    plt.clf()
+    ax.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
+    ax.legend(fontsize="xx-large")
+    ax.set(xlim=([start, end]), ylim=[60, 220])
+    for key in activities:
+        ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                    xytext=(mdates.date2num(activities[key][1]), 55), textcoords='data', annotation_clip=False,
+                    horizontalalignment='center')
+
+    fig.savefig(path + "_hr_fig.png")
+    fig.clf()
 
 
 # This function calculates the RMS of each second for 1 axis on 3 devices (Garmin, Apple Watch, Actigraph)
 # It then plots the RMS values versus time
 # It takes as input the aligned data, the start and end time of the trial,
 # Which accelerometer axis it will be working with, and a path to store the plots.
-def plot_accel(data, start, end, axis, path):
+def plot_accel(data, start, end, axis, activities, path):
     # Grab the actigraph data
     data.loc[:, "Actigraph Timestamp"] = pd.to_datetime(data["Actigraph Timestamp"])
     acti_accel = data.loc[(data['Actigraph Timestamp'] >= start) & (data['Actigraph Timestamp'] < end),
@@ -152,7 +157,8 @@ def plot_accel(data, start, end, axis, path):
     acti_seconds = acti_accel.groupby("Actigraph Timestamp").aggregate(lambda x: np.sqrt(np.sum(x ** 2)))
 
     data.loc[:, "Apple Time"] = pd.to_datetime(data["Apple Time"])
-    apple_accel = data.loc[(data['Apple Time'] >= start) & (data['Apple Time'] < end), ["Apple Time", "Apple " + axis]].dropna(axis=0)
+    apple_accel = data.loc[
+        (data['Apple Time'] >= start) & (data['Apple Time'] < end), ["Apple Time", "Apple " + axis]].dropna(axis=0)
     apple_accel['Apple ' + axis] = pd.to_numeric(apple_accel['Apple ' + axis])
     # Calculate the rms for each second
     apple_seconds = apple_accel.groupby("Apple Time").aggregate(lambda x: np.sqrt(np.sum(x ** 2)))
@@ -169,11 +175,16 @@ def plot_accel(data, start, end, axis, path):
     garmin_seconds = garmin_accel.groupby("Garmin Time").aggregate(lambda x: np.sqrt(np.sum(x ** 2)))
 
     # Plot each accelerometer vs time
-    plt.figure(figsize=(25, 15))
-    plt.plot(acti_seconds.index, acti_seconds['Actigraph Accelerometer ' + axis], label='Actigraph ' + axis)
-    plt.plot(apple_seconds.index, apple_seconds['Apple ' + axis], label="Apple " + axis)
-    plt.plot(garmin_seconds.index, garmin_seconds['Garmin ' + axis], label='Garmin ' + axis)
-    plt.legend(fontsize="xx-large")
-    plt.xlim([start, end])
-    plt.savefig(path + "_accel" + axis + "_fig.png")
-    plt.clf()
+    fig, ax = plt.subplots(figsize=(25, 15))
+    ax.plot(acti_seconds.index, acti_seconds['Actigraph Accelerometer ' + axis], label='Actigraph ' + axis)
+    ax.plot(apple_seconds.index, apple_seconds['Apple ' + axis], label="Apple " + axis)
+    ax.plot(garmin_seconds.index, garmin_seconds['Garmin ' + axis], label='Garmin ' + axis)
+    ax.legend(fontsize="xx-large")
+    ax.set(xlim=([start, end]))
+    for key in activities:
+        ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                    xytext=(mdates.date2num(activities[key][1]), -4), textcoords='data', annotation_clip=False,
+                    horizontalalignment='center')
+
+    fig.savefig(path + "_accel" + axis + "_fig.png")
+    fig.clf()
