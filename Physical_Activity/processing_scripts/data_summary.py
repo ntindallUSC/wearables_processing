@@ -111,7 +111,7 @@ def summarize(device, path, data, start, end):
 # The aligned dataframe, produced from pa_aligner.py
 # The start and end time of the trial
 # and a path to store the plot.
-def plot_hr(data, start, end, activities, path):
+def plot_hr(data, start, end, activities, path, k5):
     # Grab the actiheart data
     acti_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
                        ["Actiheart ECG Time", "Actiheart Heart Rate"]].dropna(axis=0)
@@ -121,6 +121,9 @@ def plot_hr(data, start, end, activities, path):
     # Grab the Garmin data
     garmin_hr = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] <= end),
                          ["Garmin Time", "Garmin Heart Rate"]].dropna(axis=0)
+
+    k5_data = data.loc[(data['K5 t'] >= start) & (data['K5 t'] <= end),
+                       ["K5 t", "K5 VO2/Kg"]].dropna(axis=0)
 
     # Create figure
     fig, ax = plt.subplots(figsize=(25, 15))
@@ -141,6 +144,23 @@ def plot_hr(data, start, end, activities, path):
     fig.savefig(path + "_hr_fig.png")
     fig.clf()
 
+    # Now I will plot a figure with 2 Y-axes, the first displaying V02/kg and the second displaying heart rate
+    fig, ax1 = plt.subplots(figsize=(25, 15))
+    ax1.plot(k5_data['K5 t'], k5_data['K5 VO2/Kg'], label="V02/kg")
+    ax1.legend(fontsize="xx-large")
+    ax1.set(xlim=([start, end]), ylim=[0, 100])
+    ax2 = ax1.twinx()
+    ax2.plot(acti_hr['Actiheart ECG Time'], acti_hr['Actiheart Heart Rate'], label="ACTI Heart")
+    ax2.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
+    ax2.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
+    # fig.tight_layout()
+    for key in activities:
+        ax1.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                     xytext=(mdates.date2num(activities[key][1]), -4), textcoords='data', annotation_clip=False,
+                     horizontalalignment='center')
+
+    fig.savefig(k5)
+    fig.clf()
 
 # This function calculates the RMS of each second for 1 axis on 3 devices (Garmin, Apple Watch, Actigraph)
 # It then plots the RMS values versus time

@@ -56,6 +56,7 @@ trial_start = activities['1'][1]
 trial_end = activities[str(len(activities))][2]
 print(f"Trial Start: {trial_start} \nTrial End: {trial_end}")
 
+"""
 # Plot V02/Kg vs Time
 data_to_plot = k5_data.loc[(k5_data['t'] >= trial_start) & (k5_data['t'] <= trial_end), ['t', 'VO2/Kg']]
 fig, ax = plt.subplots(figsize=(25, 15))
@@ -71,7 +72,7 @@ for key in activities:
 # ax.annotate(activities[key][0], xy=(0, activities[key][1]), xycoords='data', xytext=(50, activities[key][1]), textcoords='axes fraction')
 fig.savefig(k5_path + '/Processed Data/' + particpant_num + "_v02.png")
 fig.clf()
-
+"""
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
 apple_path = pa_path + '/Apple Data'
@@ -179,7 +180,9 @@ label = "Break"
 aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num,
                    activities)
 print("Plotting HR")
-plot_hr(aligned_df, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+k5_path = k5_path + '/Processed Data/' + particpant_num + "_v02.png"
+hr_path = pa_path + "/" + particpant_num
+plot_hr(aligned_df, trial_start, trial_end, activities, hr_path, k5_path)
 print("Plotting Accelerometers")
 plot_accel(aligned_df, trial_start, trial_end, "X", activities, pa_path + "/" + particpant_num)
 plot_accel(aligned_df, trial_start, trial_end, "Y", activities, pa_path + "/" + particpant_num)
