@@ -174,14 +174,14 @@ def plot_accel(data, start, end, axis, activities, path):
     acti_accel['Actigraph Accelerometer ' + axis] = pd.to_numeric(acti_accel['Actigraph Accelerometer ' + axis])
 
     # Calculate the rms for each second
-    acti_seconds = acti_accel.groupby("Actigraph Timestamp").aggregate(lambda x: np.sqrt(np.sum(x ** 2)))
+    acti_seconds = acti_accel.groupby("Actigraph Timestamp").aggregate(lambda x: np.sqrt(np.mean(x ** 2)))
 
     data.loc[:, "Apple Time"] = pd.to_datetime(data["Apple Time"])
     apple_accel = data.loc[
         (data['Apple Time'] >= start) & (data['Apple Time'] < end), ["Apple Time", "Apple " + axis]].dropna(axis=0)
     apple_accel['Apple ' + axis] = pd.to_numeric(apple_accel['Apple ' + axis])
     # Calculate the rms for each second
-    apple_seconds = apple_accel.groupby("Apple Time").aggregate(lambda x: np.sqrt(np.sum(x ** 2)))
+    apple_seconds = apple_accel.groupby("Apple Time").aggregate(lambda x: np.sqrt(np.mean(x ** 2)))
 
     # Grab Garmin Data
     data.loc[:, "Garmin Time"] = pd.to_datetime(data["Garmin Time"])
@@ -192,7 +192,7 @@ def plot_accel(data, start, end, axis, activities, path):
     garmin_accel.loc[:, 'Garmin ' + axis] = garmin_accel["Garmin " + axis].apply(lambda x: x / 1000)
 
     # Calculate the rms for each second
-    garmin_seconds = garmin_accel.groupby("Garmin Time").aggregate(lambda x: np.sqrt(np.sum(x ** 2)))
+    garmin_seconds = garmin_accel.groupby("Garmin Time").aggregate(lambda x: np.sqrt(np.mean(x ** 2)))
 
     # Plot each accelerometer vs time
     fig, ax = plt.subplots(figsize=(25, 15))
