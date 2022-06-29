@@ -180,6 +180,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     plt.legend()
     plt.xlim([sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_xyz.png")
+    plt.clf()
 
     plt.figure(figsize=(25, 15))
     # Need to drop the readings without a heart rate before plotting
@@ -187,6 +188,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     plt.plot(thin_time['Time'], thin_time['Heart Rate'])
     plt.xlim([sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
+    plt.clf()
 
     final_df.to_csv(garmin_path + "\\Processed Data\\" + participant_num + "_garmin_data.csv", index=False)
     print("GARMIN PROCESSING FINISHED")

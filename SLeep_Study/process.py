@@ -63,7 +63,7 @@ def process_participant(file_path):
         for path in fit_file:
             # Run the jar file to convert a fit file to a csv
             jar_path = 'FitCSVTool.jar'
-            jar_path = 'V:/"ACOI"/"R01 - W4K"/"2_Shaker project"/FitSDK/java/FitCSVTool.jar'
+            # jar_path = 'V:/"ACOI"/"R01 - W4K"/"2_Shaker project"/FitSDK/java/FitCSVTool.jar'
             garmin_csv = garmin_path + "\\" + participant_num + "_Garmin_" + str(i) + ".csv"
             subprocess.call(['java', '-jar', jar_path, '-b', path, garmin_csv, '--data', 'record'])
             i += 1

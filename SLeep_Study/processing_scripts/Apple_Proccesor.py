@@ -315,6 +315,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     plt.legend()
     plt.xlim([s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_xyz.png")
+    plt.clf()
 
     plt.figure(figsize=(25, 15))
     # Need to drop the readings without a heart rate before plotting
@@ -324,6 +325,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     # plt.show()
     plt.xlim([s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_hr.png")
+    plt.clf()
     print("APPLE PROCESSING FINISHED")
 
     # In[ ]:

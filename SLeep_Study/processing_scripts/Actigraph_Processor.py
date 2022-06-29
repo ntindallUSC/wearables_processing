@@ -81,6 +81,7 @@ def actigraph_process(participant_num, acti_path, acti_data, acti_folder):
     plt.legend()
     plt.xlim([over_night.iloc[0, 0], over_night.iloc[-1, 0]])
     plt.savefig(output_path + "\\" + participant_num + "_xyz.png")
+    plt.clf()
 
     acti_summ.write("\n8PM to 6AM Summary: \n\n")
     acti_summ.write(over_night.loc[:, ["X","Y","Z"]].describe().to_string())
