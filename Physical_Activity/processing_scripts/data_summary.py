@@ -90,7 +90,7 @@ def summarize(device, path, data, start, end):
     plt.legend()
     plt.xlim([start, end])
     plt.savefig(path + "_xyz.png")
-    plt.clf()
+    plt.close()
 
     if device >= 1:
         plt.figure(figsize=(25, 15))
@@ -142,7 +142,7 @@ def plot_hr(data, start, end, activities, path, k5):
                     horizontalalignment='center')
 
     fig.savefig(path + "_hr_fig.png")
-    fig.clf()
+    fig.close()
 
     # Now I will plot a figure with 2 Y-axes, the first displaying V02/kg and the second displaying heart rate
     fig, ax1 = plt.subplots(figsize=(25, 15))
@@ -160,7 +160,7 @@ def plot_hr(data, start, end, activities, path, k5):
                      horizontalalignment='center')
 
     fig.savefig(k5)
-    fig.clf()
+    fig.close()
 
 # This function calculates the RMS of each second for 1 axis on 3 devices (Garmin, Apple Watch, Actigraph)
 # It then plots the RMS values versus time
@@ -207,4 +207,4 @@ def plot_accel(data, start, end, axis, activities, path):
                     horizontalalignment='center')
 
     fig.savefig(path + "_accel" + axis + "_fig.png")
-    fig.clf()
+    fig.close()
