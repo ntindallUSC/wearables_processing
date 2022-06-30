@@ -56,23 +56,7 @@ trial_start = activities['1'][1]
 trial_end = activities[str(len(activities))][2]
 print(f"Trial Start: {trial_start} \nTrial End: {trial_end}")
 
-"""
-# Plot V02/Kg vs Time
-data_to_plot = k5_data.loc[(k5_data['t'] >= trial_start) & (k5_data['t'] <= trial_end), ['t', 'VO2/Kg']]
-fig, ax = plt.subplots(figsize=(25, 15))
-ax.plot(k5_data['t'].to_numpy(), k5_data['VO2/Kg'].to_numpy(), label="VO2/Kg")
-ax.legend()
-ax.set(xlim=([trial_start, trial_end]), ylim=[0, 100])
-# annotate figure with activity names
-for key in activities:
-    ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
-                xytext=(mdates.date2num(activities[key][1]), -7), textcoords='data', annotation_clip=False, horizontalalignment='center')
 
-# for key in activities:
-# ax.annotate(activities[key][0], xy=(0, activities[key][1]), xycoords='data', xytext=(50, activities[key][1]), textcoords='axes fraction')
-fig.savefig(k5_path + '/Processed Data/' + particpant_num + "_v02.png")
-fig.clf()
-"""
 # APPLE WATCH Processing
 # First get the path of the Apple Watch Data files
 apple_path = pa_path + '/Apple Data'
