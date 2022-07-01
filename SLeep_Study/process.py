@@ -12,9 +12,12 @@ import tkinter as tk
 from tkinter import filedialog
 import os.path
 import subprocess
+import pandas as pd
+from datetime import datetime
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
 from processing_scripts.Actigraph_Processor import actigraph_process
+from processing_scripts.Data_Plot import plot_accel
 
 
 def process_participant(file_path):
@@ -50,7 +53,6 @@ def process_participant(file_path):
         # print(f"Auto Health Files: \n{auto_health}")
         if len(sensor_log) != 0 or len(auto_health) != 0:
             apple_process(participant_num, apple_path, sensor_log, auto_health)
-
 
     # CHECK IF THERE IS GARMIN DATA
     garmin_path = participant_path + "\\Garmin"
@@ -90,8 +92,21 @@ def process_participant(file_path):
         if len(acti_file) != 0:
             actigraph_process(participant_num, acti_data_path, acti_file, acti_path)
 
+    print("Plotting All Devices")
+    # Read in Apple, Actigraph, and Garmin data and then plot data.
+    apple = pd.read_csv(apple_path + "/Processed Data/" + participant_num + "_apple_data.csv", parse_dates=["Time"],
+                        infer_datetime_format=True)
+    garmin = pd.read_csv(garmin_path + "/Processed Data/" + participant_num + "_garmin_data.csv", parse_dates=["Time"],
+                         infer_datetime_format=True)
+    # Read in file and store it as a dataframe.
+    actigraph = pd.read_csv(acti_path, skiprows=10, parse_dates=['Timestamp'], date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
 
+    # Plot acceleration data
+    plot_accel(apple, garmin, actigraph, participant_num, "X", participant_path)
+    plot_accel(apple, garmin, actigraph, participant_num, "Y", participant_path)
+    plot_accel(apple, garmin, actigraph, participant_num, "Z", participant_path)
     # ----------------------------------------------------------------------------------------------------------------------
+
 
 root = tk.Tk()
 root.winfo_toplevel().title("Select csv files")
