@@ -99,7 +99,7 @@ def process_participant(file_path):
     garmin = pd.read_csv(garmin_path + "/Processed Data/" + participant_num + "_garmin_data.csv", parse_dates=["Time"],
                          infer_datetime_format=True)
     # Read in file and store it as a dataframe.
-    actigraph = pd.read_csv(acti_path, skiprows=10, parse_dates=['Timestamp'], date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
+    actigraph = pd.read_csv(acti_file[0], skiprows=10, parse_dates=['Timestamp'], date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
 
     # Plot acceleration data
     plot_accel(apple, garmin, actigraph, participant_num, "X", participant_path)
