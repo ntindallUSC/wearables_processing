@@ -30,7 +30,7 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
 
         # Grab the start and end time of the test.
         date = temp.iloc[0, 4]
-        time = temp.iloc[1, 4]
+        time = str(temp.iloc[1, 4])
         # Combine start date and time.
         start = date + " " + time
         start_time = datetime.strptime(start, '%m/%d/%Y %I:%M %p')
