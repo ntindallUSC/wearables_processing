@@ -57,7 +57,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
 
     # garmin
     garmin_iter = 0
-    while garmin_np[garmin_iter, 0] < t_start:
+    while garmin_rows > 0 and garmin_np[garmin_iter, 0] < t_start:
         garmin_iter += 1
 
     # apple

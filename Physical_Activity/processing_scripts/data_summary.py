@@ -119,8 +119,11 @@ def plot_hr(data, start, end, activities, path, k5):
     apple_hr = data.loc[(data['Apple Time'] >= start) & (data['Apple Time'] <= end),
                         ["Apple Time", "Apple Heart Rate"]].dropna(axis=0)
     # Grab the Garmin data
-    garmin_hr = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] <= end),
-                         ["Garmin Time", "Garmin Heart Rate"]].dropna(axis=0)
+    if "Garmin Time" in data.columns:
+        garmin_hr = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] <= end),
+                             ["Garmin Time", "Garmin Heart Rate"]].dropna(axis=0)
+    else:
+        garmin_hr = pd.DataFrame()
 
     k5_data = data.loc[(data['K5 t'] >= start) & (data['K5 t'] <= end),
                        ["K5 t", "K5 VO2/Kg"]].dropna(axis=0)
@@ -133,7 +136,8 @@ def plot_hr(data, start, end, activities, path, k5):
     # Plot Apple Data
     ax.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
     # Plot Garmin Data
-    ax.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
+    if garmin_hr.shape[0] > 0:
+        ax.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
     ax.legend(fontsize="xx-large")
     ax.set(xlim=([start, end]), ylim=[60, 220])
     for key in activities:
@@ -152,7 +156,8 @@ def plot_hr(data, start, end, activities, path, k5):
     ax2 = ax1.twinx()
     ax2.plot(acti_hr['Actiheart ECG Time'], acti_hr['Actiheart Heart Rate'], label="ACTI Heart")
     ax2.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
-    ax2.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
+    if garmin_hr.shape[0] > 0:
+        ax2.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
     # fig.tight_layout()
     for key in activities:
         ax1.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
@@ -184,21 +189,25 @@ def plot_accel(data, start, end, axis, activities, path):
     apple_seconds = apple_accel.groupby("Apple Time").aggregate(lambda x: np.sqrt(np.mean(x ** 2)))
 
     # Grab Garmin Data
-    data.loc[:, "Garmin Time"] = pd.to_datetime(data["Garmin Time"])
-    garmin_accel = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] < end),
-                            ["Garmin Time", "Garmin " + axis]].dropna(axis=0)
-    garmin_accel['Garmin ' + axis] = pd.to_numeric(garmin_accel['Garmin ' + axis])
-    # Garmin data is measured on a different scale. Need to convert.
-    garmin_accel.loc[:, 'Garmin ' + axis] = garmin_accel["Garmin " + axis].apply(lambda x: x / 1000)
+    if "Garmin Time" in data.columns: # Checks to make sure there is Garmin Data
+        data.loc[:, "Garmin Time"] = pd.to_datetime(data["Garmin Time"])
+        garmin_accel = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] < end),
+                                ["Garmin Time", "Garmin " + axis]].dropna(axis=0)
+        garmin_accel['Garmin ' + axis] = pd.to_numeric(garmin_accel['Garmin ' + axis])
+        # Garmin data is measured on a different scale. Need to convert.
+        garmin_accel.loc[:, 'Garmin ' + axis] = garmin_accel["Garmin " + axis].apply(lambda x: x / 1000)
 
-    # Calculate the rms for each second
-    garmin_seconds = garmin_accel.groupby("Garmin Time").aggregate(lambda x: np.sqrt(np.mean(x ** 2)))
+        # Calculate the rms for each second
+        garmin_seconds = garmin_accel.groupby("Garmin Time").aggregate(lambda x: np.sqrt(np.mean(x ** 2)))
+    else:
+        garmin_accel = pd.DataFrame()
 
     # Plot each accelerometer vs time
     fig, ax = plt.subplots(figsize=(25, 15))
     ax.plot(acti_seconds.index, acti_seconds['Actigraph Accelerometer ' + axis], label='Actigraph ' + axis)
     ax.plot(apple_seconds.index, apple_seconds['Apple ' + axis], label="Apple " + axis)
-    ax.plot(garmin_seconds.index, garmin_seconds['Garmin ' + axis], label='Garmin ' + axis)
+    if garmin_accel.shape[0] > 0:
+        ax.plot(garmin_seconds.index, garmin_seconds['Garmin ' + axis], label='Garmin ' + axis)
     ax.legend(fontsize="xx-large")
     ax.set(xlim=([start, end]))
     for key in activities:

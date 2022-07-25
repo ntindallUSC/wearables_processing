@@ -87,6 +87,7 @@ The garmin devices output a fit file. The processing of the garmin device involv
 # First get the path of the Garmin data folder
 garmin_path = pa_path + '\\Garmin data'
 # Check if folder exists:
+garmin_data = pd.DataFrame()
 if os.path.isdir(garmin_path):
     # Get path of all fit files
     fit_files = glob.glob(garmin_path + '/*.fit')
@@ -102,6 +103,7 @@ if os.path.isdir(garmin_path):
     output_path = garmin_path + "/Processed Data/" + particpant_num
     summarize(3, output_path, garmin_data, trial_start, trial_end)
     print("FINISHED")
+
 
 """
 ACTIHEART PROCESSING
