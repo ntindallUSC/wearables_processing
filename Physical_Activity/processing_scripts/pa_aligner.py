@@ -6,10 +6,8 @@
 
 import pandas as pd
 import numpy as np
-import tkinter as tk
-from tkinter import filedialog
-from datetime import datetime, timedelta
-import math
+from datetime import timedelta
+from .data_summary import calc_enmo
 
 
 # # Read in data
@@ -186,8 +184,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
         # Select each row from data who's timestamp falls during and activity and then change the activity column to that
         # activity name
         #       **************Selecting Rows******************  Grab a column -> Set equal to name
-        out_df.loc[(out_df['Actiheart ECG Time'] >= acti[1]) & (out_df['Actiheart ECG Time'] < acti[2]), 'Activity'] = \
-        acti[0]
+        out_df.loc[(out_df['Actiheart ECG Time'] >= acti[1]) & (out_df['Actiheart ECG Time'] < acti[2]), 'Activity'] = acti[0]
 
     # Output File
     output_file = folder_path + "/" + participant_num + "_aligned.csv"
