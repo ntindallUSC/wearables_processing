@@ -17,7 +17,7 @@ from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
 from processing_scripts.k5_processer import process_k5
 from processing_scripts.pa_aligner import align
-from processing_scripts.data_summary import summarize, plot_hr, plot_accel
+from processing_scripts.data_summary import summarize, plot_hr, plot_accel, calc_enmo
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -154,11 +154,16 @@ if os.path.isdir(actigraph_path):
                                  date_parser=acti_date_parser)
     sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
     actigraph_data.insert(1, 'Second Fraction', sec_frac)
+    mag, enmo = calc_enmo(actigraph_data.loc[:,['Accelerometer X', 'Accelerometer Y', 'Accelerometer Z']])
+    actigraph_data.insert(5, "Magnitude", mag)
+    actigraph_data.insert(6, "ENMO", enmo)
+
     print("Writing Actigraph Summary")
     output_path = actigraph_path[:-4] + "/Processed Data/" + particpant_num
     if os.path.isdir(output_path[:-5]) is False:
         os.mkdir(output_path[:-5])
     summarize(0, output_path, actigraph_data, trial_start, trial_end)
+
 
 # Align Data
 print("BEGIN ALIGNMENT")

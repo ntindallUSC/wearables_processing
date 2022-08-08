@@ -2,7 +2,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import pandas as pd
 import os
-
+from .data_summary import calc_enmo
 
 
 # ## First you need to load the data into the script
@@ -175,6 +175,11 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
     output_path = os.path.join(folder_path, "Processed Data")
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
+
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
+    mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
+    final_df.insert(5, "Magnitude", mag)
+    final_df.insert(6, "ENMO", enmo)
 
     output_file = output_path + '/' + participant_num + '_apple.csv'
     final_df.to_csv(output_file, index=False)

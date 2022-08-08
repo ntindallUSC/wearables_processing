@@ -15,6 +15,7 @@ from datetime import datetime
 from datetime import timedelta
 import subprocess
 import os
+from .data_summary import calc_enmo
 
 
 
@@ -109,8 +110,15 @@ def process_garmin(data_path, garmin_path, participant_num):
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
 
+
+    final_df['Time'] = pd.to_datetime(final_df['Time'])
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].applymap(lambda x : x/1000)
+    mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
+    final_df.insert(5, "Magnitude", mag)
+    final_df.insert(6, "ENMO", enmo)
+
     out_path = output_path + "/" + participant_num + "_garmin.csv"
     final_df.to_csv(out_path, index=False)
-    final_df['Time'] = pd.to_datetime(final_df['Time'])
     return final_df
 
