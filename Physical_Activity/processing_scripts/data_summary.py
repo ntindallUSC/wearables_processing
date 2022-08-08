@@ -13,6 +13,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+from datetime import timedelta
 
 # 0 Actigraph : Timestamp,Accelerometer X,Accelerometer Y,Accelerometer Z
 # 1 Actiheart : ECG Time,Second Fraction,ECG (uV),X,Y,Z,Heart Rate,Upright Angle,Roll Angle
@@ -217,3 +218,61 @@ def plot_accel(data, start, end, axis, activities, path):
 
     fig.savefig(path + "_accel" + axis + "_fig.png")
     plt.close(fig)
+
+# Takes as input a dataframe containing 3 columns, corresponding to the axis of an accelerometer for a device.
+def calc_enmo(some_data):
+    # Calculate the magnitue by first squaring all of the x, y, and z value, then summing them, and taking the square root.
+    mag = ((some_data.applymap(lambda x: x ** 2)).sum(axis=1)).transform(lambda x: np.sqrt(x))
+    # To calculate ENMO we subtract 1 (Gravity) from the vector magnitudes
+    enmo = mag.transform(lambda x: x - 1)
+    # Finally if we have any ENMO values less than 0 we round them up.
+    enmo.loc[enmo.loc[:] < 0] = 0
+
+    return mag, enmo
+
+
+def calc_mad(some_data, device):
+    all_mad = {}
+
+    if device == "Actigraph":
+        time_name = device + " Timestamp"
+    else:
+        time_name = device + " Time"
+
+    # Grab the first timestamp from data
+    start = some_data.loc[some_data.index[0], time_name]
+    # Specify the amount of time to aggregate over
+    agg_len = 5
+    # Grab end of aggregation period
+    end_time = start + timedelta(seconds=agg_len - 1)
+    # Calculate the total length of the trial in seconds
+    trial_length = (some_data.loc[some_data.index[-1], time_name] - start).total_seconds()
+    # Runs the total length of trial divided by the length of time we aggregate over
+    # essentialy creates a window of agg_len, and interval of agg_len
+    for i in range(int(trial_length // agg_len)):
+        # print(end_time)
+        # Get agg_len seconds worth of accelerometer readings
+        group_s = some_data.loc[(some_data[time_name] >= start) & (some_data[time_name] <= end_time), :]
+        # print(group_s)
+        # Get the mean X, Y, and Z of those readings
+        mean_s = group_s.drop(columns=[time_name, device + " Magnitude"]).aggregate(lambda x: np.mean(x))
+        # print(mean_s)
+        # Calculate the mean accelerometer magnitude
+        mag_s = np.sqrt(mean_s[0] ** 2 + mean_s[1] ** 2 + mean_s[2] ** 2)
+        # print(f"{mag_s}")
+        # Subtract the mean magnitude from each accelerometer magnitude from each vector magnitude and then take abs
+        dif_mean = group_s[device + ' Magnitude'].apply(lambda x: abs(x - mag_s))
+        # Caclulate the sum of all the vector mags - mean mags. Then divide by the number of vectors
+        # print(dif_mean.sum())
+        # print(dif_mean.shape[0])
+        mad = (dif_mean.sum()) / dif_mean.shape[0]
+        # print(mad)
+
+        # Add each Mad and the corresponding time to a list :
+        all_mad[end_time] = mad
+        #
+        start = end_time + timedelta(seconds=1)
+        end_time = start + timedelta(seconds=agg_len - 1)
+
+    mad_df = pd.Series(data=all_mad)
+    return mad_df
