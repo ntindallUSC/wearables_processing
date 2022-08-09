@@ -18,6 +18,7 @@ from processing_scripts.actiheart_processer import data_split, process_actiheart
 from processing_scripts.k5_processer import process_k5
 from processing_scripts.pa_aligner import align
 from processing_scripts.data_summary import summarize, plot_hr, plot_accel, calc_enmo
+from processing_scripts.aggregate import agg_to_sec
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
@@ -154,7 +155,9 @@ if os.path.isdir(actigraph_path):
                                  date_parser=acti_date_parser)
     sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
     actigraph_data.insert(1, 'Second Fraction', sec_frac)
-    mag, enmo = calc_enmo(actigraph_data.loc[:,['Accelerometer X', 'Accelerometer Y', 'Accelerometer Z']])
+    actigraph_data = actigraph_data.rename(columns={"Timestamp": "Time", "Accelerometer X": "X", "Accelerometer Y": "Y", "Accelerometer Z": "Z"})
+    # print(actigraph_data)
+    mag, enmo = calc_enmo(actigraph_data.loc[:,['X', 'Y', 'Z']])
     actigraph_data.insert(5, "Magnitude", mag)
     actigraph_data.insert(6, "ENMO", enmo)
 
@@ -170,12 +173,14 @@ print("BEGIN ALIGNMENT")
 label = "Break"
 aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num,
                    activities)
+print("BEGIN SECOND AGGREGATION")
+agg_df = agg_to_sec(aligned_df, particpant_num, pa_path)
 print("Plotting HR")
 k5_path = k5_path + '/Processed Data/' + particpant_num + "_v02.png"
 hr_path = pa_path + "/" + particpant_num
 plot_hr(aligned_df, trial_start, trial_end, activities, hr_path, k5_path)
-print("Plotting Accelerometers")
-plot_accel(aligned_df, trial_start, trial_end, "X", activities, pa_path + "/" + particpant_num)
-plot_accel(aligned_df, trial_start, trial_end, "Y", activities, pa_path + "/" + particpant_num)
-plot_accel(aligned_df, trial_start, trial_end, "Z", activities, pa_path + "/" + particpant_num)
+# print("Plotting Accelerometers")
+# plot_accel(aligned_df, trial_start, trial_end, "X", activities, pa_path + "/" + particpant_num)
+# plot_accel(aligned_df, trial_start, trial_end, "Y", activities, pa_path + "/" + particpant_num)
+# plot_accel(aligned_df, trial_start, trial_end, "Z", activities, pa_path + "/" + particpant_num)
 print("Finished")

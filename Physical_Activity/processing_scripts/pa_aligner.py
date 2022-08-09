@@ -165,7 +165,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
 
     # Remove microseconds from all timestamps
     out_df['Actiheart ECG Time'] = out_df['Actiheart ECG Time'].apply(lambda x: micro_remove(x))
-    out_df['Actigraph Timestamp'] = out_df['Actigraph Timestamp'].apply(lambda x: micro_remove(x))
+    out_df['Actigraph Time'] = out_df['Actigraph Time'].apply(lambda x: micro_remove(x))
     out_df['Apple Time'] = out_df['Apple Time'].apply(lambda x: micro_remove(x))
 
     # Move activity label to the first column
