@@ -16,8 +16,9 @@ import pandas as pd
 from datetime import datetime
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
-from processing_scripts.Actigraph_Processor import actigraph_process
-from processing_scripts.Data_Plot import plot_accel
+from Sleep_Study.Data_Aligner import data_alignment
+from processing_scripts.agg_data import calc_enmo
+from processing_scripts.agg_data import agg_to_sec
 
 
 def process_participant(file_path):
@@ -52,7 +53,7 @@ def process_participant(file_path):
         auto_health = glob.glob(apple_path + "/*_hr.*")
         # print(f"Auto Health Files: \n{auto_health}")
         if len(sensor_log) != 0 or len(auto_health) != 0:
-            apple_process(participant_num, apple_path, sensor_log, auto_health)
+            apple_data = apple_process(participant_num, apple_path, sensor_log, auto_health)
 
     # CHECK IF THERE IS GARMIN DATA
     garmin_path = participant_path + "\\Garmin"
@@ -74,7 +75,7 @@ def process_participant(file_path):
         garmin_data = glob.glob(garmin_path + "\\*Garmin*data.csv")
         # print(f"Garmin Data CSV: \n{garmin_data}")
         if len(garmin_data) != 0:
-            garmin_process(participant_num, garmin_path, garmin_data)
+            garmin_data = garmin_process(participant_num, garmin_path, garmin_data)
 
     # CHECK IF THERE IS FITBIT DATA
     fitbit_path = participant_path + "\\FitBit"
@@ -86,27 +87,25 @@ def process_participant(file_path):
     acti_path = participant_path + "\\ActiGraph\\"
     acti_file = []
     if os.path.isdir(acti_path):
+        print("BEGIN ACTIGRAPH")
         acti_data_path = acti_path + "csv"
         acti_file = glob.glob(acti_data_path + "\\*_acti.csv")
         # print(f"Actigraph File Path: {acti_file}")
-        if len(acti_file) != 0:
-            actigraph_process(participant_num, acti_data_path, acti_file, acti_path)
+        actigraph = pd.read_csv(acti_file[0], skiprows=10, parse_dates=['Timestamp'],
+                                date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
+        actigraph.rename(columns={"Timestamp": "Time", "Accelerometer X": "X", "Accelerometer Y": "Y",
+                                  "Accelerometer Z": "Z"}, inplace=True)
+        test = actigraph.loc[0,'Time']
+        actigraph[['X', 'Y', 'Z']] = actigraph[['X', 'Y', 'Z']].apply(pd.to_numeric)
+        mag, enmo = calc_enmo(actigraph.loc[:, ["X", "Y", "Z"]])
+        actigraph.insert(4, "Magnitude", mag)
+        actigraph.insert(5, "ENMO", enmo)
 
-    print("Plotting All Devices")
-    # Read in Apple, Actigraph, and Garmin data and then plot data.
-    apple = pd.read_csv(apple_path + "/Processed Data/" + participant_num + "_apple_data.csv", parse_dates=["Time"],
-                        infer_datetime_format=True)
-    garmin = pd.read_csv(garmin_path + "/Processed Data/" + participant_num + "_garmin_data.csv", parse_dates=["Time"],
-                         infer_datetime_format=True)
-    # Read in file and store it as a dataframe.
-    actigraph = pd.read_csv(acti_file[0], skiprows=10, parse_dates=['Timestamp'], date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
-
-    # Plot acceleration data
-    plot_accel(apple, garmin, actigraph, participant_num, "X", participant_path)
-    plot_accel(apple, garmin, actigraph, participant_num, "Y", participant_path)
-    plot_accel(apple, garmin, actigraph, participant_num, "Z", participant_path)
-    # ----------------------------------------------------------------------------------------------------------------------
-
+    print("BEGIN ALIGNMENT")
+    aligned_data = data_alignment(actigraph, apple_data, garmin_data, file_path, participant_num)
+    print("BEGIN SECOND AGGREGATION")
+    agg_data = agg_to_sec(aligned_data, participant_num, file_path)
+    # ------------------------------------------------------------------------------------------------------------------
 
 root = tk.Tk()
 root.winfo_toplevel().title("Select csv files")

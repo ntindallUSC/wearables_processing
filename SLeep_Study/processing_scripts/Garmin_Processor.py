@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+from Sleep_Study.processing_scripts.agg_data import calc_enmo
 
 
 # In[3]:
@@ -190,8 +191,15 @@ def garmin_process(participant_num, garmin_path, csv_data):
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
     plt.clf()
 
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(lambda x: x / 1000)
+    mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
+    final_df.insert(5, "Magnitude", mag)
+    final_df.insert(6, "ENMO", enmo)
+
     final_df.to_csv(garmin_path + "\\Processed Data\\" + participant_num + "_garmin_data.csv", index=False)
     print("GARMIN PROCESSING FINISHED")
     summary.close()
+    return final_df
 
     # In[ ]:

@@ -14,6 +14,7 @@ from datetime import datetime
 from datetime import timedelta
 import pandas as pd
 import matplotlib.pyplot as plt
+from Sleep_Study.processing_scripts.agg_data import calc_enmo
 
 
 # ## First you need to load the data into the script
@@ -293,9 +294,10 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
 
     final_df.drop(final_df.iloc[j:].index, inplace=True)
 
-    # In[ ]:
-
-    # In[ ]:
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
+    mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
+    final_df.insert(4, "Magnitude", mag)
+    final_df.insert(5, "ENMO", enmo)
 
     # ## Create new CSV File
     # Running this code creates a new CSV
@@ -327,5 +329,6 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_hr.png")
     plt.clf()
     print("APPLE PROCESSING FINISHED")
+    return final_df
 
     # In[ ]:
