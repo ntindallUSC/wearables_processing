@@ -34,17 +34,15 @@ def calc_mad(some_data, device):
     # Calculate the total length of the trial in seconds
     trial_length = (some_data.loc[some_data.index[-1], time_name] - start).total_seconds()
     # Runs the total length of trial divided by the length of time we aggregate over
-    # essentialy creates a window of agg_len, and interval of agg_len
+    # essentially creates a window of agg_len, and interval of agg_len
     for i in range(int(trial_length // agg_len)):
         # print(end_time)
         # Get agg_len seconds worth of accelerometer readings
         group_s = some_data.loc[(some_data[time_name] >= start) & (some_data[time_name] <= end_time), :]
         # print(group_s)
         # Get the mean X, Y, and Z of those readings
-        mean_s = group_s.drop(columns=[time_name, device + " Magnitude"]).aggregate(lambda x: np.mean(x))
-        # print(mean_s)
-        # Calculate the mean accelerometer magnitude
-        mag_s = np.sqrt(mean_s[0] ** 2 + mean_s[1] ** 2 + mean_s[2] ** 2)
+        agg_s = group_s.aggregate(lambda x: np.mean(x))
+        mag_s = agg_s[4]
         # print(f"{mag_s}")
         # Subtract the mean magnitude from each accelerometer magnitude from each vector magnitude and then take abs
         dif_mean = group_s[device + ' Magnitude'].apply(lambda x: abs(x - mag_s))
@@ -109,7 +107,7 @@ def agg_to_sec(data, participant_num, path):
     """
     ac_mad = calc_mad(ac_data, "Actigraph")
     g_mad = calc_mad(g_data, "Garmin")
-    ap_mad = calc_mad(ap_data, "Apple")
+    ap_mad = calc_mad(ap_data.drop(columns='Apple Heart Rate').dropna(), "Apple")
 
     """
     Aggregate Wearable  device accelerometer data to the second level
@@ -161,6 +159,5 @@ def agg_to_sec(data, participant_num, path):
 
     agg_data = agg_data.drop(columns=['Actigraph Time', 'Garmin Time', 'Apple Time', 'K5 t'])
 
-    agg_data.to_csv(path + "/" + participant_num + "_agg.csv",
-                    index=False)
+    agg_data.to_csv(path + "/" + participant_num + "_agg.csv", index=False)
     return agg_data
