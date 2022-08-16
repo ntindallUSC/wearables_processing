@@ -10,8 +10,7 @@ import os
 import glob
 from datetime import datetime
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import math
 from processing_scripts.apple_processer import process_apple
 from processing_scripts.garmin_processer import fit_to_csv, process_garmin
 from processing_scripts.actiheart_processer import data_split, process_actiheart
@@ -29,7 +28,9 @@ print("PLease select the PA Participant you wish to process")
 pa_path = filedialog.askdirectory()  # This line gets the path of the directory
 particpant_num = pa_path[-4:]
 print(f'Participant Number {particpant_num}')
-
+tracking_sheet = pd.read_excel("V:\\R01 - W4K\\3_PA protocol\\PA master tracking.xlsx")
+participant_age = tracking_sheet.loc[tracking_sheet["WDID"] == float(particpant_num), "AGE AT ENROLLMENT"]
+participant_age = math.floor(participant_age.iloc[0])
 # Now that the path of the director I need to read in and process the following devices:
 
 """
@@ -71,7 +72,7 @@ if os.path.isdir(apple_path):
     hr_files = glob.glob(apple_path + '/*_hr*.csv')
     print(f"Cardiogram Files :\n{hr_files}")
     print("Begin Apple Watch Processing")
-    apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num)
+    apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num, participant_age)
     print("Writing Apple Summary")
     output_path = apple_path + "/Processed Data/" + particpant_num
     summarize(2, output_path, apple_data, trial_start, trial_end)
@@ -99,7 +100,7 @@ if os.path.isdir(garmin_path):
     csv_files = glob.glob(garmin_path + '/*data.csv')
     print(f"CSVs: \n{csv_files}")
     print("BEGIN GARMIN PROCESSING")
-    garmin_data = process_garmin(csv_files, garmin_path, particpant_num)
+    garmin_data = process_garmin(csv_files, garmin_path, particpant_num, participant_age)
     print("Writing Garmin Summary")
     output_path = garmin_path + "/Processed Data/" + particpant_num
     summarize(3, output_path, garmin_data, trial_start, trial_end)
@@ -131,7 +132,7 @@ if os.path.isdir(actiheart_path):
     print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
     # Process the actiheart data
     print("BEGIN ACTIHEART PROCESSING")
-    actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num)
+    actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num, participant_age)
     print("Writing Actiheart Summary")
     output_path = actiheart_path + "/Processed Data/" + particpant_num
     summarize(1, output_path, actiheart_data, trial_start, trial_end)
@@ -179,8 +180,6 @@ print("Plotting HR")
 k5_path = k5_path + '/Processed Data/' + particpant_num + "_v02.png"
 hr_path = pa_path + "/" + particpant_num
 plot_hr(aligned_df, trial_start, trial_end, activities, hr_path, k5_path)
-# print("Plotting Accelerometers")
-# plot_accel(aligned_df, trial_start, trial_end, "X", activities, pa_path + "/" + particpant_num)
-# plot_accel(aligned_df, trial_start, trial_end, "Y", activities, pa_path + "/" + particpant_num)
-# plot_accel(aligned_df, trial_start, trial_end, "Z", activities, pa_path + "/" + particpant_num)
+print("Plotting Accelerometers")
+plot_accel(agg_df, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
 print("Finished")

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import os
 from .data_summary import calc_enmo
+from Physical_Activity.processing_scripts.data_summary import flag_hr
 
 
 # ## First you need to load the data into the script
@@ -14,7 +15,7 @@ from .data_summary import calc_enmo
 # In[2]:
 
 
-def process_apple(sensor_log, heart_rate, folder_path, participant_num):
+def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age):
     # Represents how many sensor log files there are
     accel = None
     # delim is initially set to a comma, however the sensor log files can be delimited by various different characters
@@ -170,6 +171,13 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num):
     sec_frac = final_df["Time"].apply(lambda x: x.microsecond)
     # Insert Second Fraction into df
     final_df.insert(1, "Second Fraction", sec_frac)
+
+    # Flag Heart Rate
+    flagged_hr = flag_hr(final_df, "Apple", part_age)
+
+    final_df = final_df.merge(flagged_hr, how='left', left_on=final_df.index, right_on=flagged_hr.index)
+    final_df.drop(columns=["key_0", "Time_y", "Heart Rate_y"], inplace=True)
+    final_df.rename(columns={"Time_x": "Time", "Heart Rate_x": "Heart Rate"}, inplace=True)
 
     # Create a Processed Data folder and then write the data as a csv to it
     output_path = os.path.join(folder_path, "Processed Data")
