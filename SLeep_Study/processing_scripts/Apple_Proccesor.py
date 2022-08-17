@@ -15,6 +15,7 @@ from datetime import timedelta
 import pandas as pd
 import matplotlib.pyplot as plt
 from Sleep_Study.processing_scripts.agg_data import calc_enmo
+from Sleep_Study.processing_scripts.Data_Plot import flag_hr, hr_helper
 
 
 # ## First you need to load the data into the script
@@ -26,7 +27,7 @@ from Sleep_Study.processing_scripts.agg_data import calc_enmo
 
 # In[ ]:
 
-def apple_process(participant_num, apple_path, sensor_log, auto_health):
+def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     print("BEGIN APPLE PROCESSING")
     summary = open(apple_path + "\\Processed Data\\Apple_Summary.txt", 'w')
     # delim is True if the document is comma separated:
@@ -299,6 +300,10 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     final_df.insert(4, "Magnitude", mag)
     final_df.insert(5, "ENMO", enmo)
 
+    # Flag heart rate
+    flagged_hr = flag_hr(final_df, "Apple", age).drop(columns="Heart Rate")
+    final_df = final_df.merge(flagged_hr, how="left", on="Time")
+
     # ## Create new CSV File
     # Running this code creates a new CSV
 
@@ -319,13 +324,10 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health):
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_xyz.png")
     plt.clf()
 
-    plt.figure(figsize=(25, 15))
+    fig, ax = plt.subplots(figsize=(25, 15))
     # Need to drop the readings without a heart rate before plotting
-    heart_plot_df = final_df.loc[(final_df['Time'] >= s_start_time) & (final_df['Time'] <= s_end_time), ['Time', 'Heart Rate']]
-    thin_time = heart_plot_df[['Time', 'Heart Rate']].dropna(axis=0)
-    plt.plot(thin_time['Time'], thin_time['Heart Rate'])
-    # plt.show()
-    plt.xlim([s_start_time, s_end_time])
+    hr_helper(final_df, "Apple", ax)
+    ax.set(xlim=[s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_hr.png")
     plt.clf()
     print("APPLE PROCESSING FINISHED")

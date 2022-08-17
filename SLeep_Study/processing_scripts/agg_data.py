@@ -163,6 +163,6 @@ def agg_to_sec(data, participant_num, path):
     agg_data.rename(columns={"Actigraph Time": "Time"}, inplace=True)
     # agg_data = agg_data.drop(columns=['Garmin Time', 'Apple Time'])
 
-    agg_data.to_csv(path + "/" + participant_num + "_agg.csv",
+    agg_data.to_csv(path + "/" + participant_num + "_wearables_agg.csv",
                     index=False)
     return agg_data

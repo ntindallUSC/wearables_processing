@@ -13,10 +13,6 @@ from processing_scripts.PSG_Processor import psg_process
 
 def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, participant_num):
     # # Align Data
-    # Now that the data has been read in the next step is to align the all of the data. Here are the steps to do this:
-    # 1. Convert all the dataframes to numpy arrays for faster iteration
-    # 2. Throw away readings sampled before the start of the trial. (The k5 started recording when the trial started.)
-    # 3. Align all data. (Done be iterating through the actiheart file and adding the other device readings to the closest row.)
 
     # Convert all 5 data frames to numpy arrays
     graph_np = actigraph_data.to_numpy()
@@ -130,6 +126,6 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
     out_df = out_df.iloc[:out_iter, :]
 
     # Output File
-    output_file = folder_path + "/" + participant_num + "_aligned.csv"
+    output_file = folder_path + "/" + participant_num + "_wearables.csv"
     out_df.to_csv(output_file, index=False)
     return out_df
