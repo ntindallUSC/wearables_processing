@@ -11,15 +11,14 @@ import glob
 from process import process_participant
 from Data_Aligner import data_alignment
 
-# Intialize path to folcer containing all the participant files
-parent_dir = "V:\\R01 - W4K\\1_Sleep Study"
+# Intialize path to folder containing all the participant files
+parent_dir = "V:\\R01 - W4K\\1_Sleep Study\\1_Participant Data"
 
 # Create a list of all the participant files
 participants = glob.glob(parent_dir + "\\7*")
 # Process all participants
-i = 15
+i = 1
 total_participants = len(participants)
-participants = participants[13:]
 
 for participant in participants:
     print(f"PROCESSING {i}/{total_participants}")
@@ -27,11 +26,4 @@ for participant in participants:
     # Process the Apple, Garmin, and Actigraph Data
     process_participant(participant)
 
-    # Check if PSG Data exists
-    psg_files = glob.glob(participant + "/PSG/*ebe*")  # Gets a list of paths of psg files
-    if len(psg_files) > 0:  # If the list's length is > 0 then psg files exist and the data needs to be aligned
-        print("PSG detected. Aligning Data")
-        data_alignment(participant)
-    else:
-        print("No PSG Detected")
     i += 1

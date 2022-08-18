@@ -144,6 +144,6 @@ root.winfo_toplevel().title("Select csv files")
 root.withdraw()
 
 # Start of dialogue
-print("Please select the folder of the participant you wish to process")
-path = filedialog.askdirectory()
-process_participant(path)
+# print("Please select the folder of the participant you wish to process")
+# path = filedialog.askdirectory()
+# process_participant(path)
