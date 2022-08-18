@@ -33,7 +33,8 @@ def garmin_process(participant_num, garmin_path, csv_data):
     garmin_found = datetime(year=1989, month=12, day=31)
     # The US is awesome and follows daylight savings time, so in order to convert to EST we need to ask the user
     # if at the time of recording the data, if daylight savings was active.
-    daylight = input("Is it currently daylight savings time?")
+    # daylight = input("Is it currently daylight savings time?")
+    daylight = 'yes'
     offset = timedelta(hours=5)
     if 'yes' == daylight.lower():
         offset = timedelta(hours=4)
