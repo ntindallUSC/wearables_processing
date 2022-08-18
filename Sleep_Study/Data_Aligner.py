@@ -28,7 +28,7 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
     # define ref as the time of the first actigraph reading.
     ref = actigraph_data.iloc[0,0]
     # Initialize trial start and end
-    t_start = datetime(year=ref.year, month=ref.month, day=ref.day, hour=20)
+    t_start = datetime(year=ref.year, month=ref.month, day=ref.day, hour=21)
     t_end = t_start + timedelta(hours=10)
 
     # initialize device iterators and iterate to start of trial

@@ -41,7 +41,7 @@ def psg_process(participant_num, psg_path, psg_summary, psg_data):
 
     # In[12]:
 
-    psg = pd.read_csv(new_path, delimiter=' ', skipinitialspace=True)
+    psg = pd.read_csv(new_path, delimiter=' ', skipinitialspace=True, low_memory=False)
     os.remove(new_path)
     psg = psg[['#', 'BP', "Stg"]]
 

@@ -121,7 +121,7 @@ def agg_to_sec(data, participant_num, path):
     """
     ac_mad = calc_mad(ac_data, "Actigraph")
     g_mad = calc_mad(g_data, "Garmin")
-    ap_mad = calc_mad(ap_data.drop(columns='Apple Heart Rate').dropna(), "Apple")
+    ap_mad = calc_mad(ap_data, "Apple")
 
     """
     Aggregate Wearable  device accelerometer data to the second level

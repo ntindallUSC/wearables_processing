@@ -18,8 +18,10 @@ from datetime import datetime
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
 from Sleep_Study.Data_Aligner import data_alignment
+from Sleep_Study.Align_PSG import align_psg
 from processing_scripts.agg_data import calc_enmo,agg_to_sec
 from processing_scripts.Data_Plot import plot_accel
+from processing_scripts.PSG_Processor import psg_process
 
 
 def process_participant(file_path):
@@ -79,7 +81,7 @@ def process_participant(file_path):
         garmin_data = glob.glob(garmin_path + "\\*Garmin*data.csv")
         # print(f"Garmin Data CSV: \n{garmin_data}")
         if len(garmin_data) != 0:
-            garmin_data = garmin_process(participant_num, garmin_path, garmin_data, participant_age)
+            garmin_data = garmin_process(participant_num, garmin_path, garmin_data)
 
     # CHECK IF THERE IS FITBIT DATA
     fitbit_path = participant_path + "\\FitBit"
@@ -99,7 +101,6 @@ def process_participant(file_path):
                                 date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
         actigraph.rename(columns={"Timestamp": "Time", "Accelerometer X": "X", "Accelerometer Y": "Y",
                                   "Accelerometer Z": "Z"}, inplace=True)
-        test = actigraph.loc[0,'Time']
         actigraph[['X', 'Y', 'Z']] = actigraph[['X', 'Y', 'Z']].apply(pd.to_numeric)
         mag, enmo = calc_enmo(actigraph.loc[:, ["X", "Y", "Z"]])
         actigraph.insert(4, "Magnitude", mag)
@@ -110,6 +111,20 @@ def process_participant(file_path):
     print("BEGIN SECOND AGGREGATION")
     agg_data = agg_to_sec(aligned_data, participant_num, file_path)
     plot_accel(agg_data, participant_num, file_path + "/")
+
+    # Check if the PSG Data exists: If it does process it:
+    psg_path = participant_path + "/PSG/"
+    if os.path.exists(psg_path + participant_num + "_psg.txt"):
+        print("Process PSG")
+        # PSG data exists, Process it
+        psg_summary = psg_path + participant_num + "_psg.txt"
+        psg_data = psg_path + participant_num + "_ebe.txt"
+        psg_data = psg_process(participant_num, psg_path, psg_summary, psg_data)
+        # data = pd.read_csv("")
+        # Now align PSG Data with all other data
+        aligned_data = pd.read_csv(participant_path + "/7515071922_wearables.csv", parse_dates=["Actigraph Time"], infer_datetime_format=True)
+        print("Align PSG")
+        align_psg(aligned_data, psg_data, participant_num, participant_path + "/")
     # ------------------------------------------------------------------------------------------------------------------
 
 root = tk.Tk()
