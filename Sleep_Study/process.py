@@ -14,7 +14,7 @@ import os.path
 import subprocess
 import pandas as pd
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
 from Sleep_Study.Data_Aligner import data_alignment
@@ -36,6 +36,7 @@ def process_participant(file_path):
     tracking = pd.read_excel("V:\\R01 - W4K\\1_Sleep Study\\Sleep study tracking.xlsx")
     participant_age = tracking.loc[tracking["Child ID"] == float(participant_num), "age at enrollment"]
     participant_age = math.floor(participant_age.iloc[0])
+
     # print(f"Processing Participant Number: \n{participant_num}")
     # A TEst
     # ----------------------------------------------------------------------------------------------------------------------
@@ -60,6 +61,10 @@ def process_participant(file_path):
         # print(f"Auto Health Files: \n{auto_health}")
         if len(sensor_log) != 0 or len(auto_health) != 0:
             apple_data = apple_process(participant_num, apple_path, sensor_log, auto_health, participant_age)
+        else:
+            apple_data = pd.DataFrame
+    else:
+        apple_data = pd.DataFrame
 
     # CHECK IF THERE IS GARMIN DATA
     garmin_path = participant_path + "\\Garmin"
@@ -82,6 +87,10 @@ def process_participant(file_path):
         # print(f"Garmin Data CSV: \n{garmin_data}")
         if len(garmin_data) != 0:
             garmin_data = garmin_process(participant_num, garmin_path, garmin_data)
+        else :
+            garmin_data = pd.Dataframe()
+    else:
+        garmin_data = pd.Dataframe()
 
     # CHECK IF THERE IS FITBIT DATA
     fitbit_path = participant_path + "\\FitBit"
@@ -120,11 +129,14 @@ def process_participant(file_path):
         psg_summary = psg_path + participant_num + "_psg.txt"
         psg_data = psg_path + participant_num + "_ebe.txt"
         psg_data = psg_process(participant_num, psg_path, psg_summary, psg_data)
-        # data = pd.read_csv("")
         # Now align PSG Data with all other data
-        aligned_data = pd.read_csv(participant_path + "/7515071922_wearables.csv", parse_dates=["Actigraph Time"], infer_datetime_format=True)
         print("Align PSG")
         align_psg(aligned_data, psg_data, participant_num, participant_path + "/")
+        print("Align PSG with Aggregated Data")
+        agg_data = agg_data.loc[(agg_data[agg_data.columns[0]] >= psg_data.iloc[0, 0] - timedelta(seconds=30)) &
+                       (agg_data[agg_data.columns[0]] <= psg_data.iloc[-1, 0] + timedelta(seconds=30)),:]
+        agg_psg = agg_data.merge(psg_data, how='left', on='Time')
+        agg_psg.to_csv(participant_path + "/" + participant_num + "_data_agg.csv", index=False)
     # ------------------------------------------------------------------------------------------------------------------
 
 root = tk.Tk()
