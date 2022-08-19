@@ -14,12 +14,13 @@ import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from Sleep_Study.processing_scripts.agg_data import calc_enmo
+from Sleep_Study.processing_scripts.Data_Plot import flag_hr, hr_helper
 
 
 # In[3]:
 
 
-def garmin_process(participant_num, garmin_path, csv_data):
+def garmin_process(participant_num, garmin_path, csv_data, age):
     print("BEGIN GARMIN PROCESSING")
     # Open summary file to write to.
     summary_path = garmin_path + "\\Processed Data\\" + participant_num + "_garmin_summary.txt"
@@ -33,8 +34,7 @@ def garmin_process(participant_num, garmin_path, csv_data):
     garmin_found = datetime(year=1989, month=12, day=31)
     # The US is awesome and follows daylight savings time, so in order to convert to EST we need to ask the user
     # if at the time of recording the data, if daylight savings was active.
-    # daylight = input("Is it currently daylight savings time?")
-    daylight = 'yes'
+    daylight = input("Is it currently daylight savings time?")
     offset = timedelta(hours=5)
     if 'yes' == daylight.lower():
         offset = timedelta(hours=4)
@@ -149,6 +149,8 @@ def garmin_process(participant_num, garmin_path, csv_data):
     final_df["Heart Rate"] = final_df["Heart Rate"].replace(['0', 0], np.nan)
     # pd.to_numeric(final_df['X'])
     final_df = final_df.astype({"Time": object, "Reading #": int, "X": float, "Y": float, 'Z': float, "Heart Rate": float })
+    flagged_hr = flag_hr(final_df, "Garmin", age)
+    final_df = final_df.merge(flagged_hr, how='left', on=['Time', 'Heart Rate'])
 
     # Write the total amount of rows
     summary.write(f"The data has {final_df.shape[0]} rows of data\n\nGAPS FOUND: \n\n")
@@ -184,11 +186,9 @@ def garmin_process(participant_num, garmin_path, csv_data):
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_xyz.png")
     plt.clf()
 
-    plt.figure(figsize=(25, 15))
-    # Need to drop the readings without a heart rate before plotting
-    thin_time = sleep_df[['Time', 'Heart Rate']].dropna(axis=0)
-    plt.plot(thin_time['Time'], thin_time['Heart Rate'])
-    plt.xlim([sleep_start, sleep_end])
+    fig, ax = plt.subplots(figsize=(25, 15))
+    hr_helper(final_df, "Apple", ax)
+    ax.set(xlim=[sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
     plt.clf()
 

@@ -17,9 +17,9 @@ import math
 from datetime import datetime, timedelta
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
-from Sleep_Study.Data_Aligner import data_alignment
-from Sleep_Study.Align_PSG import align_psg
-from processing_scripts.agg_data import calc_enmo,agg_to_sec
+from Data_Aligner import data_alignment
+from Align_PSG import align_psg
+from processing_scripts.agg_data import calc_enmo, agg_to_sec
 from processing_scripts.Data_Plot import plot_accel
 from processing_scripts.PSG_Processor import psg_process
 
@@ -30,7 +30,7 @@ def process_participant(file_path):
     # data from the sleep study.
 
     participant_path = file_path
-
+    devices = []
     # Determine the Participant Number
     participant_num = participant_path[-10:]
     tracking = pd.read_excel("V:\\R01 - W4K\\1_Sleep Study\\Sleep study tracking.xlsx")
@@ -61,10 +61,11 @@ def process_participant(file_path):
         # print(f"Auto Health Files: \n{auto_health}")
         if len(sensor_log) != 0 or len(auto_health) != 0:
             apple_data = apple_process(participant_num, apple_path, sensor_log, auto_health, participant_age)
+            devices.append("Apple")
         else:
-            apple_data = pd.DataFrame
+            apple_data = pd.DataFrame()
     else:
-        apple_data = pd.DataFrame
+        apple_data = pd.DataFrame()
 
     # CHECK IF THERE IS GARMIN DATA
     garmin_path = participant_path + "\\Garmin"
@@ -86,11 +87,12 @@ def process_participant(file_path):
         garmin_data = glob.glob(garmin_path + "\\*Garmin*data.csv")
         # print(f"Garmin Data CSV: \n{garmin_data}")
         if len(garmin_data) != 0:
-            garmin_data = garmin_process(participant_num, garmin_path, garmin_data)
+            garmin_data = garmin_process(participant_num, garmin_path, garmin_data, participant_age)
+            devices.append("Garmin")
         else :
-            garmin_data = pd.Dataframe()
+            garmin_data = pd.DataFrame()
     else:
-        garmin_data = pd.Dataframe()
+        garmin_data = pd.DataFrame()
 
     # CHECK IF THERE IS FITBIT DATA
     fitbit_path = participant_path + "\\FitBit"
@@ -110,6 +112,7 @@ def process_participant(file_path):
                                 date_parser=lambda x: datetime.strptime(x, '%m/%d/%Y %H:%M:%S.%f'))
         actigraph.rename(columns={"Timestamp": "Time", "Accelerometer X": "X", "Accelerometer Y": "Y",
                                   "Accelerometer Z": "Z"}, inplace=True)
+        devices.insert(0, "Actigraph")
         actigraph[['X', 'Y', 'Z']] = actigraph[['X', 'Y', 'Z']].apply(pd.to_numeric)
         mag, enmo = calc_enmo(actigraph.loc[:, ["X", "Y", "Z"]])
         actigraph.insert(4, "Magnitude", mag)
@@ -118,8 +121,8 @@ def process_participant(file_path):
     print("BEGIN ALIGNMENT")
     aligned_data = data_alignment(actigraph, apple_data, garmin_data, file_path, participant_num)
     print("BEGIN SECOND AGGREGATION")
-    agg_data = agg_to_sec(aligned_data, participant_num, file_path)
-    plot_accel(agg_data, participant_num, file_path + "/")
+    agg_data = agg_to_sec(aligned_data, participant_num, file_path, devices)
+    plot_accel(agg_data, participant_num, devices, file_path + "/")
 
     # Check if the PSG Data exists: If it does process it:
     psg_path = participant_path + "/PSG/"
@@ -144,6 +147,6 @@ root.winfo_toplevel().title("Select csv files")
 root.withdraw()
 
 # Start of dialogue
-# print("Please select the folder of the participant you wish to process")
-# path = filedialog.askdirectory()
-# process_participant(path)
+print("Please select the folder of the participant you wish to process")
+path = filedialog.askdirectory()
+process_participant(path)

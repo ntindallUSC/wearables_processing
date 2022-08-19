@@ -301,8 +301,8 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     final_df.insert(5, "ENMO", enmo)
 
     # Flag heart rate
-    flagged_hr = flag_hr(final_df, "Apple", age).drop(columns="Heart Rate")
-    final_df = final_df.merge(flagged_hr, how="left", on="Time")
+    flagged_hr = flag_hr(final_df, "Apple", age)
+    final_df = final_df.merge(flagged_hr, how="left", on=['Time', 'Heart Rate'])
 
     # ## Create new CSV File
     # Running this code creates a new CSV

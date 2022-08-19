@@ -4,35 +4,38 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def plot_accel(data, num, output):
+def plot_accel(data, num, devices, output):
+    # Get date and star time of sleep
     month = int(num[4:6])
     day = int(num[6:8])
     year = int("20" + num[8:])
     start = datetime(year=year, month=month, day=day, hour=20)
     end = start + timedelta(hours=10)
-    # print(f"Start of sleep {start}\nEnd of sleep {end}")
-    acti_seconds = data.loc[:, ["Time", "Actigraph Max ENMO", "Actigraph MAD"]].dropna()
-    apple_seconds = data.loc[:, ["Time", "Apple Max ENMO", "Apple MAD"]].dropna()
-    garmin_seconds = data.loc[:, ["Time", "Garmin Max ENMO", "Garmin MAD"]].dropna()
 
-    # Plot ENMO
-    fig, ax = plt.subplots(figsize=(25, 15))
-    ax.plot(acti_seconds["Time"], acti_seconds["Actigraph Max ENMO"], label="Actigraph")
-    ax.plot(apple_seconds["Time"], apple_seconds["Apple Max ENMO"], label="Apple")
-    ax.plot(garmin_seconds["Time"], garmin_seconds["Garmin Max ENMO"], label="Garmin")
-    ax.legend(fontsize="xx-large")
-    ax.set(xlim=([start, end]))
-    fig.savefig(output + num + "_ENMO.png")
-    plt.close(fig)
-    # Plot MAD
-    fig, ax = plt.subplots(figsize=(25, 15))
-    ax.plot(acti_seconds["Time"], acti_seconds["Actigraph MAD"], label="Actigraph")
-    ax.plot(apple_seconds["Time"], apple_seconds["Apple MAD"], label="Apple")
-    ax.plot(garmin_seconds["Time"], garmin_seconds["Garmin MAD"], label="Garmin")
-    ax.legend(fontsize="xx-large")
-    ax.set(xlim=([start, end]))
-    fig.savefig(output + num + "_MAD.png")
-    plt.close(fig)
+    # Initialize plots
+    fig_1, ax_1 = plt.subplots(figsize=(25, 15))
+    fig_2, ax_2 = plt.subplots(figsize=(25, 15))
+    # Plot all devices
+    i = 0
+    while i < len(devices):
+        # Grab data
+        dev_seconds = data.loc[:, ["Time", devices[i] + " Max ENMO", devices[i] + " MAD"]].dropna()
+        # Plot ENMO
+        ax_1.plot(dev_seconds["Time"], dev_seconds[devices[i] + " Max ENMO"], label=devices[i])
+        # Plot MAD
+        ax_2.plot(dev_seconds["Time"], dev_seconds[devices[i] + " MAD"], label=devices[i])
+        i += 1
+
+    # Save and close ENMO figure
+    ax_1.legend(fontsize="xx-large")
+    ax_1.set(xlim=([start, end]))
+    fig_1.savefig(output + num + "_ENMO.png")
+    plt.close(fig_1)
+    # Save and close MAD figure
+    ax_2.legend(fontsize="xx-large")
+    ax_2.set(xlim=([start, end]))
+    fig_2.savefig(output + num + "_MAD.png")
+    plt.close(fig_2)
 
 # This function takes in wearable and flags implausible heart rate values.
 def flag_hr(data, device, age):
