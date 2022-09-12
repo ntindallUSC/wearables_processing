@@ -82,11 +82,6 @@ def aggregate_accel(data, device):
 # This function takes as input the aligned trial data
 # It then calculates the MAD for actigraph, apple watch, and garmin.
 # Next it aggregates all of the trial data to the second level.
-
-data = pd.read_csv("C:\\Users\\Nick\\Watch_Extraction\\Physical_Activity_Protocol\\Test_Data\\1854\\1854_aligned.csv",
-                   low_memory=False)
-
-
 def agg_to_sec(data, participant_num, path):
     """
     Find and select the Wearable Data that is required for mad Calculation:
