@@ -74,7 +74,7 @@ def process_garmin(data_path, garmin_path, participant_num, part_age):
 
     # Iterate through the Garmin array
     for readings in xyz_numpy :    # Check to see if the xyz data is empty
-        if pd.isna(readings[1]) :
+        if pd.isna(readings[1]) or pd.isna(readings[2]) or pd.isna(readings[3]):
             unpack_xyz[counter, 0] = readings[0]
             unpack_xyz[counter, 1] = 1
             unpack_xyz[counter, 2:] = readings[1:]
