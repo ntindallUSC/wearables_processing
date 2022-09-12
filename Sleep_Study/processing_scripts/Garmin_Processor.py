@@ -115,10 +115,11 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
             if readings[0] == sleep_end:
                 end_found = True
 
-        if pd.isna(readings[1]):
+        if pd.isna(readings[1]) or pd.isna(readings[2]) or pd.isna(readings[3]):
             unpack_xyz[counter, 0] = readings[0]
             unpack_xyz[counter, 1] = 1
-            unpack_xyz[counter, 2:] = readings[1:]
+            unpack_xyz[counter, 2:5] = np.nan()
+            unpack_xyz[counter, 5] = readings[4]
 
             counter += 1
             total += 1

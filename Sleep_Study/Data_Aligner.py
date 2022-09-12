@@ -26,9 +26,9 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
     apple_rows, apple_cols = apple_np.shape
 
     # define ref as the time of the first actigraph reading.
-    ref = actigraph_data.iloc[0,0]
+    ref = actigraph_data.iloc[0, 0]
     # Initialize trial start and end
-    t_start = datetime(year=ref.year, month=ref.month, day=ref.day, hour=21)
+    t_start = datetime(year=ref.year, month=ref.month, day=ref.day, hour=20)
     t_end = t_start + timedelta(hours=10)
 
     # initialize device iterators and iterate to start of trial
@@ -85,7 +85,7 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
         return device_iter
 
     # Begin alignment
-    while graph_iter < graph_rows - 1 and graph_np[graph_iter - 1, 0] < t_end and out_iter < out_rows:
+    while graph_iter < graph_rows - 1 and graph_np[graph_iter, 0] < t_end and out_iter < out_rows:
         # Initialize out_row as empty row. Through loop data will be added to row and then row will be added to output array.
         out_row = []
 
