@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.dates as mdates
 
 
 def plot_accel(data, num, devices, output):
@@ -70,7 +71,7 @@ def flag_hr(data, device, age):
     return data
 
 # A helper function that helps to plot the heart rate and flags
-def hr_helper(data, device, axis):
+def hr_helper(data, device, axis, kubios):
     if device == "Actiheart":
         time_name = "Time"
         p_color = "blue"
@@ -80,16 +81,62 @@ def hr_helper(data, device, axis):
     else:
         time_name = "Time"
         p_color = "green"
+    if kubios is False :
+        # flagged data
+        flag = data
+        # print(flag)
+        flag = flag.loc[(flag["HR Change"] == 1) | (flag["HR Low"] == 1), [time_name, "Heart Rate"]]
 
-    # flagged data
-    flag = data
-    # print(flag)
-    flag = flag.loc[(flag["HR Change"] == 1) | (flag["HR Low"] == 1), [time_name, "Heart Rate"]]
+        # Unflagged Data
+        not_flag = data
+        not_flag.loc[(not_flag["HR Change"] == 1) | (not_flag["HR Low"] == 1), ["Heart Rate"]] = np.nan
+        not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
 
-    # Unflagged Data
-    not_flag = data
-    not_flag.loc[(not_flag["HR Change"] == 1) | (not_flag["HR Low"] == 1), ["Heart Rate"]] = np.nan
-    not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
+        axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= device + " Unflagged")
+        axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= device + " Flagged")
+    else :
+        time_name = device + " " + time_name
+        # flagged data
+        flag = data
+        # print(flag)
+        flag = flag.loc[(flag[device + " HR Change"] == 1) | (flag[device + " HR Low"] == 1), [time_name, device + " Heart Rate"]]
 
-    axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= "Unflagged")
-    axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= "Flagged")
+        # Unflagged Data
+        not_flag = data
+        not_flag.loc[(not_flag[device + " HR Change"] == 1) | (not_flag[device + " HR Low"] == 1), [device + " Heart Rate"]] = np.nan
+        not_flag = not_flag[[time_name, device + " Heart Rate"]].dropna()
+
+        axis.plot(not_flag[time_name], not_flag[device + " Heart Rate"], color=p_color, label=device + " Unflagged")
+        axis.scatter(flag[time_name], flag[device + " Heart Rate"], color=p_color, sizes=[100], edgecolor='k',
+                     label=device + " Flagged")
+
+# This function plots the heart rates of Garmin, Apple Watches, and Actiheart vs Time all on the same plot.
+# This function takes as input:
+# The aligned dataframe, produced from pa_aligner.py
+# The start and end time of the trial
+# and a path to store the plot.
+def plot_hr(data, path, part_num):
+    # Grab Kubios Heart Rate
+    kubios_hr = data.loc[:, ["Time", "Kubios Medium Mean HR"]].dropna(axis=0)
+    # Grab the apple data
+    apple_hr = data.loc[:, ["Apple Time", "Apple Heart Rate", "Apple HR High", "Apple HR Low", "Apple HR Change"]].dropna(axis=0)
+    # Grab the Garmin data
+    if "Garmin Time" in data.columns:
+        garmin_hr = data.loc[:, ["Garmin Time", "Garmin Heart Rate", "Garmin HR High", "Garmin HR Low", "Garmin HR Change"]].dropna(axis=0)
+    else:
+        garmin_hr = pd.DataFrame()
+
+    # Create figure
+    fig, ax = plt.subplots(figsize=(25, 15))
+    # Plot Actigraph Data
+    ax.plot(kubios_hr['Time'], kubios_hr["Kubios Medium Mean HR"], color="blue", label="Kubios")
+    # Plot Apple Data
+    hr_helper(apple_hr, "Apple", ax, True)
+    # Plot Garmin Data
+    if garmin_hr.shape[0] > 0:
+        hr_helper(garmin_hr, "Garmin", ax, True)
+    ax.legend(fontsize="xx-large")
+    # ax.set(ylim=[40, 220])
+    print(path)
+    fig.savefig(path + "/" + part_num + "_hr_fig.png")
+    plt.close(fig)

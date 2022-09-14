@@ -20,8 +20,9 @@ from processing_scripts.Garmin_Processor import garmin_process
 from Data_Aligner import data_alignment
 from Align_PSG import align_psg
 from processing_scripts.agg_data import calc_enmo, agg_to_sec
-from processing_scripts.Data_Plot import plot_accel
+from processing_scripts.Data_Plot import plot_accel, plot_hr
 from processing_scripts.PSG_Processor import psg_process
+from processing_scripts.Kubios_Processor import read_kubios
 
 
 def process_participant(file_path):
@@ -139,7 +140,28 @@ def process_participant(file_path):
         agg_data = agg_data.loc[(agg_data[agg_data.columns[0]] >= psg_data.iloc[0, 0] - timedelta(seconds=30)) &
                        (agg_data[agg_data.columns[0]] <= psg_data.iloc[-1, 0] + timedelta(seconds=30)),:]
         agg_psg = agg_data.merge(psg_data, how='left', on='Time')
+
+        kubios_path = psg_path + "/Kubios Output/"
+        if os.path.exists(kubios_path + participant_num + "_medium_hrv.csv"):
+            agg_psg = pd.read_csv(participant_path + "/" + participant_num + "_data_agg.csv", parse_dates=['Time'],
+                                  infer_datetime_format=True)
+            agg_psg["Apple Time"] = agg_psg["Apple Time"].apply(lambda x: pd.to_datetime(x))
+            agg_psg["Garmin Time"] = agg_psg["Garmin Time"].apply(lambda x: pd.to_datetime(x))
+            # Check if the Kubios Heart rate Data exists: If it does process it:
+            # Get the paths of the 2 different kubios outputs
+            medium_path = kubios_path + participant_num + "_medium_hrv.csv"
+            none_path = kubios_path + participant_num + "_none_hrv.csv"
+
+            # Read in the data
+            kubios_med = read_kubios(medium_path, True, participant_num)
+            kubios_none = read_kubios(none_path, False, participant_num)
+            # Merge two data sets
+            kubios_hr = kubios_med.merge(kubios_none, how="inner", on='Time')
+            agg_psg = agg_psg.merge(kubios_hr, how="left", on="Time")
+            plot_hr(agg_psg, participant_path, participant_num)
         agg_psg.to_csv(participant_path + "/" + participant_num + "_data_agg.csv", index=False)
+
+
     # ------------------------------------------------------------------------------------------------------------------
 
 root = tk.Tk()
