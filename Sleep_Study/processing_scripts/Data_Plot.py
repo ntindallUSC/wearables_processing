@@ -55,7 +55,7 @@ def flag_hr(data, device, age):
     # Flags HR over threshold
     data.loc[data["Heart Rate"] >= (220-age), ["HR High"]] = 1
     # Flags HR below threshold
-    data.loc[data["Heart Rate"] <= 60, ["HR Low"]] = 1
+    data.loc[data["Heart Rate"] <= 50, ["HR Low"]] = 1
     # Calculate average HR of the last 8 seconds
     averaged = data[[time_name,'Heart Rate']].rolling('8s', on=time_name, closed='left').mean()
     # Insert temporary column to keep track of average chang of hr
