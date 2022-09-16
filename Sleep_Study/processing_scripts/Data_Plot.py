@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib.dates as mdates
+import statsmodels.api as sm
 
 
 def plot_accel(data, num, devices, output):
@@ -115,28 +115,15 @@ def hr_helper(data, device, axis, kubios):
 # The aligned dataframe, produced from pa_aligner.py
 # The start and end time of the trial
 # and a path to store the plot.
-def plot_hr(data, path, part_num):
-    # Grab Kubios Heart Rate
-    kubios_hr = data.loc[:, ["Time", "Kubios Medium Mean HR"]].dropna(axis=0)
-    # Grab the apple data
-    apple_hr = data.loc[:, ["Apple Time", "Apple Heart Rate", "Apple HR High", "Apple HR Low", "Apple HR Change"]].dropna(axis=0)
-    # Grab the Garmin data
-    if "Garmin Time" in data.columns:
-        garmin_hr = data.loc[:, ["Garmin Time", "Garmin Heart Rate", "Garmin HR High", "Garmin HR Low", "Garmin HR Change"]].dropna(axis=0)
-    else:
-        garmin_hr = pd.DataFrame()
-
-    # Create figure
-    fig, ax = plt.subplots(figsize=(25, 15))
-    # Plot Actigraph Data
-    ax.plot(kubios_hr['Time'], kubios_hr["Kubios Medium Mean HR"], color="blue", label="Kubios")
-    # Plot Apple Data
-    hr_helper(apple_hr, "Apple", ax, True)
-    # Plot Garmin Data
-    if garmin_hr.shape[0] > 0:
-        hr_helper(garmin_hr, "Garmin", ax, True)
-    ax.legend(fontsize="xx-large")
-    # ax.set(ylim=[40, 220])
-    print(path)
-    fig.savefig(path + "/" + part_num + "_hr_fig.png")
-    plt.close(fig)
+def plot_hr(data, device, path, part_num):
+    # Intialize names of heart rate columns
+    hr_cols = [device + " Heart Rate", "Kubios Medium Mean HR"]
+    # Check if they exist
+    if hr_cols[0] in data.columns and hr_cols[1] in data.columns:
+        # Select a subset of those columns where both columns have a value
+        hr = data.loc[:,hr_cols].dropna()
+        # Plot a bland altman plot
+        fig, ax = plt.subplots(figsize=(10,8))
+        sm.graphics.mean_diff_plot(hr[hr_cols[1]], hr[hr_cols[0]], ax=ax)
+        plt.savefig(path + "/" + part_num + "_" + device + "_ba.jpg", bbox_inces='tight')
+        plt.close(fig)

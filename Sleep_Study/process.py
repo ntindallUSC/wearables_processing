@@ -158,7 +158,8 @@ def process_participant(file_path):
             # Merge two data sets
             kubios_hr = kubios_med.merge(kubios_none, how="inner", on='Time')
             agg_psg = agg_psg.merge(kubios_hr, how="left", on="Time")
-            plot_hr(agg_psg, participant_path, participant_num)
+            plot_hr(agg_psg, "Apple", participant_path, participant_num)
+            plot_hr(agg_psg, "Garmin", participant_path, participant_num)
         agg_psg.to_csv(participant_path + "/" + participant_num + "_data_agg.csv", index=False)
 
 
