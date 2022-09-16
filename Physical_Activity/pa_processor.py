@@ -43,7 +43,7 @@ def process_participant(pa_path) :
     if os.path.isdir(k5_path) and os.path.isdir(activity_path):
         k5_files = glob.glob(k5_path + "/*_K5*")
         log_file = glob.glob(activity_path + "/*log*")
-        print(f"K5 files {k5_files} \nActivity Log file {log_file}")
+        # print(f"K5 files {k5_files} \nActivity Log file {log_file}")
         # Process k5 data
         print("BEGIN K5 PROCESSING")
         k5_data, activities = process_k5(k5_files, log_file, k5_path, particpant_num)
@@ -63,10 +63,10 @@ def process_participant(pa_path) :
     if os.path.isdir(apple_path):
         # Get list of acceleration files
         accel_files = glob.glob(apple_path + '/*_sl*.csv')
-        print(f"Apple Sensor log Files :\n{accel_files}")
+        # print(f"Apple Sensor log Files :\n{accel_files}")
         # Get list of heart rate files
         hr_files = glob.glob(apple_path + '/*_hr*.csv')
-        print(f"Cardiogram Files :\n{hr_files}")
+        # print(f"Cardiogram Files :\n{hr_files}")
         print("Begin Apple Watch Processing")
         apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num, participant_age)
         print("Writing Apple Summary")
@@ -89,12 +89,12 @@ def process_participant(pa_path) :
     if os.path.isdir(garmin_path):
         # Get path of all fit files
         fit_files = glob.glob(garmin_path + '/*.fit')
-        print(f"Fit Files: \n{fit_files}")
+        # print(f"Fit Files: \n{fit_files}")
         # Convert fit files to csv
         fit_to_csv(fit_files, garmin_path, particpant_num)
         # Get paths of csv
         csv_files = glob.glob(garmin_path + '/*data.csv')
-        print(f"CSVs: \n{csv_files}")
+        # print(f"CSVs: \n{csv_files}")
         print("BEGIN GARMIN PROCESSING")
         garmin_data = process_garmin(csv_files, garmin_path, particpant_num, participant_age)
         print("Writing Garmin Summary")
@@ -116,7 +116,7 @@ def process_participant(pa_path) :
     if os.path.isdir(actiheart_path):
         # Get the path to the ECG and Accelerometer data
         ecg_accel = glob.glob(actiheart_path + "/*combined*")
-        print(f"Raw ECG and Acceleration path: {ecg_accel}")
+        # print(f"Raw ECG and Acceleration path: {ecg_accel}")
         # Split the ecg and acceleration files. Also grab start time of actiheart data collection
         start = data_split(ecg_accel, actiheart_path, particpant_num)
         # Get the path to the ECG data
@@ -125,7 +125,7 @@ def process_participant(pa_path) :
         accel_data = glob.glob(actiheart_path + "/*accel_split*")
         # Grab the heart rate and rotation data
         hr_data = glob.glob(actiheart_path + "/*hr.txt")
-        print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
+        # print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
         # Process the actiheart data
         print("BEGIN ACTIHEART PROCESSING")
         actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num, participant_age)
