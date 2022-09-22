@@ -240,11 +240,9 @@ def plot_hr(data, start, end, activities, path, k5):
     fig.savefig(k5)
     plt.close(fig)
 
-# This function calculates the RMS of each second for 1 axis on 3 devices (Garmin, Apple Watch, Actigraph)
-# It then plots the RMS values versus time
-# It takes as input the aligned data, the start and end time of the trial,
-# Which accelerometer axis it will be working with, and a path to store the plots.
+#This function plots the ENMO and MAD for each wearable device.
 def plot_accel(data, start, end, activities, path):
+    # Select
     acti_seconds = data.loc[:, ["Time", "Actigraph Max ENMO", "Actigraph MAD"]].dropna()
     apple_seconds = data.loc[:, ["Time", "Apple Max ENMO", "Apple MAD"]].dropna()
     if "Garmin Max ENMO" in data.columns:
