@@ -107,6 +107,7 @@ def agg_to_sec(data, participant_num, path, devices):
         data[device + " Time"] = pd.to_datetime(data[device + " Time"]).apply(lambda x: x.replace(microsecond=0))
         # Find columns pertaining to device
         device_cols = get_columns(data, device)
+        # Need to drop all blank rows. Also if the device is a garmin need to drop the reading number column
         if device != "Garmin":
             dev_data = data.iloc[:, device_cols[0]:device_cols[1]+1].dropna(how='all')
         else :
