@@ -30,16 +30,21 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
 
         # Grab the start and end time of the test.
         date = temp.iloc[0, 4]
+        # print(f"Date: {date}")
         time = str(temp.iloc[1, 4])
+        # print(f"Time: {time}")
         # Combine start date and time.
         start = date + " " + time
-        start_time = datetime.strptime(start, '%m/%d/%Y %I:%M %p')
+        start_time = datetime.strptime(start, '%m/%d/%Y %I:%M:%S %p')
         # print(f"Start Time: {start_time}")
         # Grab duration of test from table
         duration = temp.iloc[2, 4]
         # print(f"Test Duration: {duration}")
         # Add duration + startime to get end time
-        end_time = start_time + timedelta(hours=duration.hour, minutes=duration.minute, seconds=duration.second)
+        if isinstance(duration, str):
+            end_time = start_time + timedelta(hours=int(duration[:2]), minutes=int(duration[3:5]), seconds=int(duration[6:]))
+        else :
+            end_time = start_time + timedelta(hours=duration.hour, minutes=duration.minute, seconds=duration.second)
         # print(f"End Time {end_time}")
 
         # Drop beginning columns that hold no data
@@ -57,7 +62,14 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
         def timestamp(elapse, start):
             # Make sure the value is a time
             if isinstance(elapse, timedelta):
+                print(f"Before: {elapse}")
                 elapse = elapse + start
+                print(f"After: {elapse}")
+            elif isinstance(elapse, str):
+                temp = timedelta(hours=int(elapse[:2]), minutes=int(elapse[3:5]), seconds=int(elapse[6:]))
+                elapse = temp + start
+            else :
+                print("K5 Timestamp isn't a timedelta or string. Need to look at code.")
             return elapse
 
         temp['t'] = temp['t'].apply(lambda x: timestamp(x, start_time))
@@ -107,6 +119,15 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
     output_path = os.path.join(folder_path, "Processed Data")
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
+
+    # Next I will select the k5 values we're interested in.
+    data_names = []
+    for name in data.columns:
+        data_names.append(name)
+        if name == "METS":
+            break
+    data_names.append("Amb. Temp.")
+    data = data.loc[:, data_names]
 
     output_file = output_path + '/' + participant_num + '_k5.csv'
 
