@@ -83,63 +83,36 @@ def aggregate_accel(data, device):
 # This function takes as input the aligned trial data
 # It then calculates the MAD for actigraph, apple watch, and garmin.
 # Next it aggregates all of the trial data to the second level.
-def agg_to_sec(data, participant_num, path):
+def agg_to_sec(data, devices, participant_num, path):
     """
     Find and select the Wearable Data that is required for mad Calculation:
     """
+    wearables = []
+    for device in devices:
+        # Get a subset of the data's columns containing the wearables devices data
+        dev_cols = get_columns(data, device)
+        # Drop a column depending on the device
+        if device != "Garmin":
+            dev_data = data.iloc[:, dev_cols[0]:dev_cols[1] + 1].dropna(how='all').drop(columns=device + " Second Fraction")
+        elif device == "Garmin":
+            dev_data = data.iloc[:, dev_cols[0]:dev_cols[1] + 1].dropna(how='all').drop(columns=device + " Reading #")
 
-    ac_cols = get_columns(data, "Actigraph")
-    g_cols = get_columns(data, "Garmin")
-    ap_cols = get_columns(data, "Apple")
+        # Calculate MAD for the device
+        dev_mad = calc_mad(dev_data, device)
 
-    ac_data = data.iloc[:, ac_cols[0]:ac_cols[1] + 1].dropna(how='all').drop(
-        columns="Actigraph Second Fraction")  # Actigraph
-    # print(ac_data.columns)
-    g_data = data.iloc[:, g_cols[0]:g_cols[1] + 1]  # Garmin
-    if not g_data.empty:
-        g_data = g_data.dropna(how='all').drop(columns="Garmin Reading #")
-    # print(g_data.columns)
-    ap_data = data.iloc[:, ap_cols[0]:ap_cols[1] + 1].dropna(how='all').drop(columns="Apple Second Fraction")  # Apple
-    # print(ap_data.columns)
+        # Calculate the RMS and Mean of raw acceleration data. Calculate the max and mean of Magnitude and ENMO
+        dev_agg = aggregate_accel(dev_data, device)
 
-    """
-    Calculate MAD for the 3 devices:
-    """
-    ac_mad = calc_mad(ac_data, "Actigraph")
-    if not g_data.empty:
-        g_mad = calc_mad(g_data, "Garmin")
-    ap_mad = calc_mad(ap_data.dropna(how='all'), "Apple")
-
-    """
-    Aggregate Wearable  device accelerometer data to the second level
-    """
-
-    ac_agg = aggregate_accel(ac_data, "Actigraph")
-    if not g_data.empty:
-        g_agg = aggregate_accel(g_data, "Garmin")
-    # print(g_agg.columns)
-    ap_agg = aggregate_accel(ap_data, "Apple")
-    # print(ap_agg.columns)
-
-    """ 
-    Combine the aggregated accelerometer data with MAD calculations. Then combine with heart rate
-    """
-    # Combine aggregated Accelerometer data with MAD
-    ac_agg = ac_agg.merge(ac_mad, how='left', left_on='Actigraph Time', right_on=ac_mad.index)
-    if not g_data.empty:
-        g_agg = g_agg.merge(g_mad, how='left', left_on='Garmin Time', right_on=g_mad.index)
-    ap_agg = ap_agg.merge(ap_mad, how='left', left_on='Apple Time', right_on=ap_mad.index)
-
-    if not g_data.empty:
-        # Grab just garmin heart rate
-        g_hr = g_data.loc[:, ["Garmin Time", "Garmin Heart Rate", "Garmin HR Low", "Garmin HR High", "Garmin HR Change"]].dropna()
-        # Combine Garmin accel with heart rate
-        g_agg = g_agg.merge(g_hr, how="left", on="Garmin Time")
-
-    # Grab jut apple heart rate
-    ap_hr = ap_data.loc[:, ["Apple Time", "Apple Heart Rate", "Apple HR Low", "Apple HR High", "Apple HR Change"]].dropna()
-    # Combine Apple accel with HR
-    ap_agg = ap_agg.merge(ap_hr, how="left", on="Apple Time")
+        # Combine aggregated Accelerometer data with MAD
+        dev_agg = dev_agg.merge(dev_mad, how='left', left_on=device + ' Time', right_on=dev_mad.index)
+        # Combine aggregated accelerometer values with heart rate. (Actigraph doesn't collect heart rate)
+        if device != "Actigraph":
+            dev_hr = dev_data.loc[:, [device + " Time", device + " Heart Rate", device + " HR Low", device + " HR High", device + " HR Change"]].dropna()
+            dev_hr = dev_hr.groupby(device + " Time").agg(np.mean).reset_index()
+            # Combine Apple accel with HR
+            dev_agg = dev_agg.merge(dev_hr, how="left", on=device + " Time")
+        # Add data to list of wearable data
+        wearables.append(dev_agg)
 
     """
     Select Actiheart Heart Rate and K5 data. Combine with aggregated wearable data.
@@ -151,22 +124,31 @@ def agg_to_sec(data, participant_num, path):
     heart_data["Time"] = heart_data["Time"].apply(pd.to_datetime)
 
     # Select K5 data
-    k5_data = data.iloc[:, ap_cols[1] + 1:].dropna(how='all')
+    k5_cols = get_columns(data, "K5")
+    k5_data = data.iloc[:, k5_cols[0]:k5_cols[1]].dropna(how='all')
     k5_data['K5 t'] = k5_data['K5 t'].apply(pd.to_datetime)
-    # Combine Actiheart Data with Actigraph Data
-    agg_data = heart_data.merge(ac_agg, how="left", left_on="Time", right_on="Actigraph Time")
-    if not g_data.empty:
-        # Combine data with Garmin Data
-        agg_data = agg_data.merge(g_agg, how="left", left_on="Time", right_on="Garmin Time")
-    # Combine Data with Apple Data
-    agg_data = agg_data.merge(ap_agg, how="left", left_on="Time", right_on="Apple Time")
-    # Combine Data with K5 Data
-    agg_data = agg_data.merge(k5_data, how="left", left_on="Time", right_on="K5 t")
+    k5_data = k5_data.groupby('K5 t').agg(np.mean)
+    # k5_data = k5_data.reset_index()
+    # print(k5_data)
 
-    if not g_data.empty:
-        agg_data = agg_data.drop(columns=['Actigraph Time', 'Garmin Time', 'Apple Time', 'K5 t'])
-    else :
-        agg_data = agg_data.drop(columns=['Actigraph Time', 'Apple Time', 'K5 t'])
+
+    # Combine Actiheart Data with wearables Data
+    agg_data = heart_data.merge(wearables[0], how="left", left_on="Time", right_on=devices[0] + " Time")
+    # combine with rest of wearables data
+    device = 1
+    while device < len(devices) :
+        agg_data = agg_data.merge(wearables[device], how="left", left_on="Time", right_on=devices[device] + " Time")
+        device += 1
+
+    # Combine Data with K5 Data
+    agg_data = agg_data.merge(k5_data, how="left", left_on="Time", right_on=k5_data.index)
+
+    # Only keep 1 time column. (the time column from the actiheart data
+    time_drop = []
+    for device in devices :
+        time_drop.append(device + " Time")
+    agg_data.drop(columns=time_drop, inplace=True)
+    agg_data.drop_duplicates(inplace=True)
 
     agg_data.to_csv(path + "/" + participant_num + "_agg.csv", index=False)
     return agg_data
