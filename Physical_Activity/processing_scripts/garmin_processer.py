@@ -15,7 +15,7 @@ from datetime import datetime
 from datetime import timedelta
 import subprocess
 import os
-from data_summary import calc_enmo, flag_hr
+from .data_summary import calc_enmo, flag_hr
 
 
 

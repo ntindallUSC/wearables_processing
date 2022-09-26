@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import os
-from data_summary import flag_hr
+from .data_summary import flag_hr
 
 
 # In[2]:

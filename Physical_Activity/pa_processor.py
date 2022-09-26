@@ -194,9 +194,9 @@ def process_participant(pa_path):
 
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
-root = tk.Tk()
-root.winfo_toplevel().title("Select csv files")
-root.withdraw()
-print("Select Participant to Process")
-participant = filedialog.askdirectory()  # Opens file system, prompting the user to select a folder
-process_participant(participant)
+# root = tk.Tk()
+# root.winfo_toplevel().title("Select csv files")
+# root.withdraw()
+# print("Select Participant to Process")
+# participant = filedialog.askdirectory()  # Opens file system, prompting the user to select a folder
+# process_participant(participant)

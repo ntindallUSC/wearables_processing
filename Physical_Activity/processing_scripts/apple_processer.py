@@ -2,7 +2,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import pandas as pd
 import os
-from data_summary import calc_enmo, flag_hr
+from .data_summary import calc_enmo, flag_hr
 
 
 
