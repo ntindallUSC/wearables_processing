@@ -62,11 +62,11 @@ def hr_helper_sum(data, device, axis):
     # flagged data
     flag = data
     # print(flag)
-    flag = flag.loc[(flag["HR Change"] == 1) | (flag["HR Low"] == 1), [time_name, "Heart Rate"]]
+    flag = flag.loc[(flag["HR Change"] > 0) | (flag["HR Low"] > 0) | (flag["HR High"] > 0), [time_name, "Heart Rate"]]
 
     # Unflagged Data
     not_flag = data
-    not_flag.loc[(not_flag["HR Change"] == 1) | (not_flag["HR Low"] == 1), ["Heart Rate"]] = np.nan
+    not_flag = not_flag.loc[(not_flag["HR Change"] == 0) | (not_flag["HR Low"] == 0) | (not_flag["HR High"] == 0), [time_name, "Heart Rate"]]
     not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
 
     axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= "Unflagged")
@@ -119,24 +119,23 @@ def summarize(device, path, data, start, end):
     if device == 0:
         data.rename(columns={data.columns[2]: "X", data.columns[3]: "Y", data.columns[4]: "Z"}, inplace=True)
     # First select the data specific to the trial
-    trial = data.loc[(data['Time'] >= start) & (data['Time'] <= end)]
 
     # Convert accel to numeric
-    trial.loc[:, 'X'] = pd.to_numeric(trial['X'])
-    trial.loc[:, 'Y'] = pd.to_numeric(trial['Y'])
-    trial.loc[:, 'Z'] = pd.to_numeric(trial['Z'])
+    data['X'] = pd.to_numeric(data['X'])
+    data['Y'] = pd.to_numeric(data['Y'])
+    data['Z'] = pd.to_numeric(data['Z'])
 
 
     if device >= 1:
-        trial.loc[:, 'Heart Rate'] = pd.to_numeric(trial['Heart Rate'])
+        data['Heart Rate'] = pd.to_numeric(data['Heart Rate'])
         summary.write(
-            trial.loc[:, ["Time", "X", "Y", "Z", "Heart Rate"]].describe(datetime_is_numeric=True).to_string())
+            data[["Time", "X", "Y", "Z", "Heart Rate"]].describe(datetime_is_numeric=True).to_string())
     else:
         summary.write(
-            trial.loc[:, ["Time", "X", "Y", "Z"]].describe(datetime_is_numeric=True).to_string())
+            data[["Time", "X", "Y", "Z"]].describe(datetime_is_numeric=True).to_string())
 
     # Grab accelerometer and heart rate data from device if it has it
-    accel = trial.loc[:, ["Time", "X", "Y", "Z"]].dropna(axis=0)
+    accel = data.loc[(data['Time'] >= start) & (data['Time'] <= end), ["Time", "X", "Y", "Z"]].dropna(axis=0)
     # Plot accelerometer data
     plt.figure(figsize=(25, 15))
     plt.plot(accel['Time'], accel['X'], label="X")
@@ -149,7 +148,7 @@ def summarize(device, path, data, start, end):
 
     if device >= 1:
         fig, ax = plt.subplots(figsize=(25, 15))
-        hr_helper_sum(trial, stats[device][0], ax)
+        hr_helper_sum(data, stats[device][0], ax)
         ax.legend()
         plt.savefig(path + "_hr.png")
         plt.close()
@@ -171,10 +170,12 @@ def hr_helper(data, device, axis):
 
     # flagged data
     flag = data
-    flag = flag.loc[(flag[device + " HR Change"] == 1) | (flag[device + " HR Low"] == 1), [device + " " + time_name, device + " Heart Rate"]]
+    flag = flag.loc[(flag[device + " HR Change"] > 0) | (flag[device + " HR Low"] > 0) | (flag[device + " HR High"] > 0),
+                    [device + " " + time_name, device + " Heart Rate"]]
     # Unflagged Data
     not_flag = data
-    not_flag.loc[(not_flag[device + " HR Change"] == 0) | (not_flag[device + " HR Low"] == 0), [device + " Heart Rate"]]
+    not_flag = not_flag.loc[(not_flag[device + " HR Change"] == 0) | (not_flag[device + " HR Low"] == 0) | (not_flag[device + " HR High"] == 0),
+                            [device + " " + time_name, device + " Heart Rate"]]
 
     axis.plot(not_flag[device + " " + time_name], not_flag[device + " Heart Rate"], color=p_color, label=device + " Unflagged")
     axis.scatter(flag[device + " " + time_name], flag[device + " Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= device + " Flagged")
@@ -193,11 +194,11 @@ def plot_hr(data, devices, start, end, activities, path, k5):
         if device == "Actiheart" :
             device_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
                                ["Actiheart ECG Time", "Actiheart Heart Rate", "Actiheart HR Low", "Actiheart HR High",
-                                "Actiheart HR Change"]].dropna(axis=0)
+                                "Actiheart HR Change"]]
         else :
             device_hr = data.loc[(data[device + ' Time'] >= start) & (data[device + ' Time'] <= end),
                                  [device + " Time", device + " Heart Rate", device + " HR High", device + " HR Low",
-                                  device + " HR Change"]].dropna(axis=0)
+                                  device + " HR Change"]]
         # Plot HR
         hr_helper(device_hr, device, ax_hr)
 
