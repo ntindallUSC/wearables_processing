@@ -46,15 +46,20 @@ def process_garmin(data_path, garmin_path, participant_num, part_age):
     # Convert the Garmin timestamp to the excel number format.
     # Date garmin was founded
     garmin_date = datetime(year=1989, month=12, day=31)
+
+    # The Garmin timestamp is the number of seconds that have passed since the founding of Garmin.
+    data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(lambda x: timedelta(seconds=x) + garmin_date)
+
     # Changes depending on Daylight savings
-    daylight = input("Is it currently daylight savings time?")
-    if daylight.lower() == 'yes':
+    date = data.iloc[0,0]
+    if datetime(year=2022, month=3, day=13, hour=2) <= date <= datetime(year=2022, month=11, day=6, hour=2) or \
+            datetime(year=2023, month=3, day=12, hour=2) <= date <= datetime(year=2023, month=11, day=5, hour=2) or \
+            datetime(year=2024, month=3, day=10, hour=2) <= date <= datetime(year=2024, month=11, day=3, hour=2):
         offset = timedelta(hours=4)
     else:
         offset = timedelta(hours=5)
 
-    # The Garmin timestamp is the number of seconds that have passed since the founding of Garmin.
-    data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(lambda x: timedelta(seconds=x) + garmin_date - offset)
+    data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(lambda x: x - offset)
 
     # Here I create a smaller dataframe with only the readings that we're interested in
     xyz_df = data.loc[:, ['record.timestamp[s]', 'record.developer.0.SensorAccelerationX_HD[mgn]', 'record.developer.0.SensorAccelerationY_HD[mgn]', 'record.developer.0.SensorAccelerationZ_HD[mgn]', 'record.heart_rate[bpm]']]
@@ -93,7 +98,7 @@ def process_garmin(data_path, garmin_path, participant_num, part_age):
             unpack_xyz[counter: counter + num_y, 3] = readings[2].split('|')
             unpack_xyz[counter: counter + num_z, 4] = readings[3].split('|')
             # Add the time to each row
-            unpack_xyz[counter: counter + num_z, 0] = readings[0].strftime("%Y-%m-%d %H:%M:%S")
+            unpack_xyz[counter: counter + num_z, 0] = readings[0]
             # Add assign a number to each acceleration reading numbering 1 to the amount of readings detected.
             unpack_xyz[counter: counter + num_z, 1] = accel_index[0: num_z]
 
@@ -102,7 +107,8 @@ def process_garmin(data_path, garmin_path, participant_num, part_age):
             counter += num_x
             total += num_x
 
-    final_df = pd.DataFrame(unpack_xyz[0:total], columns = ['Time', 'Reading #', 'X', 'Y', 'Z', 'Heart Rate'])
+    final_df = pd.DataFrame(unpack_xyz[0:total], columns=['Time', 'Reading #', 'X', 'Y', 'Z', 'Heart Rate'])
+    final_df['Time'] = final_df['Time'].apply(lambda x: x.strftime("%Y-%m-%d %H:%M:%S"))
     final_df["Heart Rate"] = final_df["Heart Rate"].replace(['0', 0], np.nan)
 
     # Output data
