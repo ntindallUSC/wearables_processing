@@ -174,113 +174,93 @@ def hr_helper(data, device, axis):
     flag = flag.loc[(flag[device + " HR Change"] == 1) | (flag[device + " HR Low"] == 1), [device + " " + time_name, device + " Heart Rate"]]
     # Unflagged Data
     not_flag = data
-    not_flag.loc[(not_flag[device + " HR Change"] == 1) | (not_flag[device + " HR Low"] == 1), [device + " Heart Rate"]] = np.nan
+    not_flag.loc[(not_flag[device + " HR Change"] == 0) | (not_flag[device + " HR Low"] == 0), [device + " Heart Rate"]]
 
     axis.plot(not_flag[device + " " + time_name], not_flag[device + " Heart Rate"], color=p_color, label=device + " Unflagged")
     axis.scatter(flag[device + " " + time_name], flag[device + " Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= device + " Flagged")
 
-# This function plots the heart rates of Garmin, Apple Watches, and Actiheart vs Time all on the same plot.
+# This function plots the heart rates of the wearables devices and  Actiheart vs Time all on the same plot.
 # This function takes as input:
 # The aligned dataframe, produced from pa_aligner.py
+# A list of wearable devices
 # The start and end time of the trial
 # and a path to store the plot.
-def plot_hr(data, start, end, activities, path, k5):
-    # Grab the actiheart data
-    acti_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
-                       ["Actiheart ECG Time", "Actiheart Heart Rate", "Actiheart HR Low", "Actiheart HR High",
-                        "Actiheart HR Change"]].dropna(axis=0)
-    # Grab the apple data
-    apple_hr = data.loc[(data['Apple Time'] >= start) & (data['Apple Time'] <= end),
-                        ["Apple Time", "Apple Heart Rate", "Apple HR High", "Apple HR Low", "Apple HR Change"]].dropna(axis=0)
-    # Grab the Garmin data
-    if "Garmin Time" in data.columns:
-        garmin_hr = data.loc[(data['Garmin Time'] >= start) & (data['Garmin Time'] <= end),
-                             ["Garmin Time", "Garmin Heart Rate", "Garmin HR High", "Garmin HR Low", "Garmin HR Change"]].dropna(axis=0)
-    else:
-        garmin_hr = pd.DataFrame()
+def plot_hr(data, devices, start, end, activities, path, k5):
+    # Intialize plot used to plot heart rate
+    fig_hr, ax_hr = plt.subplots(figsize=(25, 15))
+    # Iterate through list of devices:
+    for device in devices :
+        if device == "Actiheart" :
+            device_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
+                               ["Actiheart ECG Time", "Actiheart Heart Rate", "Actiheart HR Low", "Actiheart HR High",
+                                "Actiheart HR Change"]].dropna(axis=0)
+        else :
+            device_hr = data.loc[(data[device + ' Time'] >= start) & (data[device + ' Time'] <= end),
+                                 [device + " Time", device + " Heart Rate", device + " HR High", device + " HR Low",
+                                  device + " HR Change"]].dropna(axis=0)
+        # Plot HR
+        hr_helper(device_hr, device, ax_hr)
 
-    k5_data = data.loc[(data['K5 t'] >= start) & (data['K5 t'] <= end),
-                       ["K5 t", "K5 VO2/Kg"]].dropna(axis=0)
-
-    # Create figure
-    fig, ax = plt.subplots(figsize=(25, 15))
-    # Plot Actigraph Data
-    hr_helper(acti_hr, "Actiheart", ax)
-    # Plot Apple Data
-    hr_helper(apple_hr, "Apple", ax)
-    # Plot Garmin Data
-    if garmin_hr.shape[0] > 0:
-        hr_helper(garmin_hr, "Garmin", ax)
-    ax.legend(fontsize="xx-large")
-    ax.set(xlim=([start, end]), ylim=[60, 220])
+    # Set axes for HR fig
+    ax_hr.legend(fontsize="xx-large")
+    ax_hr.set(xlim=([start, end]), ylim=[60, 220])
     for key in activities:
-        ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+        ax_hr.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
                     xytext=(mdates.date2num(activities[key][1]), 55), textcoords='data', annotation_clip=False,
                     horizontalalignment='center')
+    # Save figure
+    fig_hr.savefig(path + "_hr_fig.png")
 
-    fig.savefig(path + "_hr_fig.png")
-    plt.close(fig)
+    # Read in k5 data
+    k5_data = data.loc[(data['K5 t'] >= start) & (data['K5 t'] <= end), ["K5 t", "K5 VO2/Kg"]].dropna(axis=0)
+    # Create new axis for data
+    ax_o2kg = ax_hr.twinx()
+    # Plot K5 VO2/KG
+    ax_o2kg.plot(k5_data['K5 t'], k5_data['K5 VO2/Kg'], label="V02/kg", color='red')
+    fig_hr.savefig(k5)
+    plt.close('all')
 
-    # Now I will plot a figure with 2 Y-axes, the first displaying V02/kg and the second displaying heart rate
-    fig, ax1 = plt.subplots(figsize=(25, 15))
-    ax1.plot(k5_data['K5 t'], k5_data['K5 VO2/Kg'], label="V02/kg")
-    ax1.legend(fontsize="xx-large")
-    ax1.set(xlim=([start, end]), ylim=[0, 100])
-    ax2 = ax1.twinx()
-    ax2.plot(acti_hr['Actiheart ECG Time'], acti_hr['Actiheart Heart Rate'], label="ACTI Heart")
-    ax2.plot(apple_hr['Apple Time'], apple_hr['Apple Heart Rate'], label="Apple")
-    if garmin_hr.shape[0] > 0:
-        ax2.plot(garmin_hr['Garmin Time'], garmin_hr['Garmin Heart Rate'], label="Garmin")
-    # fig.tight_layout()
-    for key in activities:
-        ax1.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
-                     xytext=(mdates.date2num(activities[key][1]), -4), textcoords='data', annotation_clip=False,
-                     horizontalalignment='center')
-
-    fig.savefig(k5)
-    plt.close(fig)
 
 #This function plots the ENMO and MAD for each wearable device.
-def plot_accel(data, start, end, activities, path):
-    # Select
-    acti_seconds = data.loc[:, ["Time", "Actigraph Max ENMO", "Actigraph MAD"]].dropna()
-    apple_seconds = data.loc[:, ["Time", "Apple Max ENMO", "Apple MAD"]].dropna()
-    if "Garmin Max ENMO" in data.columns:
-        garmin_seconds = data.loc[:, ["Time", "Garmin Max ENMO", "Garmin MAD"]].dropna()
-    else:
-        garmin_seconds= pd.DataFrame()
-
-    # Plot each accelerometer vs time
+def plot_accel(data, devices, start, end, activities, path):
+    device_color = {"Actigraph": "blue", "Apple": "orange", "Garmin": "green"}
+    # Initialize 2 plots. One for ENMO and one for MAD.
     fig, ax = plt.subplots(figsize=(25, 15))
-    ax.plot(acti_seconds["Time"], acti_seconds['Actigraph Max ENMO'], label='Actigraph')
-    ax.plot(apple_seconds["Time"], apple_seconds['Apple Max ENMO'], label="Apple")
-    if not garmin_seconds.empty:
-        ax.plot(garmin_seconds["Time"], garmin_seconds['Garmin Max ENMO'], label='Garmin')
+    fig2, ax2 = plt.subplots(figsize=(25, 15))
+    # Select Time, ENMO and MAD for each wearable device:
+    for device in devices:
+        # Select data from dataframe
+        dev_seconds = data.loc[:, ["Time", device + " Max ENMO", device + " MAD"]].dropna()
+
+        # Plot each Max Enmo of device
+        ax.plot(dev_seconds["Time"], dev_seconds[device + ' Max ENMO'], label=device, color=device_color[device])
+
+        # Plot MAD values for each device
+        ax2.plot(dev_seconds["Time"], dev_seconds[device + ' MAD'], label=device, color=device_color[device])
+
+    # Set ax for ENMO fig
     ax.legend(fontsize="xx-large")
     ax.set(xlim=([start, end]))
+    # Add activity name
     for key in activities:
         ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
                     xytext=(mdates.date2num(activities[key][1]), -4), textcoords='data', annotation_clip=False,
                     horizontalalignment='center')
 
-    fig.savefig(path + "_ENMO_fig.png")
-    plt.close(fig)
-
-    # Plot each accelerometer vs time
-    fig, ax = plt.subplots(figsize=(25, 15))
-    ax.plot(acti_seconds["Time"], acti_seconds['Actigraph MAD'], label='Actigraph')
-    ax.plot(apple_seconds["Time"], apple_seconds['Apple MAD'], label="Apple")
-    if garmin_seconds.shape[0] > 0:
-        ax.plot(garmin_seconds["Time"], garmin_seconds['Garmin MAD'], label='Garmin')
-    ax.legend(fontsize="xx-large")
-    ax.set(xlim=([start, end]))
+    # Set ax for MAD fig
+    ax2.legend(fontsize="xx-large")
+    ax2.set(xlim=([start, end]))
+    # Add activity name labels
     for key in activities:
-        ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
-                    xytext=(mdates.date2num(activities[key][1]), -3), textcoords='data', annotation_clip=False,
-                    horizontalalignment='center')
+        ax2.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                     xytext=(mdates.date2num(activities[key][1]), -3), textcoords='data', annotation_clip=False,
+                     horizontalalignment='center')
 
-    fig.savefig(path + "_MAD_fig.png")
-    plt.close(fig)
+    # Save both figures
+    fig.savefig(path + "_ENMO_fig.png")
+    fig2.savefig(path + "_MAD_fig.png")
+    # Close both figures
+    plt.close('all')
 
 # Takes as input a dataframe containing 3 columns, corresponding to the axis of an accelerometer for a device.
 def calc_enmo(some_data):

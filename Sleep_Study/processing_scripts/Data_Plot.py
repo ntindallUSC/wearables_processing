@@ -81,34 +81,17 @@ def hr_helper(data, device, axis, kubios):
     else:
         time_name = "Time"
         p_color = "green"
-    if kubios is False :
-        # flagged data
-        flag = data
-        # print(flag)
-        flag = flag.loc[(flag["HR Change"] == 1) | (flag["HR Low"] == 1), [time_name, "Heart Rate"]]
 
-        # Unflagged Data
-        not_flag = data
-        not_flag.loc[(not_flag["HR Change"] == 1) | (not_flag["HR Low"] == 1), ["Heart Rate"]] = np.nan
-        not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
+    # flagged data
+    flag = data.loc[(data["HR Change"] == 1) | (data["HR Low"] == 1) | (data["HR High"] == 1), [time_name, "Heart Rate"]]
 
-        axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= device + " Unflagged")
-        axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= device + " Flagged")
-    else :
-        time_name = device + " " + time_name
-        # flagged data
-        flag = data
-        # print(flag)
-        flag = flag.loc[(flag[device + " HR Change"] == 1) | (flag[device + " HR Low"] == 1), [time_name, device + " Heart Rate"]]
+    # Unflagged Data
+    not_flag = data.loc[(data["HR Change"] == 0) | (data["HR Low"] == 0)| (data["HR High"] == 0), ["Heart Rate"]]
+    not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
 
-        # Unflagged Data
-        not_flag = data
-        not_flag.loc[(not_flag[device + " HR Change"] == 1) | (not_flag[device + " HR Low"] == 1), [device + " Heart Rate"]] = np.nan
-        not_flag = not_flag[[time_name, device + " Heart Rate"]].dropna()
+    axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= device + " Unflagged")
+    axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= device + " Flagged")
 
-        axis.plot(not_flag[time_name], not_flag[device + " Heart Rate"], color=p_color, label=device + " Unflagged")
-        axis.scatter(flag[time_name], flag[device + " Heart Rate"], color=p_color, sizes=[100], edgecolor='k',
-                     label=device + " Flagged")
 
 # This function plots the heart rates of Garmin, Apple Watches, and Actiheart vs Time all on the same plot.
 # This function takes as input:
