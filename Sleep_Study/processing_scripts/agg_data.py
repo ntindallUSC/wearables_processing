@@ -77,12 +77,13 @@ def aggregate_accel(data, device):
     # Initialize function to calculate rms
     rms = lambda x: np.sqrt(np.mean(x ** 2))
     # Specify what function to use on each column:
-    agg_functions = {device + " X": [rms], device + " Y": [rms], device + " Z": [rms], device + " Magnitude": [np.max],
-                     device + " ENMO": [np.max]}
+    agg_functions = {device + " X": [rms, np.mean], device + " Y": [rms, np.mean], device + " Z": [rms, np.mean],
+                     device + " Magnitude": [np.max, np.mean], device + " ENMO": [np.max, np.mean]}
     aggregated_data = data.groupby(device + " Time").agg(agg_functions)
     aggregated_data = aggregated_data.reset_index()
-    aggregated_data.columns = [device + " Time", device + " RMS X", device + " RMS Y", device + " RMS Z",
-                               device + " Max Magnitude", device + " Max ENMO"]
+    aggregated_data.columns = [device + " Time", device + " RMS X", device + " Mean X", device + " RMS Y",
+                               device + " Mean Y", device + " RMS Z", device + " Mean Z", device + " Max Magnitude",
+                               device + " Mean Magnitude", device + " Max ENMO", device + " Mean ENMO"]
     return aggregated_data
 
 
