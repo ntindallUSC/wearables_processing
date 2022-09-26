@@ -20,7 +20,7 @@ from processing_scripts.data_summary import summarize, plot_hr, plot_accel, calc
 from processing_scripts.aggregate import agg_to_sec
 
 
-def process_participant(pa_path) :
+def process_participant(pa_path):
     # This line gets the path of the directory
     particpant_num = pa_path[-4:]
     print(f'Participant Number {particpant_num}')
@@ -56,7 +56,6 @@ def process_participant(pa_path) :
     trial_end = activities[str(len(activities))][2]
     print(f"Trial Start: {trial_start} \nTrial End: {trial_end}")
 
-
     # APPLE WATCH Processing
     # First get the path of the Apple Watch Data files
     apple_path = pa_path + '/Apple Data'
@@ -70,7 +69,7 @@ def process_participant(pa_path) :
         hr_files = glob.glob(apple_path + '/*_hr*.csv')
         # print(f"Cardiogram Files :\n{hr_files}")
         # Check to make sure the raw data files exist
-        if len(accel_files) != 0 and len(hr_files) != 0 :
+        if len(accel_files) != 0 and len(hr_files) != 0:
             print("Begin Apple Watch Processing")
             apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num, participant_age)
             devices.append("Apple")
@@ -78,7 +77,7 @@ def process_participant(pa_path) :
             output_path = apple_path + "/Processed Data/" + particpant_num
             summarize(2, output_path, apple_data, trial_start, trial_end)
             print("Finished")
-        else :
+        else:
             # If there isn't data initialize apple_data as an empty dataframe. The alignment script will ignore it
             apple_data = pd.DataFrame()
 
@@ -98,7 +97,7 @@ def process_participant(pa_path) :
         # Get path of all fit files
         fit_files = glob.glob(garmin_path + '/*.fit')
         # Checks that there are fit files
-        if len(fit_files) != 0 :
+        if len(fit_files) != 0:
             # print(f"Fit Files: \n{fit_files}")
             # Convert fit files to csv
             fit_to_csv(fit_files, garmin_path, particpant_num)
@@ -112,9 +111,8 @@ def process_participant(pa_path) :
             output_path = garmin_path + "/Processed Data/" + particpant_num
             summarize(3, output_path, garmin_data, trial_start, trial_end)
             print("FINISHED")
-        else :
+        else:
             garmin_data = pd.DataFrame()
-
 
     """
     ACTIHEART PROCESSING
@@ -141,7 +139,8 @@ def process_participant(pa_path) :
         # print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
         # Process the actiheart data
         print("BEGIN ACTIHEART PROCESSING")
-        actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num, participant_age)
+        actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num,
+                                           participant_age)
         print("Writing Actiheart Summary")
         output_path = actiheart_path + "/Processed Data/" + particpant_num
         summarize(1, output_path, actiheart_data, trial_start, trial_end)
@@ -165,9 +164,10 @@ def process_participant(pa_path) :
                                      date_parser=acti_date_parser)
         sec_frac = actigraph_data["Timestamp"].apply(lambda x: x.microsecond)
         actigraph_data.insert(1, 'Second Fraction', sec_frac)
-        actigraph_data = actigraph_data.rename(columns={"Timestamp": "Time", "Accelerometer X": "X", "Accelerometer Y": "Y", "Accelerometer Z": "Z"})
+        actigraph_data = actigraph_data.rename(
+            columns={"Timestamp": "Time", "Accelerometer X": "X", "Accelerometer Y": "Y", "Accelerometer Z": "Z"})
         # print(actigraph_data)
-        mag, enmo = calc_enmo(actigraph_data.loc[:,['X', 'Y', 'Z']])
+        mag, enmo = calc_enmo(actigraph_data.loc[:, ['X', 'Y', 'Z']])
         actigraph_data.insert(5, "Magnitude", mag)
         actigraph_data.insert(6, "ENMO", enmo)
 
@@ -176,7 +176,6 @@ def process_participant(pa_path) :
         if os.path.isdir(output_path[:-5]) is False:
             os.mkdir(output_path[:-5])
         summarize(0, output_path, actigraph_data, trial_start, trial_end)
-
 
     # Align Data
     print("BEGIN ALIGNMENT")
@@ -192,6 +191,7 @@ def process_participant(pa_path) :
     print("Plotting Accelerometers")
     plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
     print("Finished")
+
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
 root = tk.Tk()
