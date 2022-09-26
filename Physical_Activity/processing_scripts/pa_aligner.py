@@ -60,7 +60,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
 
     # apple
     apple_iter = 0
-    while apple_np[apple_iter, 0] < t_start:
+    while apple_rows > 0 and apple_np[apple_iter, 0] < t_start:
         apple_iter += 1
 
     # actiheart
@@ -166,7 +166,8 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     # Remove microseconds from all timestamps
     out_df['Actiheart ECG Time'] = out_df['Actiheart ECG Time'].apply(lambda x: micro_remove(x))
     out_df['Actigraph Time'] = out_df['Actigraph Time'].apply(lambda x: micro_remove(x))
-    out_df['Apple Time'] = out_df['Apple Time'].apply(lambda x: micro_remove(x))
+    if "Apple Time" in out_df.columns:
+        out_df['Apple Time'] = out_df['Apple Time'].apply(lambda x: micro_remove(x))
 
     # Move activity label to the first column
     activity = out_df['K5 Activity']
