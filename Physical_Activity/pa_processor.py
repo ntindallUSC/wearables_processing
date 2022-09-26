@@ -27,11 +27,13 @@ def process_participant(pa_path) :
     tracking_sheet = pd.read_excel("V:\\R01 - W4K\\3_PA protocol\\PA master tracking.xlsx")
     participant_age = tracking_sheet.loc[tracking_sheet["WDID"] == float(particpant_num), "AGE AT ENROLLMENT"]
     participant_age = math.floor(participant_age.iloc[0])
+    # Initialize a list of the wearables as an empty list
+    devices = []
     # Now that the path of the director I need to read in and process the following devices:
 
     """
     K5 PROCESSING
-    The K5 can output multiple files all formatted the same way. 
+    The K5 can output multiple files all formatted the same way.
     For the K5 processing the files must be:
     1. Read in
     2. Timestamped
@@ -67,12 +69,18 @@ def process_participant(pa_path) :
         # Get list of heart rate files
         hr_files = glob.glob(apple_path + '/*_hr*.csv')
         # print(f"Cardiogram Files :\n{hr_files}")
-        print("Begin Apple Watch Processing")
-        apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num, participant_age)
-        print("Writing Apple Summary")
-        output_path = apple_path + "/Processed Data/" + particpant_num
-        summarize(2, output_path, apple_data, trial_start, trial_end)
-        print("Finished")
+        # Check to make sure the raw data files exist
+        if len(accel_files) != 0 and len(hr_files) != 0 :
+            print("Begin Apple Watch Processing")
+            apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num, participant_age)
+            devices.append("Apple")
+            print("Writing Apple Summary")
+            output_path = apple_path + "/Processed Data/" + particpant_num
+            summarize(2, output_path, apple_data, trial_start, trial_end)
+            print("Finished")
+        else :
+            # If there isn't data initialize apple_data as an empty dataframe. The alignment script will ignore it
+            apple_data = pd.DataFrame()
 
     """
     GARMIN PROCESSING
@@ -89,18 +97,23 @@ def process_participant(pa_path) :
     if os.path.isdir(garmin_path):
         # Get path of all fit files
         fit_files = glob.glob(garmin_path + '/*.fit')
-        # print(f"Fit Files: \n{fit_files}")
-        # Convert fit files to csv
-        fit_to_csv(fit_files, garmin_path, particpant_num)
-        # Get paths of csv
-        csv_files = glob.glob(garmin_path + '/*data.csv')
-        # print(f"CSVs: \n{csv_files}")
-        print("BEGIN GARMIN PROCESSING")
-        garmin_data = process_garmin(csv_files, garmin_path, particpant_num, participant_age)
-        print("Writing Garmin Summary")
-        output_path = garmin_path + "/Processed Data/" + particpant_num
-        summarize(3, output_path, garmin_data, trial_start, trial_end)
-        print("FINISHED")
+        # Checks that there are fit files
+        if len(fit_files) != 0 :
+            # print(f"Fit Files: \n{fit_files}")
+            # Convert fit files to csv
+            fit_to_csv(fit_files, garmin_path, particpant_num)
+            # Get paths of csv
+            csv_files = glob.glob(garmin_path + '/*data.csv')
+            # print(f"CSVs: \n{csv_files}")
+            print("BEGIN GARMIN PROCESSING")
+            garmin_data = process_garmin(csv_files, garmin_path, particpant_num, participant_age)
+            devices.append("Garmin")
+            print("Writing Garmin Summary")
+            output_path = garmin_path + "/Processed Data/" + particpant_num
+            summarize(3, output_path, garmin_data, trial_start, trial_end)
+            print("FINISHED")
+        else :
+            garmin_data = pd.DataFrame()
 
 
     """
@@ -171,13 +184,13 @@ def process_participant(pa_path) :
     aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num,
                        activities)
     print("BEGIN SECOND AGGREGATION")
-    agg_df = agg_to_sec(aligned_df, particpant_num, pa_path)
+    agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, particpant_num, pa_path)
     print("Plotting HR")
     k5_path = k5_path + '/Processed Data/' + particpant_num + "_v02.png"
     hr_path = pa_path + "/" + particpant_num
-    plot_hr(aligned_df, trial_start, trial_end, activities, hr_path, k5_path)
+    plot_hr(aligned_df, ["Actiheart"] + devices, trial_start, trial_end, activities, hr_path, k5_path)
     print("Plotting Accelerometers")
-    plot_accel(agg_df, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+    plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
     print("Finished")
 
 # This is used to intialize the tkinter interface where the user selects the PA Participant Folder
