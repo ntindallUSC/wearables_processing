@@ -326,7 +326,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
 
     fig, ax = plt.subplots(figsize=(25, 15))
     # Need to drop the readings without a heart rate before plotting
-    hr_helper(final_df, "Apple", ax)
+    hr_helper(final_df, "Apple", ax, False)
     ax.set(xlim=[s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_hr.png")
     plt.clf()
