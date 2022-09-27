@@ -33,11 +33,7 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
     # To convert the time stamp to Eastern Standard Time
     garmin_found = datetime(year=1989, month=12, day=31)
     # The US is awesome and follows daylight savings time, so in order to convert to EST we need to ask the user
-    # if at the time of recording the data, if daylight savings was active.
-    daylight = input("Is it currently daylight savings time?")
-    offset = timedelta(hours=5)
-    if 'yes' == daylight.lower():
-        offset = timedelta(hours=4)
+
 
     for file in csv_data:
         # Checks if the file being read in is the first file
@@ -47,8 +43,8 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
             # read in next file
             temp = pd.read_csv(file)
             # Find the gap start and end, then convert to time and store in gaps list
-            gap_start = timedelta(seconds=int(data.iloc[-1, 0])) + garmin_found - offset
-            gap_end = timedelta(seconds=int(temp.iloc[0, 0])) + garmin_found - offset
+            gap_start = timedelta(seconds=int(data.iloc[-1, 0])) + garmin_found
+            gap_end = timedelta(seconds=int(temp.iloc[0, 0])) + garmin_found
             gaps.append(f"Gap found between {gap_start} and {gap_end}\n")
             # combine two files
             data = pd.concat([data, temp], ignore_index=True)
@@ -57,11 +53,18 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
     # In[4]:
     # Convert the Garmin timestamp to datetime.
     # The Garmin timestamp is the number of seconds that have passed since the founding of Garmin.
-    data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(
-        lambda x: timedelta(seconds=x) + garmin_found - offset)
+    data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(lambda x: timedelta(seconds=x) + garmin_found)
 
-    # In[5]:
+    # if at the time of recording the data, if daylight savings was active.
+    if datetime(year=2022, month=3, day=13) <= data.iloc[0,0] <= datetime(year=2022, month=12, day=6) or \
+            datetime(year=2023, month=3, day=13) <= data.iloc[0,0] <= datetime(year=2023, month=11, day=5) or \
+            datetime(year=2024, month=3, day=10) <= data.iloc[0,0] <= datetime(year=2024, month=11, day=3):
+        offset = timedelta(hours=4)
+    else :
+        offset = timedelta(hours=5)
 
+        # In[5]:
+    data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(lambda x: x - offset)
     # Here I create a smaller dataframe with only the readings that we're interested in
     xyz_df = data.loc[:, ['record.timestamp[s]', 'record.developer.0.SensorAccelerationX_HD[mgn]',
                           'record.developer.0.SensorAccelerationY_HD[mgn]',
@@ -118,7 +121,7 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
         if pd.isna(readings[1]) or pd.isna(readings[2]) or pd.isna(readings[3]):
             unpack_xyz[counter, 0] = readings[0]
             unpack_xyz[counter, 1] = 1
-            unpack_xyz[counter, 2:5] = np.nan()
+            unpack_xyz[counter, 2:5] = np.nan
             unpack_xyz[counter, 5] = readings[4]
 
             counter += 1
@@ -188,7 +191,7 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
     plt.clf()
 
     fig, ax = plt.subplots(figsize=(25, 15))
-    hr_helper(final_df, "Apple", ax)
+    hr_helper(final_df, "Garmin", ax, False)
     ax.set(xlim=[sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
     plt.clf()
