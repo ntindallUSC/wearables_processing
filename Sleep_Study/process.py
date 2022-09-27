@@ -37,6 +37,7 @@ def process_participant(file_path):
     tracking = pd.read_excel("V:\\R01 - W4K\\1_Sleep Study\\Sleep study tracking.xlsx")
     participant_age = tracking.loc[tracking["Child ID"] == float(participant_num), "age at enrollment"]
     participant_age = math.floor(participant_age.iloc[0])
+    participant_age = 8
 
     # print(f"Processing Participant Number: \n{participant_num}")
     # A TEst
@@ -143,10 +144,6 @@ def process_participant(file_path):
 
         kubios_path = psg_path + "/Kubios Output/"
         if os.path.exists(kubios_path + participant_num + "_medium_hrv.csv"):
-            agg_psg = pd.read_csv(participant_path + "/" + participant_num + "_data_agg.csv", parse_dates=['Time'],
-                                  infer_datetime_format=True)
-            agg_psg["Apple Time"] = agg_psg["Apple Time"].apply(lambda x: pd.to_datetime(x))
-            agg_psg["Garmin Time"] = agg_psg["Garmin Time"].apply(lambda x: pd.to_datetime(x))
             # Check if the Kubios Heart rate Data exists: If it does process it:
             # Get the paths of the 2 different kubios outputs
             medium_path = kubios_path + participant_num + "_medium_hrv.csv"
@@ -158,18 +155,20 @@ def process_participant(file_path):
             # Merge two data sets
             kubios_hr = kubios_med.merge(kubios_none, how="inner", on='Time')
             agg_psg = agg_psg.merge(kubios_hr, how="left", on="Time")
-            plot_hr(agg_psg, "Apple", participant_path, participant_num)
-            plot_hr(agg_psg, "Garmin", participant_path, participant_num)
+            if "Apple Time" in agg_psg.columns :
+                plot_hr(agg_psg, "Apple", participant_path, participant_num)
+            if "Garmin Time" in agg_psg.columns :
+                plot_hr(agg_psg, "Garmin", participant_path, participant_num)
         agg_psg.to_csv(participant_path + "/" + participant_num + "_data_agg.csv", index=False)
 
 
     # ------------------------------------------------------------------------------------------------------------------
 
-root = tk.Tk()
-root.winfo_toplevel().title("Select csv files")
-root.withdraw()
-
-# Start of dialogue
-print("Please select the folder of the participant you wish to process")
-path = filedialog.askdirectory()
-process_participant(path)
+# root = tk.Tk()
+# root.winfo_toplevel().title("Select csv files")
+# root.withdraw()
+#
+# # Start of dialogue
+# print("Please select the folder of the participant you wish to process")
+# path = filedialog.askdirectory()
+# process_participant(path)
