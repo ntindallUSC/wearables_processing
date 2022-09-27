@@ -44,7 +44,7 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
 
     # apple
     apple_iter = 0
-    while apple_np[apple_iter, 0] < t_start:
+    while apple_rows > 0 and apple_np[apple_iter, 0] < t_start:
         apple_iter += 1
 
     # Initialize out_np (The aligned output array)
