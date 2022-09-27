@@ -123,6 +123,7 @@ def agg_to_sec(data, participant_num, path, devices):
         if device != "Actigraph":
             hr = [device + " Time", device + " Heart Rate", device + " HR Low", device + " HR High", device + " HR Change"]
             dev_hr = dev_data.loc[:, hr].dropna()
+            dev_hr = dev_hr.groupby(device + " Time").agg(np.mean).reset_index()
             dev_agg = dev_agg.merge(dev_hr, how='left', on=device + " Time")
         agg_devices.append(dev_agg)
 
