@@ -64,7 +64,7 @@ def flag_hr(data, device, age):
     data['Average BPM Change'] = data["Heart Rate"] - data["Average BPM Change"]
     # Make all the values Non-Negative
     data['Average BPM Change'] = data['Average BPM Change'].apply(abs)
-    # If the value is greater than or equal to 5, flag it
+    # If the value is greater than or equal to 10, flag it
     data.loc[data["Average BPM Change"] >= 10, "HR Change"] = 1
     # Drop the subtracted columns
     data.drop(columns=["Average BPM Change"], inplace=True)
@@ -83,10 +83,10 @@ def hr_helper(data, device, axis, kubios):
         p_color = "green"
 
     # flagged data
-    flag = data.loc[(data["HR Change"] == 1) | (data["HR Low"] == 1) | (data["HR High"] == 1), [time_name, "Heart Rate"]]
+    flag = data.loc[(data["HR Change"] > 0) | (data["HR Low"] > 0) | (data["HR High"] > 0), [time_name, "Heart Rate"]]
 
     # Unflagged Data
-    not_flag = data.loc[(data["HR Change"] == 0) | (data["HR Low"] == 0)| (data["HR High"] == 0), ["Heart Rate"]]
+    not_flag = data.loc[(data["HR Change"] == 0) | (data["HR Low"] == 0)| (data["HR High"] == 0), [time_name, "Heart Rate"]]
     not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
 
     axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= device + " Unflagged")
