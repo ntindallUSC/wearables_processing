@@ -14,8 +14,8 @@ from datetime import datetime
 from datetime import timedelta
 import pandas as pd
 import matplotlib.pyplot as plt
-from Sleep_Study.processing_scripts.agg_data import calc_enmo
-from Sleep_Study.processing_scripts.Data_Plot import flag_hr, hr_helper
+from .agg_data import calc_enmo
+from .Data_Plot import flag_hr, hr_helper
 
 
 # ## First you need to load the data into the script
