@@ -20,11 +20,11 @@ from processing_scripts.data_summary import summarize, plot_hr, plot_accel, calc
 from processing_scripts.aggregate import agg_to_sec
 
 
-def process_participant(pa_path):
+def process_participant(pa_path, v_drive):
     # This line gets the path of the directory
     particpant_num = pa_path[-4:]
     print(f'Participant Number {particpant_num}')
-    tracking_sheet = pd.read_excel("V:\\R01 - W4K\\3_PA protocol\\PA master tracking.xlsx")
+    tracking_sheet = pd.read_excel(v_drive + "PA master tracking.xlsx")
     participant_age = tracking_sheet.loc[tracking_sheet["WDID"] == float(particpant_num), "AGE AT ENROLLMENT"]
     participant_age = math.floor(participant_age.iloc[0])
     # Initialize a list of the wearables as an empty list
@@ -199,4 +199,7 @@ def process_participant(pa_path):
 # root.withdraw()
 # print("Select Participant to Process")
 # participant = filedialog.askdirectory()  # Opens file system, prompting the user to select a folder
-# process_participant(participant)
+# parent_dir = "V:\\R01 - W4K\\3_PA protocol\\"
+# if not os.path.isdir(parent_dir) :
+#     parent_dir = "V:\\ACOI\\R01 - W4K\\3_PA protocol\\"
+# process_participant(participant, parent_dir)
