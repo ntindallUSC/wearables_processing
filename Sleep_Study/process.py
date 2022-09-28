@@ -25,7 +25,7 @@ from processing_scripts.PSG_Processor import psg_process
 from processing_scripts.Kubios_Processor import read_kubios
 
 
-def process_participant(file_path):
+def process_participant(file_path, v_drive):
     # ---------------------------------------------------------------------------------------------------------------------
     # This first section of code prompts the user to select the participant folder. This folder will house all of the raw
     # data from the sleep study.
@@ -34,7 +34,7 @@ def process_participant(file_path):
     devices = []
     # Determine the Participant Number
     participant_num = participant_path[-10:]
-    tracking = pd.read_excel("V:\\R01 - W4K\\1_Sleep Study\\Sleep study tracking.xlsx")
+    tracking = pd.read_excel(v_drive + "\\Sleep study tracking.xlsx")
     participant_age = tracking.loc[tracking["Child ID"] == float(participant_num), "age at enrollment"]
     participant_age = math.floor(participant_age.iloc[0])
     participant_age = 8
@@ -171,4 +171,7 @@ def process_participant(file_path):
 # # Start of dialogue
 # print("Please select the folder of the participant you wish to process")
 # path = filedialog.askdirectory()
-# process_participant(path)
+# parent_dir = "V:\\R01 - W4K\\1_Sleep Study\\"
+# if not os.path.isdir(parent_dir):
+#     parent_dir = "V:\\ACOI\\R01 - W4K\\1_Sleep Study\\"
+# process_participant(path, parent_dir)
