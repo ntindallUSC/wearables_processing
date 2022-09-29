@@ -22,7 +22,7 @@ from .data_summary import calc_enmo
 # Function that replaces nan activities with label
 
 
-def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num, activities):
+def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num, activities, flags):
     # # Align Data
     # Now that the data has been read in the next step is to align the all of the data. Here are the steps to do this:
     # 1. Convert all the dataframes to numpy arrays for faster iteration
@@ -186,6 +186,20 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
         # activity name
         #       **************Selecting Rows******************  Grab a column -> Set equal to name
         out_df.loc[(out_df['Actiheart ECG Time'] >= acti[1]) & (out_df['Actiheart ECG Time'] < acti[2]), 'Activity'] = acti[0]
+
+
+    out_df.insert(1, "Flags", np.nan, True)
+    if len(flags) != 0:
+        # This column will hold the names of flagvites
+        for flag in flags:
+            # Get the tuple of flagvity information
+            flag = flags[flag]
+            # Select each row from data who's timestamp falls during and flagvtiy and then change the flagvity column to that
+            # flagvity name
+            #       **************Selecting Rows******************  Grab a column -> Set equal to name
+            out_df.loc[
+                (out_df['Actiheart ECG Time'] >= flag[0]) & (out_df['Actiheart ECG Time'] < flag[1]), 'Flags'] = \
+            flag[2]
 
     # Output File
     output_file = folder_path + "/" + participant_num + "_aligned.csv"

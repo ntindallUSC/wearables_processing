@@ -7,6 +7,7 @@
 import pandas as pd
 from datetime import datetime
 from datetime import timedelta
+from datetime import time
 import os
 
 
@@ -31,10 +32,10 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
         # Grab the start and end time of the test.
         date = temp.iloc[0, 4]
         # print(f"Date: {date}")
-        time = str(temp.iloc[1, 4])
+        daytime = str(temp.iloc[1, 4])
         # print(f"Time: {time}")
         # Combine start date and time.
-        start = date + " " + time
+        start = date + " " + daytime
         start_time = datetime.strptime(start, '%m/%d/%Y %I:%M:%S %p')
         # print(f"Start Time: {start_time}")
         # Grab duration of test from table
@@ -62,9 +63,7 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
         def timestamp(elapse, start):
             # Make sure the value is a time
             if isinstance(elapse, timedelta):
-                print(f"Before: {elapse}")
                 elapse = elapse + start
-                print(f"After: {elapse}")
             elif isinstance(elapse, str):
                 temp = timedelta(hours=int(elapse[:2]), minutes=int(elapse[3:5]), seconds=int(elapse[6:]))
                 elapse = temp + start
@@ -129,7 +128,28 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
     data_names.append("Amb. Temp.")
     data = data.loc[:, data_names]
 
+    # This creates a dictionary of tuples.
+    # Each tuple contains the start and end time of flags, and the note associated with the flag.
+    flags = {}
+    for i in range(log.shape[0]):
+        # Get pull data from row to check if it's nonempty
+        aTime = log.iloc[i, 5]
+
+        if isinstance(aTime, time):
+            # Get start time of flag
+            flag_start = date + " " + str(log.iloc[i, 4])
+            flag_start = datetime.strptime(flag_start, '%m/%d/%Y %H:%M:%S')
+            # Get end time of flag
+            flag_end = date + " " + str(log.iloc[i, 5])
+            flag_end = datetime.strptime(flag_end, '%m/%d/%Y %H:%M:%S')
+            # Add note
+            note = log.iloc[i, 6]
+            # Create Tuple
+            flag = (flag_start, flag_end, note)
+            # Add to dictionary
+            flags[str(i + 1)] = flag
+            
     output_file = output_path + '/' + participant_num + '_k5.csv'
 
     data.to_csv(output_file, index=False)
-    return data, activities
+    return data, activities, flags

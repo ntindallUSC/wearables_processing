@@ -48,7 +48,7 @@ def process_participant(pa_path, v_drive):
         # print(f"K5 files {k5_files} \nActivity Log file {log_file}")
         # Process k5 data
         print("BEGIN K5 PROCESSING")
-        k5_data, activities = process_k5(k5_files, log_file, k5_path, particpant_num)
+        k5_data, activities, flags = process_k5(k5_files, log_file, k5_path, particpant_num)
         print("FINISHED")
 
     # Grab start and end time of trial
@@ -181,7 +181,7 @@ def process_participant(pa_path, v_drive):
     print("BEGIN ALIGNMENT")
     label = "Break"
     aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num,
-                       activities)
+                       activities, flags)
     print("BEGIN SECOND AGGREGATION")
     agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, particpant_num, pa_path)
     print("Plotting HR")

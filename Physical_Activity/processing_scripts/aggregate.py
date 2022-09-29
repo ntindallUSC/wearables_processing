@@ -119,8 +119,8 @@ def agg_to_sec(data, devices, participant_num, path):
     Select Actiheart Heart Rate and K5 data. Combine with aggregated wearable data.
     """
     # Select Actiheart Data
-    heart_data = data.loc[:, ["Activity", "Actiheart ECG Time", "Actiheart Heart Rate", "Actiheart HR Low",
-                              "Actiheart HR High", "Actiheart HR Change"]].dropna()
+    heart_data = data.loc[:, ["Activity", "Flags", "Actiheart ECG Time", "Actiheart Heart Rate", "Actiheart HR Low",
+                              "Actiheart HR High", "Actiheart HR Change"]].dropna(subset=['Actiheart Heart Rate'])
     heart_data.rename(columns={"Actiheart ECG Time": "Time"}, inplace=True)
     heart_data["Time"] = heart_data["Time"].apply(pd.to_datetime)
 
