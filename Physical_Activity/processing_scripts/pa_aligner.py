@@ -7,7 +7,6 @@
 import pandas as pd
 import numpy as np
 from datetime import timedelta
-from .data_summary import calc_enmo
 
 
 # # Read in data
@@ -109,7 +108,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
         return device_iter
 
     # Begin alignment
-    while heart_iter < heart_rows - 1 and heart_np[heart_iter - 1, 0] < t_end and out_iter < out_rows:
+    while heart_iter < heart_rows - 1 and heart_np[heart_iter, 0] < t_end and out_iter < out_rows:
         # Initialize out_row as empty row. Through loop data will be added to row and then row will be added to output array.
         out_row = []
 
