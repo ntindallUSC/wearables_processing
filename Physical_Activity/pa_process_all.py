@@ -14,7 +14,7 @@ participants = glob.glob(parent_dir + "1_Participants\\[0-9][0-9][0-9][0-9]")
 i = 1
 total_participants = len(participants)
 
-start = input("Which participant to begin with?")
+start = int(input("Which participant to begin with?"))
 for i in range(start - 1):
     del participants[0]
     i += 1

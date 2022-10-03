@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from datetime import timedelta
-from processing_scripts.PSG_Processor import psg_process
 
 
 def reading_check(device_np, device_iter, device_rows, device_cols, ref_np, ref_iter, out_row):
@@ -30,10 +29,9 @@ def reading_check(device_np, device_iter, device_rows, device_cols, ref_np, ref_
 
 
 def align_psg(data, psg, participant_num, outpath):
-    # Convert Data to numpy arrays for faster iteraton
+    # Convert Data to numpy arrays for faster iteration
     data_np = data.loc[(data[data.columns[0]] >= psg.iloc[0, 0] - timedelta(seconds=30)) &
-                       (data[data.columns[0]] <= psg.iloc[-1, 0] + timedelta(seconds=30)),
-              :].to_numpy()
+                       (data[data.columns[0]] <= psg.iloc[-1, 0] + timedelta(seconds=30)), :].to_numpy()
     psg_np = psg.to_numpy()
     # Get the shape of each numpy array
     d_rows, d_cols = data_np.shape
