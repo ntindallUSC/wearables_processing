@@ -23,6 +23,11 @@ participants = glob.glob(parent_dir + "1_Participant Data\\7*")
 i = 1
 total_participants = len(participants)
 
+start = input("Which participant do you want to start with?")
+for i in range(start - 1) :
+    del participants[0]
+    i += 1
+
 for participant in participants:
     print(f"PROCESSING {i}/{total_participants}")
     print(f"Participant {participant[-10:]}")
