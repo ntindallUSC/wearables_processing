@@ -66,7 +66,8 @@ def psg_process(participant_num, psg_path, psg_summary, psg_data):
     # Search for the spot in the file where they begin to list the time of sleep
     while "sleep overview" not in line.casefold():
         line = file.readline()
-
+    if len(line) == 0:
+        line = file.readline()
     # The line following sleep summary is the time that the lights were turned off.
     time_out = file.readline()[-9:].strip()
     file.close()
