@@ -164,14 +164,15 @@ def process_participant(file_path, v_drive):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-# root = tk.Tk()
-# root.winfo_toplevel().title("Select csv files")
-# root.withdraw()
-#
-# # Start of dialogue
-# print("Please select the folder of the participant you wish to process")
-# path = filedialog.askdirectory()
-# parent_dir = "V:\\R01 - W4K\\1_Sleep Study\\"
-# if not os.path.isdir(parent_dir):
-#     parent_dir = "V:\\ACOI\\R01 - W4K\\1_Sleep Study\\"
-# process_participant(path, parent_dir)
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.winfo_toplevel().title("Select csv files")
+    root.withdraw()
+
+    # Start of dialogue
+    print("Please select the folder of the participant you wish to process")
+    path = filedialog.askdirectory()
+    parent_dir = "V:\\R01 - W4K\\1_Sleep Study\\"
+    if not os.path.isdir(parent_dir):
+        parent_dir = "V:\\ACOI\\R01 - W4K\\1_Sleep Study\\"
+    process_participant(path, parent_dir)

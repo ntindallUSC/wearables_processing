@@ -7,9 +7,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
-import time
-import os.path
-from processing_scripts.PSG_Processor import psg_process
+
 
 def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, participant_num):
     # # Align Data

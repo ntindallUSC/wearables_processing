@@ -1,5 +1,5 @@
 """
-This code was written by Nicholas Tindall, research associate at the Universtiy of South Carolina, for the use of
+This code was written by Nicholas Tindall, research associate at the University of South Carolina, for the use of
 the ACOI wearables study.
 When this script is run it will read in all of the wearable device data from the PA Protocol, timestamp it, and
 align it.
@@ -193,13 +193,14 @@ def process_participant(pa_path, v_drive):
     print("Finished")
 
 
-# This is used to intialize the tkinter interface where the user selects the PA Participant Folder
-# root = tk.Tk()
-# root.winfo_toplevel().title("Select csv files")
-# root.withdraw()
-# print("Select Participant to Process")
-# participant = filedialog.askdirectory()  # Opens file system, prompting the user to select a folder
-# parent_dir = "V:\\R01 - W4K\\3_PA protocol\\"
-# if not os.path.isdir(parent_dir) :
-#     parent_dir = "V:\\ACOI\\R01 - W4K\\3_PA protocol\\"
-# process_participant(participant, parent_dir)
+if __name__ == '__main__':
+    # This is used to initialize the tkinter interface where the user selects the PA Participant Folder
+    root = tk.Tk()
+    root.winfo_toplevel().title("Select csv files")
+    root.withdraw()
+    print("Select Participant to Process")
+    participant = filedialog.askdirectory()  # Opens file system, prompting the user to select a folder
+    parent_dir = "V:\\R01 - W4K\\3_PA protocol\\"
+    if not os.path.isdir(parent_dir) :
+        parent_dir = "V:\\ACOI\\R01 - W4K\\3_PA protocol\\"
+    process_participant(participant, parent_dir)
