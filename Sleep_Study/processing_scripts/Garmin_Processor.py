@@ -187,13 +187,13 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
     plt.legend()
     plt.xlim([sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_xyz.png")
-    plt.clf()
+    plt.close('all')
 
     fig, ax = plt.subplots(figsize=(25, 15))
     hr_helper(final_df, "Garmin", ax, False)
     ax.set(xlim=[sleep_start, sleep_end])
     plt.savefig(garmin_path + "\\Processed Data\\" + participant_num + "_hr.png")
-    plt.clf()
+    plt.close('all')
 
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(lambda x: x / 1000)
