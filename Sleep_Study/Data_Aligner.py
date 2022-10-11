@@ -17,7 +17,6 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
     garmin_np = garmin_data.to_numpy()
     apple_np = apple_data.to_numpy()
 
-
     # Get dimensions of each array. These will be needed for boundary checking.
     graph_rows, graph_cols = graph_np.shape
     garmin_rows, garmin_cols = garmin_np.shape
@@ -95,7 +94,6 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
         garmin_iter = reading_check(garmin_np, garmin_iter, garmin_rows, garmin_cols)
         # check if apple reading has occurred
         apple_iter = reading_check(apple_np, apple_iter, apple_rows, apple_cols)
-
 
         # Add out_row to out_np
         out_np[out_iter, :] = out_row

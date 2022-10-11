@@ -4,11 +4,10 @@
 # ## Welcome
 # To begin running the code click the first box of code and then the run button at the top. You will know the code section is done running when their is a nubmer in the square brackets to the left.
 # 
-# <br><br> The purpose of this script is to upack the Garmin Acceleration Data. Initially the Garmin Accleration data is has 25 readings in one cell corresponding to 1 timestamp. This script unpacks that cell and instead has 1 acceleration reading per row.
+# <br><br> The purpose of this script is to unpack the Garmin Acceleration Data. Initially the Garmin Acceleration data is has 25 readings in one cell corresponding to 1 timestamp. This script unpacks that cell and instead has 1 acceleration reading per row.
 
 # In[2]:
 import datetime
-
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta

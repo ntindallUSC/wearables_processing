@@ -20,7 +20,7 @@ from .Data_Plot import flag_hr, hr_helper
 
 # ## First you need to load the data into the script
 # 
-# When you run the code block below a file window should open. First you need to select the Sensorlog file that you
+# When you run the code block below a file window should open. First you need to select the Sensor log file that you
 # wish to process. After that select the Auto Health File you wish to process.
 # 
 # Note you may need to minimize the Jupyter notebook window to see the file selection screen.
@@ -93,7 +93,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     summary.write(f"Ended recording at {accel.iloc[-1,0]}\n")
 
     summary.write(f"The Accelerometer file has {a_row} rows in total\n")
-    summary.write(f"The Heartrate file has {h_row} rows in total\n")
+    summary.write(f"The Heart rate file has {h_row} rows in total\n")
 
     # Convert the accel and heart dataframes to numpy arrays.
     # It's faster to iterate through numpy arrays than pandas dataframes.
@@ -104,18 +104,18 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     # files and add them to my merged array. I look at 2 adjacent acceleration readings and compare the times of
     # recording to the time of recording of a single heart rate. There are 3 cases to consider here:<br> <br>1. The
     # heart rate time stamp is less than both of the acceleration time stamps.<br> <br>2. The heart rate time stamp
-    # is in between two inbetween or equal to the accleration time stamps.<br> <br>3. The heart rate time stamp is
+    # is in between two in between or equal to the acceleration time stamps.<br> <br>3. The heart rate time stamp is
     # greater than both of my acceleration time stamps.<br>
     #
     # <br> Case 1 only occurs when I first begin reading the iterating through the entries. If the heart rates occur
-    # before the acceration data I iterate through the array until I find a heart rate timestamp that begins after
+    # before the acceleration data I iterate through the array until I find a heart rate timestamp that begins after
     # the acceleration readings.<br>
     #
     # <br> Case 2 can be caused by two different scenarios. <br>The first scenario is the heart rate timestamp falls
     # in between 2 adjacent acceleration readings. If this is the case I take the difference between the heart rate
     # timestamp with both of the acceleration timestamps. I then put the heart rate in the row with the acceleration
     # time stamp it is closer to. <br>The second scenario means that their is a gap in the acceleration data. If this
-    # occurs there coud potentially be mutliple heart rate readings in the gap.  I check for this by taking the
+    # occurs there could potentially be multiple heart rate readings in the gap.  I check for this by taking the
     # difference between the two acceleration timestamps. If difference is greater than a second I assume that their
     # is a gap. I then add each heart rate reading that occurs in the gap to  the array without any acceleration
     # data.<br>
@@ -128,13 +128,13 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
 
     # In[ ]:
 
-    # Here I intialize the numpy array that will hold both heart rate and acceleration data
+    # Here I initialize the numpy array that will hold both heart rate and acceleration data
     # I make the # of rows in this array equal to the amount of rows the sum of the acceleration data
     # and heart rate data. I do this because if for some reason there isn't any overlap in time between
     # The two data sets the data structure could hold all of the information.
     merged = np.empty((a_row + h_row, 5), dtype="object")
 
-    # Intialize counters that will be used to iterate through arrays
+    # Initialize counters that will be used to iterate through arrays
     h_counter = 0
 
     # Iterate through heart file until we've reached a reading that corresponds with the first accelerometer reading
@@ -165,9 +165,9 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     s_end_time = datetime(year=date[0], month=date[1], day=date[2], hour=6) + timedelta(days=1)
     end_index = 0
 
-    # Create a variable to keep track of abnomral heart rates:
+    # Create a variable to keep track of abnormal heart rates:
     abnormal_counter = 0
-    # print(f"Beginning Heartrate: {h_reading[0]} \nBeginning Accelerometer {a_reading[0]} \nBegin H counter {h_counter}\n")
+    # print(f"Beginning Heart rate: {h_reading[0]} \nBeginning Accelerometer {a_reading[0]} \nBegin H counter {h_counter}\n")
     summary.write("\nAcceleration Gaps:\n")
     while i < a_row - 2:
 
@@ -180,11 +180,11 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
             while accel_np[i + 1, 0] > h_reading[0] and h_counter < h_row:
                 if 40 > h_reading[1] or 150 < h_reading[1]:
                     abnormal_counter += 1
-                #print(f"{h_reading[0]} is in the gap")
+                # print(f"{h_reading[0]} is in the gap")
                 merged[j, :] = [h_reading[0], np.nan, np.nan, np.nan, h_reading[1]]
                 j += 1
 
-                # Add Time and Accelormeter readings to current row
+                # Add Time and Accelerometer readings to current row
                 h_reading = heart_np[h_counter]
                 h_counter += 1
 
@@ -216,7 +216,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
             else:
                 h_reading = heart_np[h_counter]
                 h_counter += 1
-                # print(f"Next heartrate time {h_reading[0]} \nNext H_counter {h_counter}\n")
+                # print(f"Next heart rate time {h_reading[0]} \nNext H_counter {h_counter}\n")
 
         # Compare accel times
         if h_counter < h_row and (accel_np[i, 0] <= h_reading[0] < accel_np[i + 1, 0]):
@@ -329,7 +329,10 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     hr_helper(final_df, "Apple", ax, False)
     ax.set(xlim=[s_start_time, s_end_time])
     plt.savefig(apple_path + "\\Processed Data\\" + participant_num + "_hr.png")
-    plt.clf()
+    plt.close('all')
+    # Add second fraction column
+    sec_frac = final_df["Time"].apply(lambda x: x.microsecond)
+    final_df.insert(1, "Second Fraction", sec_frac)
     print("APPLE PROCESSING FINISHED")
     return final_df
 

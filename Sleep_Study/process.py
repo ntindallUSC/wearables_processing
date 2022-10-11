@@ -119,6 +119,9 @@ def process_participant(file_path, v_drive):
         mag, enmo = calc_enmo(actigraph.loc[:, ["X", "Y", "Z"]])
         actigraph.insert(4, "Magnitude", mag)
         actigraph.insert(5, "ENMO", enmo)
+        # Insert actigraph second fraction column
+        sec_frac = actigraph["Time"].apply(lambda x: x.microsecond)
+        actigraph.insert(1, "Second Fraction", sec_frac)
 
     print("BEGIN ALIGNMENT")
     aligned_data = data_alignment(actigraph, apple_data, garmin_data, file_path, participant_num)
