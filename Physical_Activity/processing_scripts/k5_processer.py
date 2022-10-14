@@ -39,7 +39,11 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
         start_time = datetime.strptime(start, '%m/%d/%Y %I:%M:%S %p')
         # print(f"Start Time: {start_time}")
         # Grab duration of test from table
-        duration = temp.iloc[2, 4]
+        if temp.iloc[2,3] == "Test Duration" :
+            duration = temp.iloc[2, 4]
+        else :
+            duration = temp.iloc[9,4]
+            print(duration)
         # print(f"Test Duration: {duration}")
         # Add duration + startime to get end time
         if isinstance(duration, str):
