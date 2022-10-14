@@ -34,7 +34,10 @@ def flag_hr(data, device, age):
     # Flags HR below threshold
     data.loc[data["Heart Rate"] <= 60, ["HR Low"]] = 1
     # Calculate average HR of the last 8 seconds
-    averaged = data[[time_name,'Heart Rate']].rolling('8s', on=time_name, closed='left').mean()
+    try :
+        averaged = data[[time_name,'Heart Rate']].rolling('8s', on=time_name, closed='left').mean()
+    except :
+        averaged = data[[time_name, 'Heart Rate']]
     # Insert temporary column to keep track of average chang of hr
     data.insert(5, "Average BPM Change", averaged['Heart Rate'])
     # Subract the average HR of the last 8 seconds from it's corresponding current HR

@@ -26,69 +26,98 @@ from .data_summary import flag_hr
 
 
 def data_split(data, out_path, participant_number) :
-    # Need to read through data
-    ecg_accel = open(data[0], 'r')
-    # This variable is used to determine which section I'm currently iterating through
-    section = 1
-    # This variable represents the start time of the trial
-    start_time = None
-    # Create two output files, ecg and acceleration
-    ecg = open(out_path + "/" + participant_number + "_ecg_split.csv", "w")
-    accel = open(out_path + "/" + participant_number + "_accel_split.csv", "w")
-    # Variables created to signify if file is open
-    ecg_open = True
+    start_time = []
+    i = 1
+    for file in data:
+        # Need to read through data
+        ecg_accel = open(file, 'r')
+        # This variable is used to determine which section I'm currently iterating through
+        section = 1
+        # This variable represents the start time of the trial
+        # Create two output files, ecg and acceleration
+        ecg = open(out_path + "/" + participant_number + "_ecg_split_ " + str(i) + ".csv", "w")
+        accel = open(out_path + "/" + participant_number + "_accel_split_" + str(i) +".csv", "w")
+        # Variables created to signify if file is open
+        ecg_open = True
 
-    for line in ecg_accel:
-        # print(f"{section} : {line}")
-        if section == 1: # Checks if iterating through section 1
-            if line[:7].lower() == 'started' :
-                start_time = datetime.strptime(line[8:-1], "%d-%b-%Y %H:%M")
-                print(start_time)
-        elif section == 2 : # Checks if iterating through section 2
-            ecg.write(line)
-        elif section == 3 : # Checks if 3 section of file is reached
-            # Closes ECG file
-            if ecg_open :
-                ecg.close()
-                ecg_open = False
+        for line in ecg_accel:
+            # print(f"{section} : {line}")
+            if section == 1: # Checks if iterating through section 1
+                if line[:7].lower() == 'started' :
+                    start_time.append(datetime.strptime(line[8:-1], "%d-%b-%Y %H:%M"))
+                    # print(start_time)
+            elif section == 2 : # Checks if iterating through section 2
+                ecg.write(line)
+            elif section == 3 : # Checks if 3 section of file is reached
+                # Closes ECG file
+                if ecg_open :
+                    ecg.close()
+                    ecg_open = False
 
-            accel.write(line)
+                accel.write(line)
 
-        # Looks for blank line. If found it indicates that a section has ended
-        if line == "\n" :
-            section += 1
+            # Looks for blank line. If found it indicates that a section has ended
+            if line == "\n" :
+                # print(line)
+                section += 1
 
-    # Close files
-    if ecg_open :
-        ecg.close()
-    accel.close()
-    ecg_accel.close()
+        # Close files
+        if ecg_open :
+            ecg.close()
+        accel.close()
+        ecg_accel.close()
+        i += 1
     return start_time
 
 
-def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, participant_num, part_age):
-    # Function used to parse dates to datetime
-    custom_date_parser = lambda x : start_time + timedelta(seconds=float(x))
-
-
+def process_actiheart(start_time, ecg_files, accel_files, hr_files, folder_path, participant_num, part_age):
     # Now read in ECG File and combine the Date, Time, and Second Fraction into 1 column
-    ecg_data = pd.read_csv(ecg_data[0], parse_dates = ['Total Seconds'],
-                           date_parser = custom_date_parser)
+    ecg_data = None
+    for file, time in zip(ecg_files, start_time):
+        custom_date_parser = lambda x: time + timedelta(seconds=float(x))
+        if ecg_data  is None :
+            ecg_data = pd.read_csv(file, parse_dates = ['Total Seconds'],
+                                   date_parser = custom_date_parser)
+        else:
+            temp = pd.read_csv(file, parse_dates = ['Total Seconds'],
+                                   date_parser = custom_date_parser)
+            ecg_data = pd.concat([ecg_data, temp])
+
+    # ecg_data.to_csv(folder_path + "ecg_test.csv", index=None)
     ecg_data.drop(columns=["Date", "Time"], inplace=True)
     ecg_data.rename(columns={"Total Seconds": "ECG Time"}, inplace=True)
     sec_frac = ecg_data.pop('Second Fraction')
     ecg_data.insert(1, 'Second Fraction', sec_frac)
 
+       # print(ecg_data)
+
     # Read in the Accel File and combine The Date, Time, and Second Fraction Column to one column called DateTime
-    accel_data = pd.read_csv(accel_data[0], parse_dates=['Total Seconds'],
-                             date_parser= custom_date_parser)
+    accel_data = None
+    for file, time in zip(accel_files, start_time):
+        custom_date_parser = lambda x: time + timedelta(seconds=float(x))
+        if accel_data is None :
+            accel_data = pd.read_csv(file, parse_dates=['Total Seconds'],
+                                     date_parser= custom_date_parser)
+        else :
+            temp = pd.read_csv(file, parse_dates=['Total Seconds'],
+                                     date_parser= custom_date_parser)
+            accel_data = pd.concat([accel_data, temp])
+
     accel_data.drop(columns=['Date', 'Time', 'Second Fraction'], inplace=True)
     accel_data.rename(columns={"Total Seconds": "Accel Time"}, inplace = True)
+    # accel_data.to_csv(folder_path + "accel_test.csv", index=None)
+    # print(accel_data)
 
     # # Heart Rate and Rotation
     # The second file output by the actiheart device contains heartrate and rotation data sampled at a frequency of 1 hz.
     # Read in file
-    heart_data = pd.read_csv(hr_data[0], sep='\t', skiprows=5, index_col=False)
+    heart_data = None
+    for file in hr_files:
+        if heart_data is None:
+            heart_data = pd.read_csv(file, sep='\t', skiprows=5, index_col=False)
+        else :
+            temp = pd.read_csv(file, sep='\t', skiprows=5, index_col=False)
+            heart_data = pd.concat([heart_data, temp])
     # Drop unwanted columns
     heart_data.drop(columns={'Movement', 'Status'}, inplace=True)
     # Add date to Time column
@@ -98,7 +127,7 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
                                                                          minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
     heart_data.sort_values(by=["Time"])
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
-
+    # heart_data.to_csv(folder_path + "heart_test.csv", index=None)
     # # Align ECG, Acceleration, and Heart Rate
     # Iterate through each file and order all of the readings by time in one dataframe. Since ECG is the finest grain data I will align the rest of the data to ECG
 
@@ -138,7 +167,6 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
         # Add ECG to output
         for value in ecg_np[ecg_iter, :] :
             out_row.append(value)
-
         # Check if acceleration occurred
         if accel_iter < accel_rows and (ecg_np[ecg_iter, 0] <= accel_np[accel_iter, 0] < ecg_np[ecg_iter + 1, 0]):
             # Add Acceleration values to output
@@ -155,7 +183,7 @@ def process_actiheart(start_time, ecg_data, accel_data, hr_data, folder_path, pa
             for i in range(accel_col):
                 out_row.append(np.nan)
 
-        # Check if Heart Rate Occured
+        # Check if Heart Rate Occurred
         if hr_iter < hr_rows and ecg_np[ecg_iter, 0] <= hr_np[hr_iter, 0] < ecg_np[ecg_iter + 1, 0]:
             # Add Acceleration values to output
             # print(f"Heart Iter: {hr_iter} \nHeart Values{hr_np[hr_iter,:]}")

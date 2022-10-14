@@ -127,6 +127,7 @@ def process_participant(pa_path, v_drive):
     if os.path.isdir(actiheart_path):
         # Get the path to the ECG and Accelerometer data
         ecg_accel = glob.glob(actiheart_path + "/*combined*")
+        # print(ecg_accel)
         # print(f"Raw ECG and Acceleration path: {ecg_accel}")
         # Split the ecg and acceleration files. Also grab start time of actiheart data collection
         start = data_split(ecg_accel, actiheart_path, particpant_num)
@@ -135,7 +136,7 @@ def process_participant(pa_path, v_drive):
         # Get the path to the acceleration data
         accel_data = glob.glob(actiheart_path + "/*accel_split*")
         # Grab the heart rate and rotation data
-        hr_data = glob.glob(actiheart_path + "/*hr.txt")
+        hr_data = glob.glob(actiheart_path + "/*hr*.txt")
         # print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
         # Process the actiheart data
         print("BEGIN ACTIHEART PROCESSING")
@@ -143,7 +144,7 @@ def process_participant(pa_path, v_drive):
                                            participant_age)
         print("Writing Actiheart Summary")
         output_path = actiheart_path + "/Processed Data/" + particpant_num
-        summarize(1, output_path, actiheart_data, trial_start, trial_end)
+        # summarize(1, output_path, actiheart_data, trial_start, trial_end)
         print("FINISHED")
 
     """
