@@ -57,8 +57,8 @@ def calc_mad(some_data, device):
             # Add each Mad and the corresponding time to a list :
             all_mad[end_time] = mad
             #
-            start = end_time + timedelta(seconds=1)
-            end_time = start + timedelta(seconds=agg_len - 1)
+        start = end_time + timedelta(seconds=1)
+        end_time = start + timedelta(seconds=agg_len - 1)
 
     mad_df = pd.Series(data=all_mad, name = device + " MAD")
     return mad_df

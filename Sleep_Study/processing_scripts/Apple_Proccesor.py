@@ -241,7 +241,6 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
                     h_reading = heart_np[h_counter]
                     h_counter += 1
 
-
             else:
                 # print("I'm in the correct spot")
                 flag = 1
