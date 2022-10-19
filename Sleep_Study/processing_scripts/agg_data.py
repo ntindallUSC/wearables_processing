@@ -34,7 +34,7 @@ def calc_mad(some_data, device):
     time_name = device + " Time"
 
     # Grab the first timestamp from data
-    some_data[time_name] = some_data[time_name].apply(pd.to_datetime)
+    # some_data[time_name] = some_data[time_name].apply(pd.to_datetime)
     start = some_data.loc[some_data.index[0], time_name]
     # Specify the amount of time to aggregate over
     agg_len = 5
@@ -111,7 +111,7 @@ def agg_to_sec(data, participant_num, path, devices):
         device_cols = get_columns(data, device)
         # Need to drop all blank rows. Also if the device is a garmin need to drop the reading number column
         if device != "Garmin":
-            dev_data = data.iloc[:, device_cols[0]:device_cols[1]+1].dropna(how='all')
+            dev_data = data.iloc[:, device_cols[0]:device_cols[1]+1].dropna(how='all').drop(columns=device + " Second Fraction")
         else :
             dev_data = data.iloc[:, device_cols[0]:device_cols[1]+1].dropna(how='all').drop(columns=["Garmin Reading #"])
         # Calculate MAD
