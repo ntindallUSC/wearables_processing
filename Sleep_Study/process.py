@@ -148,7 +148,7 @@ def process_participant(file_path, v_drive):
         kubios_path = psg_path + "/Kubios Output/"
         if os.path.exists(kubios_path + participant_num + "_medium_hrv.csv"):
             # Check if the Kubios Heart rate Data exists: If it does process it:
-            # Get the paths of the 2 different kubios outputs
+            # Get the paths of the 2 different Kubios outputs
             medium_path = kubios_path + participant_num + "_medium_hrv.csv"
             none_path = kubios_path + participant_num + "_none_hrv.csv"
 
@@ -164,9 +164,7 @@ def process_participant(file_path, v_drive):
                 plot_hr(agg_psg, "Garmin", participant_path, participant_num)
         agg_psg.to_csv(participant_path + "/" + participant_num + "_data_agg.csv", index=False)
 
-
     # ------------------------------------------------------------------------------------------------------------------
-
 if __name__ == "__main__":
     root = tk.Tk()
     root.winfo_toplevel().title("Select csv files")
