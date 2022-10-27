@@ -19,7 +19,7 @@ from .Data_Plot import flag_hr, hr_helper
 # In[3]:
 
 
-def garmin_process(participant_num, garmin_path, csv_data, age):
+def garmin_process(participant_num, garmin_path, csv_data, age, time):
     print("BEGIN GARMIN PROCESSING")
     # Open summary file to write to.
     summary_path = garmin_path + "\\Processed Data\\" + participant_num + "_garmin_summary.txt"
@@ -96,12 +96,10 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
 
     # initialize variables to help find 8pm and 6am in the data set.
     # I need these time values so I can write a summary on the data for this time set.
-    #               Year                                Month                       Day
-    date = (int("20" + participant_num[-2:]), int(participant_num[-6:-4]), int(participant_num[-4:-2]))
-    sleep_start = datetime(year=date[0], month=date[1], day=date[2], hour=20)
+    sleep_start = time[0]
     start_found = False
     start_index = 0
-    sleep_end = datetime(year=date[0], month=date[1], day=date[2], hour=6) + timedelta(days=1)
+    sleep_end = time[1]
     end_found = False
     end_index = 0
 
@@ -200,6 +198,7 @@ def garmin_process(participant_num, garmin_path, csv_data, age):
     mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
     final_df.insert(5, "Magnitude", mag)
     final_df.insert(6, "ENMO", enmo)
+    final_df = final_df.loc[(final_df['Time'] >= time[0]) & (final_df['Time'] <= time[1]), :]
 
     final_df.to_csv(garmin_path + "\\Processed Data\\" + participant_num + "_garmin_data.csv", index=False)
     print("GARMIN PROCESSING FINISHED")

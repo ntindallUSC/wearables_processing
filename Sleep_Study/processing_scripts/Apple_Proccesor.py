@@ -27,7 +27,7 @@ from .Data_Plot import flag_hr, hr_helper
 
 # In[ ]:
 
-def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
+def apple_process(participant_num, apple_path, sensor_log, auto_health, age, time):
     print("BEGIN APPLE PROCESSING")
     summary = open(apple_path + "\\Processed Data\\Apple_Summary.txt", 'w')
     # delim is True if the document is comma separated:
@@ -159,10 +159,10 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     # Create two variables to help determine the indices where 8 pm and 6 am occur.
     date = (int("20"+participant_num[-2:]), int(participant_num[-6:-4]), int(participant_num[-4:-2]))
     sleep_start = False
-    s_start_time = datetime(year=date[0], month=date[1], day=date[2], hour=20)
+    s_start_time = time[0]
     start_index = 0
     sleep_end = False
-    s_end_time = datetime(year=date[0], month=date[1], day=date[2], hour=6) + timedelta(days=1)
+    s_end_time = time[1]
     end_index = 0
 
     # Create a variable to keep track of abnormal heart rates:
@@ -286,13 +286,13 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     # print(f"Sleep start {final_sleep.iloc[0,0]} \nSleep end{final_sleep.iloc[-1,0]}")
     final_sum = final_sleep.describe()
     summary.write(f"\nNumber of abnormal heart rate readings: {abnormal_counter}")
-    summary.write("\n8PM TO 6PM STATISTICS \n\n")
+    summary.write("\nOVERNIGHT STATISTICS \n\n")
     summary.write("For 10 hours while sampling at 50 hz we should have 1,800,000 accelerometer readings\n")
     summary.write("For 10 hours with a reading every 5 seconds we should have 7,200 heart rate readings\n")
     summary.write(final_sum.to_string())
     # In[ ]:
 
-    final_df.drop(final_df.iloc[j:].index, inplace=True)
+    final_df = final_df.loc[(final_df['Time'] >= time[0]) & (final_df['Time'] <= time[1]), :]
 
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
     mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
@@ -332,6 +332,7 @@ def apple_process(participant_num, apple_path, sensor_log, auto_health, age):
     # Add second fraction column
     sec_frac = final_df["Time"].apply(lambda x: x.microsecond)
     final_df.insert(1, "Second Fraction", sec_frac)
+
     print("APPLE PROCESSING FINISHED")
     return final_df
 

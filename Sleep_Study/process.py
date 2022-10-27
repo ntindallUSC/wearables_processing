@@ -37,8 +37,10 @@ def process_participant(file_path, v_drive):
     tracking = pd.read_excel(v_drive + "\\Sleep study tracking.xlsx")
     participant_age = tracking.loc[tracking["Child ID"] == float(participant_num), "age at enrollment"]
     participant_age = math.floor(participant_age.iloc[0])
-    participant_age = 8
-
+    devices_time = tracking.loc[tracking["Child ID"] == float(participant_num), ["Date of Visit", "Devices time on", "Devices time off"]]
+    device_on = datetime.combine(devices_time.iloc[0,0].to_pydatetime().date(), devices_time.iloc[0,1])
+    device_off = datetime.combine(devices_time.iloc[0,0].to_pydatetime().date(), devices_time.iloc[0,2]) + timedelta(hours=24)
+    time = (device_on, device_off)
     # print(f"Processing Participant Number: \n{participant_num}")
     # A TEst
     # ----------------------------------------------------------------------------------------------------------------------
@@ -62,7 +64,7 @@ def process_participant(file_path, v_drive):
         auto_health = glob.glob(apple_path + "/*_hr.*")
         # print(f"Auto Health Files: \n{auto_health}")
         if len(sensor_log) != 0 or len(auto_health) != 0:
-            apple_data = apple_process(participant_num, apple_path, sensor_log, auto_health, participant_age)
+            apple_data = apple_process(participant_num, apple_path, sensor_log, auto_health, participant_age, time)
             devices.append("Apple")
         else:
             apple_data = pd.DataFrame()
@@ -89,7 +91,7 @@ def process_participant(file_path, v_drive):
         garmin_data = glob.glob(garmin_path + "\\*Garmin*data.csv")
         # print(f"Garmin Data CSV: \n{garmin_data}")
         if len(garmin_data) != 0:
-            garmin_data = garmin_process(participant_num, garmin_path, garmin_data, participant_age)
+            garmin_data = garmin_process(participant_num, garmin_path, garmin_data, participant_age, time)
             devices.append("Garmin")
         else :
             garmin_data = pd.DataFrame()
@@ -122,6 +124,7 @@ def process_participant(file_path, v_drive):
         # Insert actigraph second fraction column
         sec_frac = actigraph["Time"].apply(lambda x: x.microsecond)
         actigraph.insert(1, "Second Fraction", sec_frac)
+        actigraph = actigraph.loc[(actigraph['Time'] >= time[0]) & (actigraph['Time'] <= time[1]), :]
 
     print("BEGIN ALIGNMENT")
     aligned_data = data_alignment(actigraph, apple_data, garmin_data, file_path, participant_num)
@@ -142,7 +145,7 @@ def process_participant(file_path, v_drive):
         align_psg(aligned_data, psg_data, participant_num, participant_path + "/")
         print("Align PSG with Aggregated Data")
         agg_data = agg_data.loc[(agg_data[agg_data.columns[0]] >= psg_data.iloc[0, 0] - timedelta(seconds=30)) &
-                       (agg_data[agg_data.columns[0]] <= psg_data.iloc[-1, 0] + timedelta(seconds=30)),:]
+                       (agg_data[agg_data.columns[0]] <= psg_data.iloc[-1, 0] + timedelta(seconds=30)), :]
         agg_psg = agg_data.merge(psg_data, how='left', on='Time')
 
         kubios_path = psg_path + "/Kubios Output/"
