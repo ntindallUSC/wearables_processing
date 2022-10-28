@@ -167,9 +167,12 @@ def hr_helper(data, device, axis):
     elif device == "Apple":
         time_name = "Time"
         p_color = "orange"
-    else:
+    elif device == "Garmin":
         time_name = "Time"
         p_color = "green"
+    else :
+        time_name = "Time"
+        p_color = "Red"
 
     # flagged data
     flag = data
@@ -227,7 +230,7 @@ def plot_hr(data, devices, start, end, activities, path, k5):
 
 #This function plots the ENMO and MAD for each wearable device.
 def plot_accel(data, devices, start, end, activities, path):
-    device_color = {"Actigraph": "blue", "Apple": "orange", "Garmin": "green"}
+    device_color = {"Actigraph": "blue", "Apple": "orange", "Garmin": "green", "Fitbit": "red"}
     # Initialize 2 plots. One for ENMO and one for MAD.
     fig, ax = plt.subplots(figsize=(25, 15))
     fig2, ax2 = plt.subplots(figsize=(25, 15))

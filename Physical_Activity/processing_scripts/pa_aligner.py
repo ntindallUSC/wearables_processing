@@ -21,7 +21,7 @@ from datetime import timedelta
 # Function that replaces nan activities with label
 
 
-def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, folder_path, participant_num, activities, flags):
+def align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, k5_data, folder_path, participant_num, activities, flags):
     # # Align Data
     # Now that the data has been read in the next step is to align the all of the data. Here are the steps to do this:
     # 1. Convert all the dataframes to numpy arrays for faster iteration
@@ -32,6 +32,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     graph_np = actigraph_data.to_numpy()
     garmin_np = garmin_data.to_numpy()
     apple_np = apple_data.to_numpy()
+    fitbit_np = fitbit_data.to_numpy()
     heart_np = actiheart_data.to_numpy()
     k5_np = k5_data.to_numpy()
 
@@ -39,6 +40,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     graph_rows, graph_cols = graph_np.shape
     garmin_rows, garmin_cols = garmin_np.shape
     apple_rows, apple_cols = apple_np.shape
+    fitbit_rows, fitbit_cols = fitbit_np.shape
     heart_rows, heart_cols = heart_np.shape
     k5_rows, k5_cols = k5_np.shape
 
@@ -62,6 +64,11 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     while apple_rows > 0 and apple_np[apple_iter, 0] < t_start:
         apple_iter += 1
 
+    # fitbit
+    fitbit_iter = 0
+    while fitbit_rows > 0 and fitbit_np[fitbit_iter, 0] < t_start:
+        fitbit_iter += 1
+
     # actiheart
     heart_iter = 0
     while heart_np[heart_iter, 0] < t_start:
@@ -72,7 +79,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
 
     # Initialize out_np (The aligned output array)
     out_rows = k5_rows * 3 * 256  # K5 has 1 reading about every 3 seconds, actiheart is collecting 256 readings a second.
-    out_cols = graph_cols + garmin_cols + apple_cols + heart_cols + k5_cols  # Sum of all device columns
+    out_cols = graph_cols + garmin_cols + apple_cols + fitbit_cols + heart_cols + k5_cols  # Sum of all device columns
     out_np = np.zeros([out_rows, out_cols], dtype="O")  # Initialize Array
     out_iter = 0  # Initialize output iterator
 
@@ -122,6 +129,8 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
         garmin_iter = reading_check(garmin_np, garmin_iter, garmin_rows, garmin_cols)
         # check if apple reading has occurred
         apple_iter = reading_check(apple_np, apple_iter, apple_rows, apple_cols)
+        # check if fitbit reading has occurred
+        fitbit_iter = reading_check(fitbit_np, fitbit_iter, fitbit_rows, fitbit_cols)
         # check if k5 reading has occurred
         k5_iter = reading_check(k5_np, k5_iter, k5_rows, k5_cols)
 
@@ -139,6 +148,7 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     new_cols.extend(actigraph_data.columns)
     new_cols.extend(garmin_data.columns)
     new_cols.extend(apple_data.columns)
+    new_cols.extend(fitbit_data.columns)
     new_cols.extend(k5_data.columns)
     # This labels the columns by which device the column came from
     for i in range(len(new_cols)):
@@ -150,6 +160,8 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
             new_cols[i] = "Garmin " + new_cols[i]
         elif i <= heart_cols + graph_cols + garmin_cols + apple_cols - 1:
             new_cols[i] = "Apple " + new_cols[i]
+        elif i <= heart_cols + graph_cols + garmin_cols + apple_cols + fitbit_cols - 1:
+            new_cols[i] = "Fitbit " + new_cols[i]
         else:
             new_cols[i] = "K5 " + new_cols[i]
 
@@ -167,6 +179,8 @@ def align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, fold
     out_df['Actigraph Time'] = out_df['Actigraph Time'].apply(lambda x: micro_remove(x))
     if "Apple Time" in out_df.columns:
         out_df['Apple Time'] = out_df['Apple Time'].apply(lambda x: micro_remove(x))
+    if "Fitbit Time" in out_df.columns:
+        out_df["Fitbit Time"] = out_df["Fitbit Time"].apply(lambda x: micro_remove(x))
 
     # Move activity label to the first column
     activity = out_df['K5 Activity']

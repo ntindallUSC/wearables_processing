@@ -18,6 +18,7 @@ from processing_scripts.k5_processer import process_k5
 from processing_scripts.pa_aligner import align
 from processing_scripts.data_summary import summarize, plot_hr, plot_accel, calc_enmo
 from processing_scripts.aggregate import agg_to_sec
+from processing_scripts.fitbit_processer import process_fitbit
 
 
 def process_participant(pa_path, v_drive):
@@ -59,7 +60,7 @@ def process_participant(pa_path, v_drive):
     # APPLE WATCH Processing
     # First get the path of the Apple Watch Data files
     apple_path = pa_path + '/Apple Data'
-    apple_data = None
+    apple_data = pd.DataFrame()
     # Apple Watch has 2 types of data output files: Accelerometer and Heart rate. Need to grab both
     if os.path.isdir(apple_path):
         # Get list of acceleration files
@@ -77,9 +78,7 @@ def process_participant(pa_path, v_drive):
             output_path = apple_path + "/Processed Data/" + particpant_num
             summarize(2, output_path, apple_data, trial_start, trial_end)
             print("Finished")
-        else:
-            # If there isn't data initialize apple_data as an empty dataframe. The alignment script will ignore it
-            apple_data = pd.DataFrame()
+
 
     """
     GARMIN PROCESSING
@@ -91,7 +90,7 @@ def process_participant(pa_path, v_drive):
 
     # First get the path of the Garmin data folder
     garmin_path = pa_path + '\\Garmin data'
-    # Check if folder exists:
+    # Initialize Dataframe:
     garmin_data = pd.DataFrame()
     if os.path.isdir(garmin_path):
         # Get path of all fit files
@@ -111,8 +110,29 @@ def process_participant(pa_path, v_drive):
             output_path = garmin_path + "/Processed Data/" + particpant_num
             summarize(3, output_path, garmin_data, trial_start, trial_end)
             print("FINISHED")
-        else:
-            garmin_data = pd.DataFrame()
+
+    """
+    FITBIT PROCESSING
+    The fitbit data comes in 2 files: acceleration and heart rate. The purpose of the processing is to read in both files,
+    and combine them into one file.
+    """
+    # First get the path to the Fitbit Folder
+    fitbit_path = pa_path + "\\Fitbit data\\"
+    # Initialize Dataframe
+    fitbit_data = pd.DataFrame()
+    if os.path.isdir(fitbit_path) :
+        # Grab accelerometer files
+        fitbit_accel = glob.glob(fitbit_path + "*_accel.csv")
+        # Grab Heart Rate files
+        fitbit_hr = glob.glob(fitbit_path + "*_heart.csv")
+        # Check if there is both an accel and HR file to merge
+        if len(fitbit_accel) != 0 and len(fitbit_hr) != 0 :
+            print("Begin Fitbit Processing")
+            fitbit_data = process_fitbit(fitbit_accel[0], fitbit_hr[0], fitbit_path, particpant_num, participant_age)
+            devices.append("Fitbit")
+            print("Finished")
+
+
 
     """
     ACTIHEART PROCESSING
@@ -181,7 +201,7 @@ def process_participant(pa_path, v_drive):
     # Align Data
     print("BEGIN ALIGNMENT")
     label = "Break"
-    aligned_df = align(actigraph_data, garmin_data, apple_data, actiheart_data, k5_data, pa_path, particpant_num,
+    aligned_df = align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, k5_data, pa_path, particpant_num,
                        activities, flags)
     print("BEGIN SECOND AGGREGATION")
     agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, particpant_num, pa_path)

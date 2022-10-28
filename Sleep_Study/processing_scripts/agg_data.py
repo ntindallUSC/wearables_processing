@@ -56,7 +56,7 @@ def calc_mad(some_data, device):
             # print(f"{mag_s}")
             # Subtract the mean magnitude from each accelerometer magnitude from each vector magnitude and then take abs
             dif_mean = group_s[device + ' Magnitude'].apply(lambda x: abs(x - mag_s))
-            # Caclulate the sum of all the vector mags - mean mags. Then divide by the number of vectors
+            # Calculate the sum of all the vector mags - mean mags. Then divide by the number of vectors
             # print(dif_mean.sum())
             # print(dif_mean.shape[0])
             mad = (dif_mean.sum()) / dif_mean.shape[0]
