@@ -17,12 +17,14 @@ import math
 from datetime import datetime, timedelta
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
+from processing_scripts.Fitbit_Processor import process_fitbit
 from Data_Aligner import data_alignment
 from Align_PSG import align_psg
 from processing_scripts.agg_data import calc_enmo, agg_to_sec
 from processing_scripts.Data_Plot import plot_accel, plot_hr
 from processing_scripts.PSG_Processor import psg_process
 from processing_scripts.Kubios_Processor import read_kubios
+
 
 
 def process_participant(file_path, v_drive):
@@ -34,6 +36,7 @@ def process_participant(file_path, v_drive):
     devices = []
     # Determine the Participant Number
     participant_num = participant_path[-10:]
+    print(f"Processing Participant {participant_num}")
     tracking = pd.read_excel(v_drive + "\\Sleep study tracking.xlsx")
     participant_age = tracking.loc[tracking["Child ID"] == float(participant_num), "age at enrollment"]
     participant_age = math.floor(participant_age.iloc[0])
@@ -99,10 +102,19 @@ def process_participant(file_path, v_drive):
         garmin_data = pd.DataFrame()
 
     # CHECK IF THERE IS FITBIT DATA
-    fitbit_path = participant_path + "\\FitBit"
-    fitbit_file = []
+    fitbit_path = participant_path + "\\FitBit\\"
+    fitbit_data = pd.DataFrame()
     if os.path.isdir(fitbit_path):
-        NotImplemented
+        # Grab accelerometer files
+        fitbit_accel = glob.glob(fitbit_path + "*_accel.csv")
+        # Grab Heart Rate files
+        fitbit_hr = glob.glob(fitbit_path + "*_heart.csv")
+        # Check if there is both an accel and HR file to merge
+        if len(fitbit_accel) != 0 and len(fitbit_hr) != 0:
+            print("Begin Fitbit Processing")
+            fitbit_data = process_fitbit(fitbit_accel[0], fitbit_hr[0], fitbit_path, time, participant_num, participant_age)
+            devices.append("Fitbit")
+            print("Finished")
 
     # CHECK IF THERE IS ACTIGRAPH DATA:
     acti_path = participant_path + "\\ActiGraph\\"
@@ -127,7 +139,7 @@ def process_participant(file_path, v_drive):
         actigraph = actigraph.loc[(actigraph['Time'] >= time[0]) & (actigraph['Time'] <= time[1]), :]
 
     print("BEGIN ALIGNMENT")
-    aligned_data = data_alignment(actigraph, apple_data, garmin_data, file_path, participant_num)
+    aligned_data = data_alignment(actigraph, apple_data, garmin_data, fitbit_data, file_path, participant_num)
     print("BEGIN SECOND AGGREGATION")
     agg_data = agg_to_sec(aligned_data, participant_num, file_path, devices)
     plot_accel(agg_data, participant_num, devices, file_path + "/")

@@ -9,18 +9,20 @@ from datetime import datetime, timedelta
 import numpy as np
 
 
-def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, participant_num):
+def data_alignment(actigraph_data, apple_data, garmin_data, fitbit_data, folder_path, participant_num):
     # # Align Data
 
     # Convert all 5 data frames to numpy arrays
     graph_np = actigraph_data.to_numpy()
     garmin_np = garmin_data.to_numpy()
     apple_np = apple_data.to_numpy()
+    fitbit_np = fitbit_data.to_numpy()
 
     # Get dimensions of each array. These will be needed for boundary checking.
     graph_rows, graph_cols = graph_np.shape
     garmin_rows, garmin_cols = garmin_np.shape
     apple_rows, apple_cols = apple_np.shape
+    fitbit_rows, fitbit_cols = fitbit_np.shape
 
     # define ref as the time of the first actigraph reading.
     ref = actigraph_data.iloc[0, 0]
@@ -44,9 +46,14 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
     while apple_rows > 0 and apple_np[apple_iter, 0] < t_start:
         apple_iter += 1
 
+    # Fitbit
+    fitbit_iter = 0
+    while fitbit_rows > 0 and fitbit_np[fitbit_iter, 0] < t_start:
+        fitbit_iter += 1
+
     # Initialize out_np (The aligned output array)
     out_rows = graph_rows
-    out_cols = graph_cols + garmin_cols + apple_cols  # Sum of all device columns
+    out_cols = graph_cols + garmin_cols + apple_cols + fitbit_cols # Sum of all device columns
     out_np = np.zeros([out_rows, out_cols], dtype="O")  # Initialize Array
     out_iter = 0  # Initialize output iterator
 
@@ -94,6 +101,8 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
         garmin_iter = reading_check(garmin_np, garmin_iter, garmin_rows, garmin_cols)
         # check if apple reading has occurred
         apple_iter = reading_check(apple_np, apple_iter, apple_rows, apple_cols)
+        # check if apple reading has occurred
+        fitbit_iter = reading_check(fitbit_np, fitbit_iter, fitbit_rows, fitbit_cols)
 
         # Add out_row to out_np
         out_np[out_iter, :] = out_row
@@ -108,6 +117,7 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
     new_cols.extend(actigraph_data.columns)
     new_cols.extend(garmin_data.columns)
     new_cols.extend(apple_data.columns)
+    new_cols.extend(fitbit_data.columns)
 
     # This labels the columns by which device the column came from
     for i in range(len(new_cols)):
@@ -115,8 +125,10 @@ def data_alignment(actigraph_data, apple_data, garmin_data, folder_path, partici
             new_cols[i] = "Actigraph " + new_cols[i]
         elif i <= graph_cols + garmin_cols - 1:
             new_cols[i] = "Garmin " + new_cols[i]
-        else:
+        elif i <= apple_cols + garmin_cols + graph_cols - 1:
             new_cols[i] = "Apple " + new_cols[i]
+        else :
+            new_cols[i] = "Fitbit " + new_cols[i]
 
     out_df = pd.DataFrame(out_np, columns=new_cols)
     out_df = out_df.iloc[:out_iter, :]

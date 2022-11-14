@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import os
-from .data_summary import calc_enmo, flag_hr
-
+from .agg_data import calc_enmo
+from .Data_Plot import flag_hr, hr_helper
+import matplotlib.pyplot as plt
 
 def reading_check(device_np, device_iter, device_rows, out_row, accel_np, a_iter):
     #   Boundary Checking          Check if current device reading occurs between 2 consecutive acceleration readings
@@ -21,15 +22,19 @@ def reading_check(device_np, device_iter, device_rows, out_row, accel_np, a_iter
     return device_iter, out_row
 
 
-def process_fitbit(accel_file, hr_file, out_path, participant_id, participant_age):
+def process_fitbit(accel_file, hr_file, out_path, sleep_time,  participant_id, participant_age):
     # Read in accel data
     accel_data = pd.read_csv(accel_file, parse_dates=['Time'], infer_datetime_format=True)
+    # Select time that corresponds to participant wearing device
+    accel_data = accel_data.loc[(accel_data['Time'] >= sleep_time[0]) & (accel_data['Time'] <= sleep_time[1]), :]
     # Get the shape of the accel_data
     a_rows, a_cols = accel_data.shape
     # Convert the pandas dataframe to a numpy array
     accel_np = accel_data.to_numpy()
     # Read in hr data
     hr_data = pd.read_csv(hr_file, parse_dates=['Time'], infer_datetime_format=True)
+    # Select time that corresponds to participant wearing the device
+
     # Bet shape of heart rate data
     hr_rows, hr_cols = hr_data.shape
     # Convert pandas dataframe to numpy array
@@ -43,7 +48,7 @@ def process_fitbit(accel_file, hr_file, out_path, participant_id, participant_ag
     h_iter = 0
     o_iter = 0
 
-    while a_iter < a_rows:
+    while a_iter < a_rows-1:
         # Initialize a list to hold contents to be added to out_np
         o_row = []
         # Add all accelerometer values
@@ -86,6 +91,12 @@ def process_fitbit(accel_file, hr_file, out_path, participant_id, participant_ag
     final_df.insert(5, "Magnitude", mag)
     final_df.insert(6, "ENMO", enmo)
 
+    fig, ax = plt.subplots(figsize=(25, 15))
+    # Need to drop the readings without a heart rate before plotting
+    hr_helper(final_df, "Fitbit", ax, False)
+    ax.set(xlim=[sleep_time[0], sleep_time[1]])
+    plt.savefig(out_path + "\\Processed Data\\" + participant_id + "_hr.png")
+    plt.close('all')
     output_file = output_path + '/' + participant_id + '_fitbit.csv'
     final_df.to_csv(output_file, index=False)
 

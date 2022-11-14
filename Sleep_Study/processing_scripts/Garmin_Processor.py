@@ -55,11 +55,11 @@ def garmin_process(participant_num, garmin_path, csv_data, age, time):
     data['record.timestamp[s]'] = data['record.timestamp[s]'].apply(lambda x: timedelta(seconds=x) + garmin_found)
 
     # if at the time of recording the data, if daylight savings was active.
-    if datetime(year=2022, month=3, day=13) <= data.iloc[0,0] <= datetime(year=2022, month=12, day=6) or \
+    if (datetime(year=2022, month=3, day=13) <= data.iloc[0, 0] <= datetime(year=2022, month=11, day=6)) or \
             datetime(year=2023, month=3, day=13) <= data.iloc[0,0] <= datetime(year=2023, month=11, day=5) or \
             datetime(year=2024, month=3, day=10) <= data.iloc[0,0] <= datetime(year=2024, month=11, day=3):
         offset = timedelta(hours=4)
-    else :
+    else:
         offset = timedelta(hours=5)
 
         # In[5]:

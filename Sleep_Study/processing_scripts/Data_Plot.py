@@ -19,12 +19,20 @@ def plot_accel(data, num, devices, output):
     # Plot all devices
     i = 0
     while i < len(devices):
+        if devices[i] == "Actigraph":
+            d_color = "blue"
+        elif devices[i] == "Apple":
+            d_color = "orange"
+        elif devices[i] == "Garmin":
+            d_color = "green"
+        else:
+            d_color = "red"
         # Grab data
         dev_seconds = data.loc[:, ["Time", devices[i] + " Max ENMO", devices[i] + " MAD"]].dropna()
         # Plot ENMO
-        ax_1.plot(dev_seconds["Time"], dev_seconds[devices[i] + " Max ENMO"], label=devices[i])
+        ax_1.plot(dev_seconds["Time"], dev_seconds[devices[i] + " Max ENMO"], label=devices[i], color=d_color)
         # Plot MAD
-        ax_2.plot(dev_seconds["Time"], dev_seconds[devices[i] + " MAD"], label=devices[i])
+        ax_2.plot(dev_seconds["Time"], dev_seconds[devices[i] + " MAD"], label=devices[i], color=d_color)
         i += 1
 
     # Save and close ENMO figure
@@ -78,6 +86,9 @@ def hr_helper(data, device, axis, kubios):
     elif device == "Apple":
         time_name = "Time"
         p_color = "orange"
+    elif device == "Fitbit":
+        time_name = "Time"
+        p_color = 'red'
     else:
         time_name = "Time"
         p_color = "green"

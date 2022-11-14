@@ -11,7 +11,6 @@
 
 import numpy as np
 from datetime import datetime
-from datetime import timedelta
 import pandas as pd
 import matplotlib.pyplot as plt
 from .agg_data import calc_enmo
