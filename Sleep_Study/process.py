@@ -177,6 +177,8 @@ def process_participant(file_path, v_drive):
                 plot_hr(agg_psg, "Apple", participant_path, participant_num)
             if "Garmin Time" in agg_psg.columns :
                 plot_hr(agg_psg, "Garmin", participant_path, participant_num)
+            if "Fitbit Time" in agg_psg.columns :
+                plot_hr(agg_psg, "Fitbit", participant_path, participant_num)
         agg_psg.to_csv(participant_path + "/" + participant_num + "_data_agg.csv", index=False)
 
     # ------------------------------------------------------------------------------------------------------------------
