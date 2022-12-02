@@ -36,7 +36,7 @@ def process_fitbit(accel_file, hr_file, out_path, participant_id, participant_ag
     hr_np = hr_data.to_numpy()
 
     # Initialize the output array
-    out_np = np.empty([a_rows, a_cols + hr_cols - 1], dtype="object")
+    out_np = np.empty([a_rows + hr_rows, a_cols + hr_cols - 1], dtype="object")
 
     # initialize iterators (one for acceleration, heart rate, and output)
     a_iter = 0
@@ -51,7 +51,10 @@ def process_fitbit(accel_file, hr_file, out_path, participant_id, participant_ag
             o_row.append(value)
 
         # add hr reading if needed
-        h_iter, o_row = reading_check(hr_np, h_iter, hr_rows, o_row, accel_np, a_iter)
+        if a_iter < a_rows - 1:
+            h_iter, o_row = reading_check(hr_np, h_iter, hr_rows, o_row, accel_np, a_iter)
+        else :
+            o_row.append(np.nan)
 
         # Add o_row to the output
         out_np[o_iter, :] = o_row
@@ -59,6 +62,21 @@ def process_fitbit(accel_file, hr_file, out_path, participant_id, participant_ag
         # Increment iterators
         o_iter += 1
         a_iter += 1
+
+    while h_iter < hr_rows:
+        o_row = []
+
+        o_row.append(hr_np[h_iter, 0])
+
+        for i in range(a_cols - 1) :
+            o_row.append(np.nan)
+
+        o_row.append(hr_np[h_iter, 1])
+
+        out_np[o_iter, :] = o_row
+        h_iter += 1
+        o_iter += 1
+
 
     # Convert numpy array to pandas dataframe:
     final_df = pd.DataFrame(out_np, columns=["Time", "X", "Y", "Z", "Heart Rate"])
