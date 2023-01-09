@@ -131,10 +131,10 @@ def process_actiheart(start_time, ecg_files, accel_files, hr_files, shift_file, 
         shift = file.readline()
         file.close()
         shift = timedelta(seconds=int(shift))
-        print(shift)
+        # print(shift)
         heart_data['Time'] = heart_data['Time'].apply(lambda x: x - shift)
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
-    print(heart_data)
+    # print(heart_data)
     # heart_data.to_csv(folder_path + "heart_test.csv", index=None)
     # # Align ECG, Acceleration, and Heart Rate
     # Iterate through each file and order all of the readings by time in one dataframe. Since ECG is the finest grain data I will align the rest of the data to ECG
@@ -161,10 +161,10 @@ def process_actiheart(start_time, ecg_files, accel_files, hr_files, shift_file, 
     hr_iter = 0
     out_iter = 0
     # Next I iterate through the heart rate and acceleration data until none of there readings occur before the start of the ecg
-    while accel_np[accel_iter, 0] > ecg_np[ecg_iter, 0] :
+    while accel_np[accel_iter, 0] < ecg_np[ecg_iter, 0] :
         accel_iter += 1
 
-    while hr_np[hr_iter, 0] > ecg_np[ecg_iter, 0] :
+    while hr_np[hr_iter, 0] < ecg_np[ecg_iter, 0] :
         hr_iter += 1
 
     # Iterate through ecg, acceleration, and heart rate. An ecg reading will be added to out_np each time, and acceleration
