@@ -130,6 +130,7 @@ def process_actiheart(start_time, ecg_files, accel_files, hr_files, shift_file, 
         file = open(shift_file[0], 'r')
         shift = file.readline()
         file.close()
+        shift = timedelta(seconds=int(shift))
         heart_data['Time'] = heart_data['Time'].apply(lambda x: x - shift)
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
     # heart_data.to_csv(folder_path + "heart_test.csv", index=None)
