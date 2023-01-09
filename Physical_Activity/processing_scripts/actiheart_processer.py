@@ -131,8 +131,10 @@ def process_actiheart(start_time, ecg_files, accel_files, hr_files, shift_file, 
         shift = file.readline()
         file.close()
         shift = timedelta(seconds=int(shift))
+        print(shift)
         heart_data['Time'] = heart_data['Time'].apply(lambda x: x - shift)
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
+    print(heart_data)
     # heart_data.to_csv(folder_path + "heart_test.csv", index=None)
     # # Align ECG, Acceleration, and Heart Rate
     # Iterate through each file and order all of the readings by time in one dataframe. Since ECG is the finest grain data I will align the rest of the data to ECG
