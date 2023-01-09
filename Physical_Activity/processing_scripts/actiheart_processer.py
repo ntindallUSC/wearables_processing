@@ -70,7 +70,7 @@ def data_split(data, out_path, participant_number) :
     return start_time
 
 
-def process_actiheart(start_time, ecg_files, accel_files, hr_files, folder_path, participant_num, part_age):
+def process_actiheart(start_time, ecg_files, accel_files, hr_files, shift_file, folder_path, participant_num, part_age):
     # Now read in ECG File and combine the Date, Time, and Second Fraction into 1 column
     ecg_data = None
     for file, time in zip(ecg_files, start_time):
@@ -126,6 +126,11 @@ def process_actiheart(start_time, ecg_files, accel_files, hr_files, folder_path,
     heart_data['Time'] = heart_data["Time"].apply(lambda x: date.replace(hour=int(x[:2]),
                                                                          minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
     heart_data.sort_values(by=["Time"])
+    if len(shift_file) > 0:
+        file = open(shift_file[0], 'r')
+        shift = file.readline()
+        file.close()
+        heart_data['Time'] = heart_data['Time'].apply(lambda x: x - shift)
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
     # heart_data.to_csv(folder_path + "heart_test.csv", index=None)
     # # Align ECG, Acceleration, and Heart Rate

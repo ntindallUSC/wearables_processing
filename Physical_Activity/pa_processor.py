@@ -158,9 +158,12 @@ def process_participant(pa_path, v_drive):
         # Grab the heart rate and rotation data
         hr_data = glob.glob(actiheart_path + "/*hr*.txt")
         # print(f"ecg path {ecg_data} \naccel path {accel_data} \nheart rate path {hr_data}")
+        # For a few experiments the clock of the actihearts were off. A time shift file was created for these trials that
+        # stores the shift need to align actiheart
+        shifts = glob.glob(actiheart_path + "/*shift.txt")
         # Process the actiheart data
         print("BEGIN ACTIHEART PROCESSING")
-        actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, actiheart_path, particpant_num,
+        actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, shifts, actiheart_path, particpant_num,
                                            participant_age)
         print("Writing Actiheart Summary")
         output_path = actiheart_path + "/Processed Data/" + particpant_num
