@@ -213,7 +213,11 @@ def process_participant(pa_path, v_drive):
     hr_path = pa_path + "/" + particpant_num
     plot_hr(aligned_df, ["Actiheart"] + devices, trial_start, trial_end, activities, hr_path, k5_path)
     print("Plotting Accelerometers")
-    plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+    if actigraph_data.empty:
+        plot_accel(agg_df, devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+    else :
+        plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+
     print("Finished")
 
 
