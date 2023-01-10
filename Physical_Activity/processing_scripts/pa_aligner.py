@@ -176,7 +176,8 @@ def align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, 
 
     # Remove microseconds from all timestamps
     out_df['Actiheart ECG Time'] = out_df['Actiheart ECG Time'].apply(lambda x: micro_remove(x))
-    out_df['Actigraph Time'] = out_df['Actigraph Time'].apply(lambda x: micro_remove(x))
+    if "Actigraph Time" in out_df.columns :
+        out_df['Actigraph Time'] = out_df['Actigraph Time'].apply(lambda x: micro_remove(x))
     if "Apple Time" in out_df.columns:
         out_df['Apple Time'] = out_df['Apple Time'].apply(lambda x: micro_remove(x))
     if "Fitbit Time" in out_df.columns:
