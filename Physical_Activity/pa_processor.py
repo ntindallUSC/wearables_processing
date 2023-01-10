@@ -210,14 +210,16 @@ def process_participant(pa_path, v_drive):
     aligned_df = align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, k5_data, pa_path, particpant_num,
                        activities, flags)
     print("BEGIN SECOND AGGREGATION")
-    agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, particpant_num, pa_path)
+    if actigraph_data.empty:
+        agg_df = agg_to_sec(aligned_df, devices, particpant_num, pa_path)
+    else:
+        agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, particpant_num, pa_path)
     print("Plotting HR")
     k5_path = k5_path + '/Processed Data/' + particpant_num + "_v02.png"
     hr_path = pa_path + "/" + particpant_num
     plot_hr(aligned_df, ["Actiheart"] + devices, trial_start, trial_end, activities, hr_path, k5_path)
     print("Plotting Accelerometers")
-    #print(actigraph_data)
-    if actigraph_data.shape[0] == 0:
+    if actigraph_data.empty:
         plot_accel(agg_df, devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
     else :
         plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
