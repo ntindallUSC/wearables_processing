@@ -202,7 +202,7 @@ def process_participant(pa_path, v_drive):
         summarize(0, output_path, actigraph_data, trial_start, trial_end)
     else:
         actigraph_data = pd.DataFrame()
-        print(actigraph_data)
+        #print(actigraph_data)
 
     # Align Data
     print("BEGIN ALIGNMENT")
@@ -217,8 +217,7 @@ def process_participant(pa_path, v_drive):
     plot_hr(aligned_df, ["Actiheart"] + devices, trial_start, trial_end, activities, hr_path, k5_path)
     print("Plotting Accelerometers")
     #print(actigraph_data)
-    print(actigraph_data.empty)
-    if actigraph_data.empty:
+    if actigraph_data.shape[0] == 0:
         plot_accel(agg_df, devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
     else :
         plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
