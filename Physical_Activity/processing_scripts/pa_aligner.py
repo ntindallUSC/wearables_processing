@@ -51,7 +51,7 @@ def align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, 
     # initialize device iterators and iterate to start of trial
     # actigraph
     graph_iter = 0
-    while graph_np[graph_iter, 0] < t_start:
+    while graph_rows > 0 and graph_np[graph_iter, 0] < t_start:
         graph_iter += 1
 
     # garmin
