@@ -200,6 +200,8 @@ def process_participant(pa_path, v_drive):
         if os.path.isdir(output_path[:-5]) is False:
             os.mkdir(output_path[:-5])
         summarize(0, output_path, actigraph_data, trial_start, trial_end)
+    else:
+        actigraph_data = pd.DataFrame()
 
     # Align Data
     print("BEGIN ALIGNMENT")
