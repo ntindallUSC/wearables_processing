@@ -121,7 +121,7 @@ def process_participant(file_path, v_drive):
                 fitbit_accel = pd.read_csv(fitbit_path + participant_num + "_accel.csv", parse_dates=['Time'], infer_datetime_format=True)
                 fitbit_hr = pd.read_csv(fitbit_path + participant_num + "_heart.csv", parse_dates=['Time'], infer_datetime_format=True)
                 print("Combined Files did exist")
-            fitbit_data = combine_fitbit(fitbit_accel, fitbit_hr, fitbit_path, participant_num, participant_age)
+            fitbit_data = combine_fitbit(fitbit_accel, fitbit_hr, fitbit_path, time, participant_num, participant_age)
             devices.append("Fitbit")
             print("Finished")
 
