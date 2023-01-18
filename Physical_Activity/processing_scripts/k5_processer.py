@@ -39,7 +39,7 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
         start_time = datetime.strptime(start, '%m/%d/%Y %I:%M:%S %p')
         # print(f"Start Time: {start_time}")
         # Grab duration of test from table
-        if temp.iloc[2,3] == "Test Duration" :
+        if temp.iloc[2,3] == "Test Duration":
             duration = temp.iloc[2, 4]
         else :
             duration = temp.iloc[9,4]
@@ -83,15 +83,27 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
         # This creates a dictionary of tuples.
         # Each tuple contains the name of activity, start time, and end time
         activities = {}
+        incr_times = False
         for i in range(log.shape[0]):
             # Get name of the activity
             name = log.iloc[i, 0]
+            # Check if the break times were left blank
+            if name == "Break" and log.iloc[i,1:3].isna().any():
+                # Get end time of previous activity
+                log.iloc[i,1] = log.iloc[i-1, 2]
+                log.iloc[i,2] = log.iloc[i+1, 1]
+                # Change incr_times to true. After the start times have been made into datetimes need to adjust times
+                # So they don't overlap with other activities
+                incr_times = True
             # Get start time of activity
-            acti_start = date + " " + str(log.iloc[i, 1])
-            acti_start = datetime.strptime(acti_start, '%m/%d/%Y %H:%M:%S')
+            acti_start = datetime.combine(start_time.date(), log.iloc[i,1])
             # Get end time of activity
-            acti_end = date + " " + str(log.iloc[i, 2])
-            acti_end = datetime.strptime(acti_end, '%m/%d/%Y %H:%M:%S')
+            acti_end = datetime.combine(start_time.date(), log.iloc[i,2])
+            # If there were blanks need to adjust the start and end times
+            if incr_times:
+                acti_start += timedelta(seconds=1)
+                acti_end -= timedelta(seconds=1)
+                incr_times = False
             # Create Tuple
             activity = (name, acti_start, acti_end)
             # Add to dictionary
