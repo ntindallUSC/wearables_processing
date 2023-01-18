@@ -37,17 +37,13 @@ def timestamp_fitbit(accel_file, hr_file, out_path, participant_id):
     hr_data.to_csv(out_path + participant_id + '_heart.csv', index=False)
     return accel_data, hr_data
 
-def combine_fitbit(accel_file, hr_file, out_path, sleep_time,  participant_id, participant_age):
-    # Read in accel data
-    accel_data = pd.read_csv(accel_file, parse_dates=['Time'], infer_datetime_format=True)
+def combine_fitbit(accel_data, hr_data, out_path, sleep_time,  participant_id, participant_age):
     # Select time that corresponds to participant wearing device
     accel_data = accel_data.loc[(accel_data['Time'] >= sleep_time[0]) & (accel_data['Time'] <= sleep_time[1]), :]
     # Get the shape of the accel_data
     a_rows, a_cols = accel_data.shape
     # Convert the pandas dataframe to a numpy array
     accel_np = accel_data.to_numpy()
-    # Read in hr data
-    hr_data = pd.read_csv(hr_file, parse_dates=['Time'], infer_datetime_format=True)
     # Select time that corresponds to participant wearing the device
 
     # Bet shape of heart rate data
