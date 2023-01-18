@@ -17,7 +17,7 @@ import math
 from datetime import datetime, timedelta
 from processing_scripts.Apple_Proccesor import apple_process
 from processing_scripts.Garmin_Processor import garmin_process
-from processing_scripts.Fitbit_Processor import process_fitbit
+from processing_scripts.Fitbit_Processor import timestamp_fitbit, combine_fitbit
 from Data_Aligner import data_alignment
 from Align_PSG import align_psg
 from processing_scripts.agg_data import calc_enmo, agg_to_sec
@@ -106,15 +106,25 @@ def process_participant(file_path, v_drive):
     fitbit_data = pd.DataFrame()
     if os.path.isdir(fitbit_path):
         # Grab accelerometer files
-        fitbit_accel = glob.glob(fitbit_path + "*_accel.csv")
+        fb_accel_path = glob.glob(fitbit_path + "Batch data\\Accel.csv")
         # Grab Heart Rate files
-        fitbit_hr = glob.glob(fitbit_path + "*_heart.csv")
+        fb_hr_path = glob.glob(fitbit_path + "Batch data\\Heart_combined.csv")
         # Check if there is both an accel and HR file to merge
-        if len(fitbit_accel) != 0 and len(fitbit_hr) != 0:
+        if len(fb_accel_path) != 0 and len(fb_hr_path) != 0:
             print("Begin Fitbit Processing")
-            fitbit_data = process_fitbit(fitbit_accel[0], fitbit_hr[0], fitbit_path, time, participant_num, participant_age)
+            # Check if the files have already been timestamped
+            # If they haven't time stamp them.
+            if not os.path.exists(fitbit_path + participant_num + "_heart.csv"):
+                fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path[0], fb_hr_path[0], fitbit_path, participant_num)
+                print("Combined Files didn't exist")
+            else :
+                fitbit_accel = pd.read_csv(fitbit_path + participant_num + "_accel.csv", parse_dates=['Time'], infer_datetime_format=True)
+                fitbit_hr = pd.read_csv(fitbit_path + participant_num + "_heart.csv", parse_dates=['Time'], infer_datetime_format=True)
+                print("Combined Files did exist")
+            fitbit_data = combine_fitbit(fitbit_accel, fitbit_hr, fitbit_path, participant_num, participant_age)
             devices.append("Fitbit")
             print("Finished")
+
 
     # CHECK IF THERE IS ACTIGRAPH DATA:
     acti_path = participant_path + "\\ActiGraph\\"
