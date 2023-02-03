@@ -45,8 +45,8 @@ def align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, 
     k5_rows, k5_cols = k5_np.shape
 
     # Initialize trial start and end
-    t_start = k5_np[0, 0] - timedelta(seconds=k5_np[0, 0].second)
-    t_end = k5_np[-1, 0]
+    t_start = activities['1'][1]
+    t_end = activities[str(len(activities))][2]
 
     # initialize device iterators and iterate to start of trial
     # actigraph
@@ -76,6 +76,8 @@ def align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, 
 
     # k5
     k5_iter = 0
+    while k5_rows > k5_iter and k5_np[k5_iter, 0] < t_start:
+        k5_iter += 1
 
     # Initialize out_np (The aligned output array)
     out_rows = k5_rows * 3 * 256  # K5 has 1 reading about every 3 seconds, actiheart is collecting 256 readings a second.
