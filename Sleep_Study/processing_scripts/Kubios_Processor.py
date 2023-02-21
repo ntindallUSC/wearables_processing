@@ -54,6 +54,6 @@ def read_kubios(path, filtered, part_num):
     date = datetime(year=int("20" + part_num[-2:]), month=int(part_num[-6:-4]), day=int(part_num[-4:-2]))
     kubios_data['Time'] = kubios_data['Time'].apply(
         lambda x: date + timedelta(hours=int(x[:2]), minutes=int(x[3:5]), seconds=int(x[6:8])))
-    if 0 <= kubios_data['Time'].iloc[0,0].hour <= 6:
+    if 0 <= kubios_data['Time'].iloc[0].hour <= 6:
         kubios_data['Time'] = kubios_data['Time'].apply(lambda x: x + timedelta(hours=24))
     return kubios_data
