@@ -73,7 +73,7 @@ def psg_process(participant_num, psg_path, psg_summary, psg_data):
     file.close()
     # print(date)
     ref_time = datetime.datetime.strptime(date + time_out, '%m/%d/%Y%H:%M:%S')
-    if 0 <= ref_time.hour >= 6:
+    if 0 <= ref_time.hour <= 6:
         ref_time += datetime.timedelta(hours=24)
     # print(f"Lights out at {ref_time}")
 
