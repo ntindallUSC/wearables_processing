@@ -96,6 +96,9 @@ def process_k5(k5_path, log_path, folder_path, participant_num):
                 # So they don't overlap with other activities
                 incr_times = True
             # Get start time of activity
+            if isinstance(log.iloc[i,1], str):
+                log.iloc[i,1] = time.fromisoformat(log.iloc[i,1])
+                log.iloc[i,2] = time.fromisoformat(log.iloc[i,2])
             acti_start = datetime.combine(start_time.date(), log.iloc[i,1])
             # Get end time of activity
             acti_end = datetime.combine(start_time.date(), log.iloc[i,2])
