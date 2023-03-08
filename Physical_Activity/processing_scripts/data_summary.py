@@ -51,7 +51,7 @@ def flag_hr(data, device, age):
     return data
 
 # A helper function that helps to plot the heart rate and flags
-def hr_helper_sum(data, device, axis):
+def hr_helper_sum(data, device, axis, start, end):
     if device == "Actiheart":
         time_name = "Time"
         p_color = "blue"
@@ -74,6 +74,7 @@ def hr_helper_sum(data, device, axis):
 
     axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= "Unflagged")
     axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= "Flagged")
+    axis.set(xlim=[start, end])
 
 
 # 0 Actigraph : Timestamp,Accelerometer X,Accelerometer Y,Accelerometer Z
@@ -151,7 +152,7 @@ def summarize(device, path, data, start, end):
 
     if device >= 1:
         fig, ax = plt.subplots(figsize=(25, 15))
-        hr_helper_sum(data, stats[device][0], ax)
+        hr_helper_sum(data, stats[device][0], ax, start, end)
         ax.legend()
         plt.savefig(path + "_hr.png")
         plt.close()
