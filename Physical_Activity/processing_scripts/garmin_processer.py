@@ -123,7 +123,7 @@ def process_garmin(data_path, garmin_path, participant_num, part_age):
     final_df = final_df.merge(flagged_hr, how='left', on=["Time", "Heart Rate"])
     # Calculate vector magnitude and ENMO
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
-    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].applymap(lambda x : x/1000)
+    final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].applymap(lambda x: x/1000)
     mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
     final_df.insert(5, "Magnitude", mag)
     final_df.insert(6, "ENMO", enmo)
