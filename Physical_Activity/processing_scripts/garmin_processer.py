@@ -32,7 +32,7 @@ def fit_to_csv(fit_path, out_path, part_num):
         subprocess.call(['java', '-jar', jar_path, '-b', file, csv_path, '--data', 'record'])
         count += 1
 
-def process_garmin(data_path, garmin_path, participant_num, part_age):
+def process_garmin(data_path, garmin_path, participant_num, part_age, protocol="PA"):
     # Read file into a Pandas dataframe
     data = None
     for file in data_path:
@@ -119,7 +119,7 @@ def process_garmin(data_path, garmin_path, participant_num, part_age):
     final_df['Time'] = pd.to_datetime(final_df['Time'])
 
     # Flag HR
-    flagged_hr = flag_hr(final_df, "Garmin", part_age)
+    flagged_hr = flag_hr(final_df, "Garmin", part_age, protocol)
     final_df = final_df.merge(flagged_hr, how='left', on=["Time", "Heart Rate"])
     # Calculate vector magnitude and ENMO
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)

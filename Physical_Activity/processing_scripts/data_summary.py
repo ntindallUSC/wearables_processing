@@ -16,7 +16,7 @@ import numpy as np
 from datetime import timedelta
 
 # This function takes in wearable and flags implausible heart rate values.
-def flag_hr(data, device, age):
+def flag_hr(data, device, age, protocol='PA'):
     time_name = "Time"
     # Select only the HR data and corresponding time
     data = data[[time_name, 'Heart Rate']].dropna()
@@ -32,7 +32,10 @@ def flag_hr(data, device, age):
     # Flags HR over threshold
     data.loc[data["Heart Rate"] >= (220-age), ["HR High"]] = 1
     # Flags HR below threshold
-    data.loc[data["Heart Rate"] <= 60, ["HR Low"]] = 1
+    if protocol == "PA" :
+        data.loc[data["Heart Rate"] <= 60, ["HR Low"]] = 1
+    elif protocol == "Sleep" :
+        data.loc[data["Heart Rate"] <= 50, ["HR Low"]] = 1
     # Calculate average HR of the last 8 seconds
     try :
         averaged = data[[time_name,'Heart Rate']].rolling('8s', on=time_name, closed='left').mean()
@@ -87,7 +90,8 @@ stats = {
     0: ("Actigraph", 100),
     1: ("Actiheart", 50),
     2: ("Apple", 50),
-    3: ("Garmin", 25)
+    3: ("Garmin", 25),
+    4: ("Fitbit", 50)
 }
 
 

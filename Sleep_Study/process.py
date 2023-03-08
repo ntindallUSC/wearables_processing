@@ -116,11 +116,11 @@ def process_participant(file_path, v_drive):
             # If they haven't time stamp them.
             if not os.path.exists(fitbit_path + participant_num + "_heart.csv"):
                 fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path[0], fb_hr_path[0], fitbit_path, participant_num)
-                print("Combined Files didn't exist")
+                #print("Combined Files didn't exist")
             else :
                 fitbit_accel = pd.read_csv(fitbit_path + participant_num + "_accel.csv", parse_dates=['Time'], infer_datetime_format=True)
                 fitbit_hr = pd.read_csv(fitbit_path + participant_num + "_heart.csv", parse_dates=['Time'], infer_datetime_format=True)
-                print("Combined Files did exist")
+                #print("Combined Files did exist")
             fitbit_data = combine_fitbit(fitbit_accel, fitbit_hr, fitbit_path, time, participant_num, participant_age)
             devices.append("Fitbit")
             print("Finished")

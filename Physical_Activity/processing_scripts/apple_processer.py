@@ -15,7 +15,7 @@ from .data_summary import calc_enmo, flag_hr
 # In[2]:
 
 
-def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age):
+def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age, protocol="PA"):
     # Represents how many sensor log files there are
     accel = None
     # delim is initially set to a comma, however the sensor log files can be delimited by various different characters
@@ -173,7 +173,7 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age
     final_df.insert(1, "Second Fraction", sec_frac)
 
     # Flag Heart Rate
-    flagged_hr = flag_hr(final_df, "Apple", part_age)
+    flagged_hr = flag_hr(final_df, "Apple", part_age, protocol)
 
     final_df = final_df.merge(flagged_hr, how='left', left_on=final_df.index, right_on=flagged_hr.index)
     final_df.drop(columns=["key_0", "Time_y", "Heart Rate_y"], inplace=True)
