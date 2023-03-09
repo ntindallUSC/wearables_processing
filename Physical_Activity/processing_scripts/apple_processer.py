@@ -15,7 +15,7 @@ from .data_summary import calc_enmo, flag_hr
 # In[2]:
 
 
-def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age, protocol="PA"):
+def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age, trial_start, trial_end, protocol="PA"):
     # Represents how many sensor log files there are
     accel = None
     # delim is initially set to a comma, however the sensor log files can be delimited by various different characters
@@ -184,6 +184,7 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
 
+    final_df = final_df.loc[(final_df['Time'] >= trial_start) & (final_df['Time'] <= trial_end), :]
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
     mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
     final_df.insert(5, "Magnitude", mag)

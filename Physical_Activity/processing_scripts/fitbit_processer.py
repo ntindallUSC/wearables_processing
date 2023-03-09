@@ -36,7 +36,7 @@ def timestamp_fitbit(accel_file, hr_file, out_path, participant_id):
     hr_data.to_csv(out_path + participant_id + '_heart.csv', index=False)
     return accel_data, hr_data
 
-def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_age, protocol="PA"):
+def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_age, start, end, protocol="PA"):
     # Get the shape of the accel_data
     a_rows, a_cols = accel_data.shape
     # Convert the pandas dataframe to a numpy array
@@ -109,6 +109,8 @@ def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_ag
     output_path = os.path.join(out_path, "Processed Data")
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
+
+    final_df = final_df.loc[(final_df['Time'] >= start) & (final_df['Time'] <= end), :]
 
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
     mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
