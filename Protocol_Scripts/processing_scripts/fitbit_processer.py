@@ -36,7 +36,7 @@ def timestamp_fitbit(accel_file, hr_file, out_path, participant_id):
     hr_data.to_csv(out_path + participant_id + '_heart.csv', index=False)
     return accel_data, hr_data
 
-def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_age):
+def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_age, start, end, protocol="PA"):
     # Get the shape of the accel_data
     a_rows, a_cols = accel_data.shape
     # Convert the pandas dataframe to a numpy array
@@ -74,6 +74,7 @@ def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_ag
         o_iter += 1
         a_iter += 1
 
+    #  If Accel ends early add remaining HR readings
     while h_iter < hr_rows:
         o_row = []
 
@@ -92,6 +93,7 @@ def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_ag
     # Convert numpy array to pandas dataframe:
     final_df = pd.DataFrame(out_np, columns=["Time", "X", "Y", "Z", "Heart Rate"])
     final_df.drop(final_df.iloc[o_iter:].index, inplace=True)
+    # Convert from meteres per second squared to Gs
     final_df[["X", "Y", "Z"]] = final_df[["X", "Y", "Z"]].applymap(lambda x: x/9.8)
     # Get Second Fraction
     sec_frac = final_df["Time"].apply(lambda x: x.microsecond)
@@ -99,7 +101,7 @@ def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_ag
     final_df.insert(1, "Second Fraction", sec_frac)
 
     # Flag Heart Rate
-    flagged_hr = flag_hr(final_df, "Apple", participant_age)
+    flagged_hr = flag_hr(final_df, "Fitbit", participant_age, protocol=protocol)
 
     final_df = final_df.merge(flagged_hr, how='left', left_on=final_df.index, right_on=flagged_hr.index)
     final_df.drop(columns=["key_0", "Time_y", "Heart Rate_y"], inplace=True)
@@ -110,6 +112,8 @@ def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_ag
     if os.path.isdir(output_path) is False:
         os.mkdir(output_path)
 
+    final_df = final_df.loc[(final_df['Time'] >= start) & (final_df['Time'] <= end), :]
+
     final_df[['X', 'Y', 'Z']] = final_df[['X', 'Y', 'Z']].apply(pd.to_numeric)
     mag, enmo = calc_enmo(final_df.loc[:, ["X", "Y", "Z"]])
     final_df.insert(5, "Magnitude", mag)
@@ -118,4 +122,4 @@ def combine_fitbit(accel_data, hr_data, out_path, participant_id, participant_ag
     output_file = output_path + '/' + participant_id + '_fitbit.csv'
     final_df.to_csv(output_file, index=False)
 
-    return final_df
+    return ["Fitbit", final_df]

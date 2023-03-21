@@ -23,10 +23,10 @@ from processing_scripts.fitbit_processer import timestamp_fitbit, combine_fitbit
 
 def process_participant(pa_path, v_drive):
     # This line gets the path of the directory
-    particpant_num = pa_path[-4:]
-    print(f'Participant Number {particpant_num}')
+    participant_num = pa_path[-4:]
+    print(f'Participant Number {participant_num}')
     tracking_sheet = pd.read_excel(v_drive + "PA master tracking.xlsx")
-    participant_age = tracking_sheet.loc[tracking_sheet["WDID"] == float(particpant_num), "AGE AT ENROLLMENT"]
+    participant_age = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), "AGE AT ENROLLMENT"]
     participant_age = math.floor(participant_age.iloc[0])
     # Initialize a list of the wearables as an empty list
     devices = []
@@ -49,7 +49,7 @@ def process_participant(pa_path, v_drive):
         # print(f"K5 files {k5_files} \nActivity Log file {log_file}")
         # Process k5 data
         print("BEGIN K5 PROCESSING")
-        k5_data, activities, flags = process_k5(k5_files, log_file, k5_path, particpant_num)
+        k5_data, activities, flags = process_k5(k5_files, log_file, k5_path, participant_num)
         print("FINISHED")
 
     # Grab start and end time of trial
@@ -72,10 +72,10 @@ def process_participant(pa_path, v_drive):
         # Check to make sure the raw data files exist
         if len(accel_files) != 0 and len(hr_files) != 0:
             print("Begin Apple Watch Processing")
-            apple_data = process_apple(accel_files, hr_files, apple_path, particpant_num, participant_age)
+            apple_data = process_apple(accel_files, hr_files, apple_path, participant_num, participant_age)
             devices.append("Apple")
             print("Writing Apple Summary")
-            output_path = apple_path + "/Processed Data/" + particpant_num
+            output_path = apple_path + "/Processed Data/" + participant_num
             summarize(2, output_path, apple_data, trial_start, trial_end)
             print("Finished")
 
@@ -99,15 +99,15 @@ def process_participant(pa_path, v_drive):
         if len(fit_files) != 0:
             # print(f"Fit Files: \n{fit_files}")
             # Convert fit files to csv
-            fit_to_csv(fit_files, garmin_path, particpant_num)
+            fit_to_csv(fit_files, garmin_path, participant_num)
             # Get paths of csv
             csv_files = glob.glob(garmin_path + '/*data.csv')
             # print(f"CSVs: \n{csv_files}")
             print("BEGIN GARMIN PROCESSING")
-            garmin_data = process_garmin(csv_files, garmin_path, particpant_num, participant_age)
+            garmin_data = process_garmin(csv_files, garmin_path, participant_num, participant_age)
             devices.append("Garmin")
             print("Writing Garmin Summary")
-            output_path = garmin_path + "/Processed Data/" + particpant_num
+            output_path = garmin_path + "/Processed Data/" + participant_num
             summarize(3, output_path, garmin_data, trial_start, trial_end)
             print("FINISHED")
 
@@ -130,14 +130,14 @@ def process_participant(pa_path, v_drive):
             print("Begin Fitbit Processing")
             # Check if the files have already been timestamped
             # If they haven't time stamp them.
-            if not os.path.exists(fitbit_path + particpant_num + "_heart.csv"):
-                fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path[0], fb_hr_path[0], fitbit_path, particpant_num)
+            if not os.path.exists(fitbit_path + participant_num + "_heart.csv"):
+                fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path[0], fb_hr_path[0], fitbit_path, participant_num)
                 print("Combined Files didn't exist")
             else :
-                fitbit_accel = pd.read_csv(fitbit_path + particpant_num + "_accel.csv", parse_dates=['Time'], infer_datetime_format=True)
-                fitbit_hr = pd.read_csv(fitbit_path + particpant_num + "_heart.csv", parse_dates=['Time'], infer_datetime_format=True)
+                fitbit_accel = pd.read_csv(fitbit_path + participant_num + "_accel.csv", parse_dates=['Time'], infer_datetime_format=True)
+                fitbit_hr = pd.read_csv(fitbit_path + participant_num + "_heart.csv", parse_dates=['Time'], infer_datetime_format=True)
                 print("Combined Files did exist")
-            fitbit_data = combine_fitbit(fitbit_accel, fitbit_hr, fitbit_path, particpant_num, participant_age)
+            fitbit_data = combine_fitbit(fitbit_accel, fitbit_hr, fitbit_path, participant_num, participant_age)
             devices.append("Fitbit")
             print("Finished")
 
@@ -159,7 +159,7 @@ def process_participant(pa_path, v_drive):
         # print(ecg_accel)
         # print(f"Raw ECG and Acceleration path: {ecg_accel}")
         # Split the ecg and acceleration files. Also grab start time of actiheart data collection
-        start = data_split(ecg_accel, actiheart_path, particpant_num)
+        start = data_split(ecg_accel, actiheart_path, participant_num)
         # Get the path to the ECG data
         ecg_data = glob.glob(actiheart_path + "/*ecg_split*")
         # Get the path to the acceleration data
@@ -172,10 +172,10 @@ def process_participant(pa_path, v_drive):
         shifts = glob.glob(actiheart_path + "/*shift.txt")
         # Process the actiheart data
         print("BEGIN ACTIHEART PROCESSING")
-        actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, shifts, actiheart_path, particpant_num,
+        actiheart_data = process_actiheart(start, ecg_data, accel_data, hr_data, shifts, actiheart_path, participant_num,
                                            participant_age)
         print("Writing Actiheart Summary")
-        output_path = actiheart_path + "/Processed Data/" + particpant_num
+        output_path = actiheart_path + "/Processed Data/" + participant_num
         # summarize(1, output_path, actiheart_data, trial_start, trial_end)
         print("FINISHED")
 
@@ -205,7 +205,7 @@ def process_participant(pa_path, v_drive):
         actigraph_data.insert(6, "ENMO", enmo)
 
         print("Writing Actigraph Summary")
-        output_path = actigraph_path[:-4] + "/Processed Data/" + particpant_num
+        output_path = actigraph_path[:-4] + "/Processed Data/" + participant_num
         if os.path.isdir(output_path[:-5]) is False:
             os.mkdir(output_path[:-5])
         summarize(0, output_path, actigraph_data, trial_start, trial_end)
@@ -216,22 +216,22 @@ def process_participant(pa_path, v_drive):
     # Align Data
     print("BEGIN ALIGNMENT")
     label = "Break"
-    aligned_df = align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, k5_data, pa_path, particpant_num,
+    aligned_df = align(actigraph_data, garmin_data, apple_data, fitbit_data, actiheart_data, k5_data, pa_path, participant_num,
                        activities, flags)
     print("BEGIN SECOND AGGREGATION")
     if actigraph_data.empty:
-        agg_df = agg_to_sec(aligned_df, devices, particpant_num, pa_path)
+        agg_df = agg_to_sec(aligned_df, devices, participant_num, pa_path)
     else:
-        agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, particpant_num, pa_path)
+        agg_df = agg_to_sec(aligned_df, ["Actigraph"] + devices, participant_num, pa_path)
     print("Plotting HR")
-    k5_path = k5_path + '/Processed Data/' + particpant_num + "_v02.png"
-    hr_path = pa_path + "/" + particpant_num
+    k5_path = k5_path + '/Processed Data/' + participant_num + "_v02.png"
+    hr_path = pa_path + "/" + participant_num
     plot_hr(aligned_df, ["Actiheart"] + devices, trial_start, trial_end, activities, hr_path, k5_path)
     print("Plotting Accelerometers")
     if actigraph_data.empty:
-        plot_accel(agg_df, devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+        plot_accel(agg_df, devices, trial_start, trial_end, activities, pa_path + "/" + participant_num)
     else :
-        plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + particpant_num)
+        plot_accel(agg_df, ["Actigraph"] + devices, trial_start, trial_end, activities, pa_path + "/" + participant_num)
 
     print("Finished")
 

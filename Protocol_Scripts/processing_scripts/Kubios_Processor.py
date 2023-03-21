@@ -43,13 +43,13 @@ def read_kubios(path, filtered, part_num):
     if filtered:
         kubios_data[['Effective data length.1', 'Mean HR']] = kubios_data[
             ['Effective data length.1', 'Mean HR']].applymap(lambda x: pd.to_numeric(x, errors='coerce'))
-        kubios_data.rename(columns={"Effective data length.1": "Kubios Signal Quality of Heart Rate Estimation",
-                                    "Mean HR": "Kubios Medium Mean HR"}, inplace=True)
+        kubios_data.rename(columns={"Effective data length.1": "Signal Quality of Heart Rate Estimation",
+                                    "Mean HR": "Medium Mean HR"}, inplace=True)
 
     else:  # The data did not have filtering, therefor drop the effective length
         kubios_data.drop(columns="Effective data length.1", inplace=True)
         kubios_data['Mean HR'] = kubios_data['Mean HR'].apply(lambda x: pd.to_numeric(x, errors='coerce'))
-        kubios_data.rename(columns={"Mean HR": "Kubios None Mean HR"}, inplace=True)
+        kubios_data.rename(columns={"Mean HR": "None Mean HR"}, inplace=True)
     # Convert time to datetime (Add date)
     date = datetime(year=int("20" + part_num[-2:]), month=int(part_num[-6:-4]), day=int(part_num[-4:-2]))
     kubios_data['Time'] = kubios_data['Time'].apply(
