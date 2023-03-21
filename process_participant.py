@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(prog='W4K_Processing', description='A program t
 parser.add_argument("protocol", help='Indicates which protocol is being processed. should be either sleep or pa')
 # Add parameter that specifies number of participants to be processed
 parser.add_argument('-m', '--multiple', action='store_true',
-                    help='Determines if 1 or multiple participants are processed')
+                    help='If included will process all participants in a folder')
 parser.add_argument('-edf', '--edf_files', action='store_true', help='If this parameter is present all of the edf files that have not been converted to csv files will be converted to csv files.')
 
 args = parser.parse_args()
