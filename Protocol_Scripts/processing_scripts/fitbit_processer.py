@@ -23,15 +23,26 @@ def reading_check(device_np, device_iter, device_rows, out_row, accel_np, a_iter
 
 
 def timestamp_fitbit(accel_file, hr_file, out_path, participant_id):
-    # Read in accel data while dropping first column, r
-    accel_data = pd.read_csv(accel_file, header=None, names=['Counter', 'Time', 'X', 'Y', 'Z'], usecols=[1,2,3,4],
-                             parse_dates=[0], date_parser=lambda x: datetime.fromtimestamp(int(x)/1000))
+    # Read in accel data while dropping first column, 
+    accel_list = []
+    for file in accel_file:
+        accel_list.append(pd.read_csv(file, header=None, names=['Counter', 'Time', 'X', 'Y', 'Z'], usecols=[1,2,3,4], parse_dates=[0], date_parser=lambda x: datetime.fromtimestamp(int(x)/1000)))
+    if len(accel_list) > 1:
+        accel_data = pd.concat(accel_list, ignore_index=True)
+    else :
+        accel_data = accel_list[0]
+    
     # Save the accel data
     accel_data.to_csv(out_path + participant_id + "_accel.csv", index=False)
 
     # Read in Heart Rate File
-    hr_data = pd.read_csv(hr_file, header=None, names=['Counter', 'Time', 'Heart Rate'], usecols=[1,2], parse_dates=[0],
-                          date_parser=lambda x: datetime.fromtimestamp(int(x)/1000))
+    hr_list = []
+    for file in hr_file:
+        hr_list.append(pd.read_csv(file, header=None, names=['Counter', 'Time', 'Heart Rate'], usecols=[1,2], parse_dates=[0], date_parser=lambda x: datetime.fromtimestamp(int(x)/1000)))
+    if len(hr_list) > 1 :
+        hr_data = pd.concat(hr_list, ignore_index=True)
+    else:
+        hr_data = hr_list[0]
     # Save the HR data
     hr_data.to_csv(out_path + participant_id + '_heart.csv', index=False)
     return accel_data, hr_data
