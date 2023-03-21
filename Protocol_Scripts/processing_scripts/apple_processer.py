@@ -193,4 +193,4 @@ def process_apple(sensor_log, heart_rate, folder_path, participant_num, part_age
     output_file = output_path + '/' + participant_num + '_apple.csv'
     final_df.to_csv(output_file, index=False)
 
-    return final_df
+    return ["Apple", final_df]

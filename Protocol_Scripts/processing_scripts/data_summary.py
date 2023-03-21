@@ -13,7 +13,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+import statsmodels.api as sm
 from datetime import timedelta
+
 
 # This function takes in wearable and flags implausible heart rate values.
 def flag_hr(data, device, age, protocol='PA'):
@@ -30,16 +32,16 @@ def flag_hr(data, device, age, protocol='PA'):
     # To big of a change in HR
     data.insert(4, "HR Change", 0)
     # Flags HR over threshold
-    data.loc[data["Heart Rate"] >= (220-age), ["HR High"]] = 1
+    data.loc[data["Heart Rate"] >= (220 - age), ["HR High"]] = 1
     # Flags HR below threshold
-    if protocol == "PA" :
+    if protocol == "PA":
         data.loc[data["Heart Rate"] <= 60, ["HR Low"]] = 1
-    elif protocol == "Sleep" :
+    elif protocol == "Sleep":
         data.loc[data["Heart Rate"] <= 50, ["HR Low"]] = 1
     # Calculate average HR of the last 8 seconds
-    try :
-        averaged = data[[time_name,'Heart Rate']].rolling('8s', on=time_name, closed='left').mean()
-    except :
+    try:
+        averaged = data[[time_name, 'Heart Rate']].rolling('8s', on=time_name, closed='left').mean()
+    except:
         averaged = data[[time_name, 'Heart Rate']]
     # Insert temporary column to keep track of average chang of hr
     data.insert(5, "Average BPM Change", averaged['Heart Rate'])
@@ -52,6 +54,7 @@ def flag_hr(data, device, age, protocol='PA'):
     # Drop the subtracted columns
     data.drop(columns=["Average BPM Change"], inplace=True)
     return data
+
 
 # A helper function that helps to plot the heart rate and flags
 def hr_helper_sum(data, device, axis, start, end):
@@ -72,11 +75,13 @@ def hr_helper_sum(data, device, axis, start, end):
 
     # Unflagged Data
     not_flag = data
-    not_flag = not_flag.loc[(not_flag["HR Change"] == 0) | (not_flag["HR Low"] == 0) | (not_flag["HR High"] == 0), [time_name, "Heart Rate"]]
+    not_flag = not_flag.loc[
+        (not_flag["HR Change"] == 0) | (not_flag["HR Low"] == 0) | (not_flag["HR High"] == 0), [time_name,
+                                                                                                "Heart Rate"]]
     not_flag = not_flag[[time_name, "Heart Rate"]].dropna()
 
-    axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label= "Unflagged")
-    axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= "Flagged")
+    axis.plot(not_flag[time_name], not_flag["Heart Rate"], color=p_color, label="Unflagged")
+    axis.scatter(flag[time_name], flag["Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label="Flagged")
     axis.set(xlim=[start, end])
 
 
@@ -133,7 +138,6 @@ def summarize(device, path, data, start, end):
     data['Y'] = pd.to_numeric(data['Y'])
     data['Z'] = pd.to_numeric(data['Z'])
 
-
     if device >= 1:
         data['Heart Rate'] = pd.to_numeric(data['Heart Rate'])
         summary.write(
@@ -166,30 +170,31 @@ def summarize(device, path, data, start, end):
 
 # A helper function that helps to plot the heart rate and flags
 def hr_helper(data, device, axis):
+    time_name = "Time"
     if device == "Actiheart":
-        time_name = "ECG Time"
         p_color = "blue"
     elif device == "Apple":
-        time_name = "Time"
         p_color = "orange"
     elif device == "Garmin":
-        time_name = "Time"
         p_color = "green"
-    else :
-        time_name = "Time"
+    else:
         p_color = "Red"
 
     # flagged data
     flag = data
-    flag = flag.loc[(flag[device + " HR Change"] > 0) | (flag[device + " HR Low"] > 0) | (flag[device + " HR High"] > 0),
-                    [device + " " + time_name, device + " Heart Rate"]]
+    flag = flag.loc[
+        (flag[device + " HR Change"] > 0) | (flag[device + " HR Low"] > 0) | (flag[device + " HR High"] > 0), [time_name, device + " Mean Heart Rate"]]
     # Unflagged Data
     not_flag = data
-    not_flag = not_flag.loc[(not_flag[device + " HR Change"] == 0) | (not_flag[device + " HR Low"] == 0) | (not_flag[device + " HR High"] == 0),
-                            [device + " " + time_name, device + " Heart Rate"]]
+    not_flag = not_flag.loc[(not_flag[device + " HR Change"] == 0) | (not_flag[device + " HR Low"] == 0) | (
+                not_flag[device + " HR High"] == 0),
+                            [time_name, device + " Mean Heart Rate"]]
 
-    axis.plot(not_flag[device + " " + time_name], not_flag[device + " Heart Rate"], color=p_color, label=device + " Unflagged")
-    axis.scatter(flag[device + " " + time_name], flag[device + " Heart Rate"], color=p_color, sizes=[100], edgecolor='k', label= device + " Flagged")
+    axis.plot(not_flag[time_name], not_flag[device + " Mean Heart Rate"], color=p_color,
+              label=device + " Unflagged")
+    axis.scatter(flag[time_name], flag[device + " Mean Heart Rate"], color=p_color, sizes=[100],
+                 edgecolor='k', label=device + " Flagged")
+
 
 # This function plots the heart rates of the wearables devices and  Actiheart vs Time all on the same plot.
 # This function takes as input:
@@ -197,82 +202,88 @@ def hr_helper(data, device, axis):
 # A list of wearable devices
 # The start and end time of the trial
 # and a path to store the plot.
-def plot_hr(data, devices, start, end, activities, path, k5):
-    # Intialize plot used to plot heart rate
+def plot_hr_pa(data, path, activities, k5):
+    # Initialize plot used to plot heart rate
     fig_hr, ax_hr = plt.subplots(figsize=(25, 15))
     # Iterate through list of devices:
-    for device in devices :
-        if device == "Actiheart" :
-            device_hr = data.loc[(data['Actiheart ECG Time'] >= start) & (data['Actiheart ECG Time'] <= end),
-                               ["Actiheart ECG Time", "Actiheart Heart Rate", "Actiheart HR Low", "Actiheart HR High",
-                                "Actiheart HR Change"]]
-        else :
-            device_hr = data.loc[(data[device + ' Time'] >= start) & (data[device + ' Time'] <= end),
-                                 [device + " Time", device + " Heart Rate", device + " HR High", device + " HR Low",
-                                  device + " HR Change"]]
-        # Plot HR
-        hr_helper(device_hr, device, ax_hr)
+    for i in range(len(data.columns)):
+        if " Mean Heart Rate" in data.columns[i]:
+            temp_hr = data[data.columns[i:i + 4].insert(0, 'Time')].dropna()
+            # Plot HR
+            hr_helper(temp_hr, temp_hr.columns[1][:-16], ax_hr)
 
     # Set axes for HR fig
     ax_hr.legend(fontsize="xx-large")
-    ax_hr.set(xlim=([start, end]), ylim=[60, 220])
+    ax_hr.set(ylim=[60, 220])
     for key in activities:
         ax_hr.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
-                    xytext=(mdates.date2num(activities[key][1]), 55), textcoords='data', annotation_clip=False,
-                    horizontalalignment='center')
+                       xytext=(mdates.date2num(activities[key][1]), 55), textcoords='data', annotation_clip=False,
+                       horizontalalignment='center')
     # Save figure
     fig_hr.savefig(path + "_hr_fig.png")
 
     # Read in k5 data
-    k5_data = data.loc[(data['K5 t'] >= start) & (data['K5 t'] <= end), ["K5 t", "K5 VO2/Kg"]].dropna(axis=0)
-    # Create new axis for data
-    ax_o2kg = ax_hr.twinx()
-    # Plot K5 VO2/KG
-    ax_o2kg.plot(k5_data['K5 t'], k5_data['K5 VO2/Kg'], label="V02/kg", color='red')
-    fig_hr.savefig(k5)
+    if "K5 VO2/Kg" in data.columns:
+        k5_data = data[["Time", "K5 VO2/Kg"]].dropna(axis=0)
+        # Create new axis for data
+        ax_o2kg = ax_hr.twinx()
+        # Plot K5 VO2/KG
+        ax_o2kg.plot(k5_data['Time'], k5_data['K5 VO2/Kg'], label="V02/kg", color='purple')
+        fig_hr.savefig(k5)
     plt.close('all')
 
 
-#This function plots the ENMO and MAD for each wearable device.
-def plot_accel(data, devices, start, end, activities, path):
+def plot_hr_sleep(data, path, part_num):
+    if "Kubios Medium Mean HR" in data.columns:
+        for device in data.columns:
+            if " Mean Heart Rate" in device:
+                hr = data[[device, "Kubios Medium Mean HR"]].dropna()
+                # Plot a bland altman plot
+                fig, ax = plt.subplots(figsize=(10, 8))
+                sm.graphics.mean_diff_plot(hr[device], hr["Kubios Medium Mean HR"], ax=ax)
+                plt.savefig(path + "/" + part_num + "_" + device[:-16] + "_ba.jpg", bbox_inces='tight')
+                plt.close(fig)
+
+
+# This function plots the ENMO and MAD for each wearable device.
+def plot_accel(data, path, protocol='PA', activities=None, flags=None):
     device_color = {"Actigraph": "blue", "Apple": "orange", "Garmin": "green", "Fitbit": "red"}
     # Initialize 2 plots. One for ENMO and one for MAD.
     fig, ax = plt.subplots(figsize=(25, 15))
     fig2, ax2 = plt.subplots(figsize=(25, 15))
-    # Select Time, ENMO and MAD for each wearable device:
-    for device in devices:
-        # Select data from dataframe
-        dev_seconds = data.loc[:, ["Time", device + " Max ENMO", device + " MAD"]].dropna()
+    # Plot MAX ENMO and MAD per second
+    for device in data.columns:
+        if " Max ENMO" in device:
+            ax.plot(data['Time'], data[device], label=device[:-9], color=device_color[device[:-9]])
 
-        # Plot each Max Enmo of device
-        ax.plot(dev_seconds["Time"], dev_seconds[device + ' Max ENMO'], label=device, color=device_color[device])
-
-        # Plot MAD values for each device
-        ax2.plot(dev_seconds["Time"], dev_seconds[device + ' MAD'], label=device, color=device_color[device])
+        if " MAD" in device:
+            temp = data[["Time", device]].dropna()
+            ax2.plot(temp["Time"], temp[device], label=device[:-4], color=device_color[device[:-4]])
 
     # Set ax for ENMO fig
     ax.legend(fontsize="xx-large")
-    ax.set(xlim=([start, end]))
     # Add activity name
-    for key in activities:
-        ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
-                    xytext=(mdates.date2num(activities[key][1]), -4), textcoords='data', annotation_clip=False,
-                    horizontalalignment='center')
+    if protocol == "PA":
+        for key in activities:
+            ax.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                        xytext=(mdates.date2num(activities[key][1]), -4), textcoords='data', annotation_clip=False,
+                        horizontalalignment='center')
 
     # Set ax for MAD fig
     ax2.legend(fontsize="xx-large")
-    ax2.set(xlim=([start, end]))
-    # Add activity name labels
-    for key in activities:
-        ax2.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
-                     xytext=(mdates.date2num(activities[key][1]), -3), textcoords='data', annotation_clip=False,
-                     horizontalalignment='center')
+    if protocol == "PA":
+        # Add activity name labels
+        for key in activities:
+            ax2.annotate(activities[key][0], xy=(mdates.date2num(activities[key][1]), 0), xycoords='data',
+                         xytext=(mdates.date2num(activities[key][1]), -3), textcoords='data', annotation_clip=False,
+                         horizontalalignment='center')
 
     # Save both figures
     fig.savefig(path + "_ENMO_fig.png")
     fig2.savefig(path + "_MAD_fig.png")
     # Close both figures
     plt.close('all')
+
 
 # Takes as input a dataframe containing 3 columns, corresponding to the axis of an accelerometer for a device.
 def calc_enmo(some_data):
@@ -284,4 +295,3 @@ def calc_enmo(some_data):
     enmo.loc[enmo.loc[:] < 0] = 0
 
     return mag, enmo
-

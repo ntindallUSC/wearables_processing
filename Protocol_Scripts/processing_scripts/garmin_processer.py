@@ -134,7 +134,7 @@ def process_garmin(data_path, garmin_path, participant_num, part_age, trial_star
 
     out_path = output_path + "/" + participant_num + "_garmin.csv"
     final_df.to_csv(out_path, index=False)
-    return final_df
+    return ["Garmin", final_df]
 
 
 if __name__ == "__main__":

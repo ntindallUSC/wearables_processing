@@ -114,6 +114,6 @@ def psg_process(participant_num, psg_path, psg_summary, psg_data, start, end):
 
     file_path = psg_path + participant_num + "_time_stamped.csv"
     psg_final.to_csv(file_path, index=False)
-    return psg_final
+    return ["PSG", psg_final]
 
 # In[ ]:
