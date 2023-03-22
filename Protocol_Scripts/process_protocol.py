@@ -97,8 +97,8 @@ def process_participant(in_path, v_drive, protocol='PA'):
         print("Begin Fitbit Processing")
         # Check if the correct timestamp files already exist
         if not os.path.exists(fitbit_path + participant_num + "_heart.csv"):
-            # fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path, fb_hr_path, fitbit_path, participant_num)
-            fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path[0], fb_hr_path[0], fitbit_path, participant_num)
+            fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path, fb_hr_path, fitbit_path, participant_num)
+            # fitbit_accel, fitbit_hr = timestamp_fitbit(fb_accel_path[0], fb_hr_path[0], fitbit_path, participant_num)
         else:
             # The files have been timestamped. Just read them in and combine them
             fitbit_accel = pd.read_csv(fitbit_path + participant_num + "_accel.csv", parse_dates=['Time'],
