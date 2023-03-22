@@ -115,7 +115,7 @@ def align(device_list, folder_path, participant_num, protocol="sleep", activitie
     out_np = np.zeros([out_rows, out_cols], dtype="O")  # Initialize Array
     
     # Iterate through each output array
-    for i in range(out_rows):
+    for i in range(out_rows - 1):
         # Initialize out_row as empty row. Through loop data will be added to row and then row will be added to output array.
         out_row = []
 
@@ -125,15 +125,8 @@ def align(device_list, folder_path, participant_num, protocol="sleep", activitie
             
         # Add data from other devices if necessary 
         for device in np_list :
-            if i != out_rows-1:
                 out_row, device[-1] = add_values(device, out_row, ref[1][i, 0], ref[1][i+1, 0])
-            else :
-                if device[-1] < device[2] and device[1][device[-1]] < out_row[0]:
-                    for value in device[1][device[-1], :]:
-                        out_row.append(value)
-                else:
-                    for i in range(device[3]):
-                        out_row.append(np.nan)
+
         out_np[i, :] = out_row
     out_np = out_np[:-1, :]
     # Initialize a list that contains the column names for out_np
