@@ -64,6 +64,9 @@ def hr_helper_sum(data, device, axis, start, end):
     elif device == "Apple":
         time_name = "Time"
         p_color = "orange"
+    elif device == "Fitbit":
+        time_name = 'Time'
+        p_color = 'Red'
     else:
         time_name = "Time"
         p_color = "green"
@@ -183,11 +186,12 @@ def hr_helper(data, device, axis):
     # flagged data
     flag = data
     flag = flag.loc[
-        (flag[device + " HR Change"] > 0) | (flag[device + " HR Low"] > 0) | (flag[device + " HR High"] > 0), [time_name, device + " Mean Heart Rate"]]
+        (flag[device + " HR Change"] > 0) | (flag[device + " HR Low"] > 0) | (flag[device + " HR High"] > 0), [
+            time_name, device + " Mean Heart Rate"]]
     # Unflagged Data
     not_flag = data
     not_flag = not_flag.loc[(not_flag[device + " HR Change"] == 0) | (not_flag[device + " HR Low"] == 0) | (
-                not_flag[device + " HR High"] == 0),
+            not_flag[device + " HR High"] == 0),
                             [time_name, device + " Mean Heart Rate"]]
 
     axis.plot(not_flag[time_name], not_flag[device + " Mean Heart Rate"], color=p_color,
