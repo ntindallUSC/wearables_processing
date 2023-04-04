@@ -18,7 +18,7 @@ def read_kubios(path, filtered, part_num):
         if "Time," in line:
             data_found = True
         if data_found:
-            # INACTIVE signifys that we've reached the end of our data
+            # INACTIVE signifies that we've reached the end of our data
             if "INACTIVE" in line:
                 break
             else:
