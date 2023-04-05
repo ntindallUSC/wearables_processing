@@ -66,12 +66,12 @@ Output:
 """
 def split_obs(data):
     data_act = []
-    data_act.append(extract_activity(obs_data, 'Physical activity', 'phys_act'))
-    data_act.append(extract_activity(obs_data, 'Transition or break', 'transition'))
-    data_act.append(extract_activity(obs_data, 'Snack/meal', 'meal_act'))
-    data_act.append(extract_activity(obs_data, 'Enrichment or academics ', 'enrichment'))
-    data_act.append(extract_activity(obs_data, 'Putting on physical activity monitors', 'activ_monitors'))
-    data_act.append(extract_activity(obs_data, 'Other', 'other activity'))
+    data_act.append(extract_activity(data, 'Physical activity', 'phys_act'))
+    data_act.append(extract_activity(data, 'Transition or break', 'transition'))
+    data_act.append(extract_activity(data, 'Snack/meal', 'meal_act'))
+    data_act.append(extract_activity(data, 'Enrichment or academics ', 'enrichment'))
+    data_act.append(extract_activity(data, 'Putting on physical activity monitors', 'activ_monitors'))
+    data_act.append(extract_activity(data, 'Other', 'other activity'))
     # Ensures that each dataframe has at least 11 columns
     data_act = add_dummy_cols(data_act)
     return data_act
@@ -117,7 +117,7 @@ def process_observations(a_inpath, a_date, a_outpath):
     # Split the data by activity category and make each activity have the same amount of columns
     obs_split = split_obs(obs_data)
     # Recombine the data 
-    obs_final = combine_obs(obs_split, start_date)
+    obs_final = combine_obs(obs_split, a_date)
     # Save dataframe to a file
     obs_final.to_csv(a_outpath, index=False)
 
