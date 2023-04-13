@@ -93,6 +93,8 @@ def process_participant(in_path, v_drive, protocol='PA'):
     # fb_accel_path = []
     fb_hr_path = glob.glob(fitbit_path + "/Batch data/Heart_combined*.csv")
     # If there are files process them
+    # fitabase hr for comparison
+    fitabase = glob.glob(fitbit_path + "/Fitabase/*_hr.csv")
     if len(fb_accel_path) > 0 and len(fb_hr_path) > 0:
         print("Begin Fitbit Processing")
         # Check if the correct timestamp files already exist
@@ -110,7 +112,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
                            trial_end, "sleep"))
         print("Writing Fitbit Summary")
         output_path = fitbit_path + "/Processed Data/" + participant_num
-        summarize(4, output_path, devices[-1][1], trial_start, trial_end)
+        summarize(4, output_path, devices[-1][1], trial_start, trial_end, fitabase)
         print("FINISHED")
 
     # Process Garmin Data
