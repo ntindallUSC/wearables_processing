@@ -103,7 +103,7 @@ stats = {
 }
 
 
-def summarize(device, path, data, start, end):
+def summarize(device, path, data, start, end, fitabase=[]):
     # Initialize output text file for summary:
     summary = open(path + "_summary.txt", 'w')
 
@@ -164,6 +164,9 @@ def summarize(device, path, data, start, end):
     if device >= 1:
         fig, ax = plt.subplots(figsize=(25, 15))
         hr_helper_sum(data, stats[device][0], ax, start, end)
+        if len(fitabase) > 0:
+            fita_hr = pd.read_csv(fitabase[0], parse_dates=['Time'])
+            ax.plot(fita_hr['Time'], fita_hr['Value'], color='orange', label='Fitabase')
         ax.legend()
         plt.savefig(path + "_hr.png")
         plt.close()
