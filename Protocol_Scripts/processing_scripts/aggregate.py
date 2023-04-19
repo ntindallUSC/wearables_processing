@@ -133,6 +133,7 @@ def agg_to_sec(devices, path, participant_num, protocol="Sleep", activities=None
         print(f"Device: {device[0]}")
         if device[0] in accelerometers:
             aggregate_data.append(agg_accelerometers(device[1], device[0]))
+            # Merge Heart rate with accelerometer. ALl accelerometers but Actigraph have HR
             if device[0] != "Actigraph":
                 aggregate_data[-1] = aggregate_data[-1].merge(agg_hr(device[1], device[0]), on="Time", how='left')
         elif device[0] in gt_hr:
