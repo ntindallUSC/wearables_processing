@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import timedelta
 import numpy as np
-from .data_summary import plot_accel, plot_hr_pa, plot_hr_sleep
+from .data_summary import plot_accel, plot_hr_pa, plot_hr
 from .merge_data import add_activity_lables
 
 accelerometers = ["Fitbit", 'Apple', "Garmin", "Actigraph"]
