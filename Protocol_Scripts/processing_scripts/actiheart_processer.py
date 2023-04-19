@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import os
+from matplotlib import pyplot as plt
 from .data_summary import flag_hr
 
 
@@ -57,6 +58,12 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
     heart_data.to_csv(output_file, index=False)
 
     return ["Actiheart", heart_data]
+
+def plot_actiheart_hr(data, out_path):
+    fig, ax = plt.subplots(figsize=(25, 15))
+    ax.plot(data['Time'], data['Heart Rate'], color='blue')
+    fig.savefig(out_path)
+    plt.close('all')
 
 
 

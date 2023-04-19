@@ -240,7 +240,7 @@ def plot_hr_pa(data, path, activities, k5):
     plt.close('all')
 
 
-def plot_hr(data, path, part_num, protocol):
+def plot_hr(data, path, part_num, protocol, rem_flags=False):
     if protocol == 'Sleep':
         if "Kubios Medium Mean HR" in data.columns:
             for device in data.columns:
@@ -255,11 +255,16 @@ def plot_hr(data, path, part_num, protocol):
         if "Actiheart Mean Heart Rate" in data.columns:
             for device in data.columns:
                 if " Mean Heart Rate" in device and "Actiheart" not in device:
-                    hr = data[[device, "Actiheart Mean Heart Rate"]].dropna()
+                    if rem_flags is False:
+                        hr = data[[device, "Actiheart Mean Heart Rate"]].dropna()
+                        out_path = path + "/" + part_num + "_" + device[:-16] + "_ba.jpg"
+                    else:
+                        hr = data.loc[(data["Actiheart HR Low"] == 0) & (data["Actiheart HR High"] == 0) & (data["Actiheart HR Change"] == 0), [device, "Actiheart Mean Heart Rate"]].dropna()
+                        out_path = path + "/" + part_num + "_" + device[:-16] + "_ba_no_flags.jpg"
                     # Plot a bland altman plot
                     fig, ax = plt.subplots(figsize=(10, 8))
                     sm.graphics.mean_diff_plot(hr[device], hr["Actiheart Mean Heart Rate"], ax=ax)
-                    plt.savefig(path + "/" + part_num + "_" + device[:-16] + "_ba.jpg", bbox_inces='tight')
+                    plt.savefig(out_path, bbox_inces='tight')
                     plt.close(fig)
 
 

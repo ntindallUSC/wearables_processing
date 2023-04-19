@@ -75,7 +75,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
             in_path += "/Camp"
             observation_path = in_path + "/Survey and Protocol documents/"
             obs_file = glob.glob(observation_path + "*camp.csv")[0]
-            process_observations(obs_file, protocol_date, observation_path + participant_num + "_activity_log.csv")
+            process_observations(obs_file, protocol_date, in_path + "/" + participant_num + "_camp_log.csv")
             device_times = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["ALL DEVICES ON: CAMP", "ALL DEVICES OFF: CAMP"]]
             trial_start = datetime.combine(protocol_date, device_times.iat[0, 0])
             trial_end = datetime.combine(protocol_date, device_times.iat[0, 1])
@@ -86,7 +86,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
             in_path += "/Home"
             diary_path = in_path + "/Daily Diary data/"
             diary_file = glob.glob(diary_path + "*home.csv")[0]
-            process_daily_diary(diary_file, protocol_date, diary_path + participant_num + "_wearsheet.csv")
+            process_daily_diary(diary_file, protocol_date, in_path + "/" + participant_num + "_home_log.csv")
             device_times = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["ALL DEVICES ON: HOME", "ALL DEVICES OFF: HOME"]]
             trial_start = datetime.combine(protocol_date, device_times.iat[0, 0])
             trial_end = datetime.combine(protocol_date, device_times.iat[0, 1])
