@@ -47,6 +47,7 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
         # print(shift)
         heart_data['Time'] = heart_data['Time'].apply(lambda x: x - shift)
     heart_data = heart_data.loc[(heart_data['Time'] >= trial_start) & (heart_data['Time'] <= trial_end), :]
+    heart_data = heart_data.sort_values("Time")
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
 
     # Write output to a csv
