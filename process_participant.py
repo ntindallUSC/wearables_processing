@@ -26,8 +26,7 @@ elif args.protocol == 'pa':
     else:
         process_protocol.process_pa()
 elif args.protocol == 'fl':
-    pass
-    # First process the at camp free living
+    process_protocol.process_fl()
 
 else:
     raise ValueError("INVALID ARGUMENT. python process_participant.py MUST BE FOLLOWED BY sleep OR pa")
