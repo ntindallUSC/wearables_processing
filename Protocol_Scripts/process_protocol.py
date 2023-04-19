@@ -15,7 +15,7 @@ from .processing_scripts.data_summary import summarize
 from .processing_scripts.merge_data import align
 from .processing_scripts.aggregate import agg_to_sec
 from .processing_scripts.k5_processer import process_k5, process_labels, process_flags
-from .processing_scripts.actiheart_processer import process_actiheart
+from .processing_scripts.actiheart_processer import process_actiheart, plot_actiheart_hr
 from .processing_scripts.process_camp_diary import process_observations
 from .processing_scripts.process_home_diary import process_daily_diary
 
