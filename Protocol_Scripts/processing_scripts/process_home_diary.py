@@ -118,6 +118,7 @@ def generate_off_times(data, device, a_date):
         time_off = pd.date_range(datetime.combine(a_date.date(), time(hour=19)), datetime.combine((a_date + timedelta(hours=24)).date(), time(hour=10)), freq='30T')
         wearable_off = pd.DataFrame(None, columns=['Start', 'End'])
         wearable_off.Start = time_off
+        wearable_off.End = wearable_off['Start'].apply(lambda x: x + timedelta(minutes=30))
     return wearable_off
 
 
@@ -216,6 +217,9 @@ def populate_wearsheet(sheet, device_times, wear_start, device):
     if 'In Bed' not in device:
         sheet.loc[sheet.index.intersection(device_times.Start), device] = 0
         sheet.loc[sheet.index < wear_start, device] = 0
+        # If the participant wasn't wearing the device at 8:30, all times after 8:30 are marked as not worn
+        if device_times.shape[0] > 0 and device_times.iloc[-1,0].time() == time(hour=8,minute=30):
+            sheet.loc[sheet.index > datetime.combine(sheet.index[-1].date(), device_times.iloc[-1, 0].time()), device] = 0
     else:
         sheet.loc[(sheet.index < device_times.iat[0,0]) | (sheet.index > device_times.iat[0,1]), device] = 0
     return sheet
@@ -224,19 +228,19 @@ def populate_wearsheet(sheet, device_times, wear_start, device):
 # In[47]:
 
 
-def gen_daily_diary(in_path, a_date, out_path):
+def process_daily_diary(in_path, a_date, out_path):
     data = pd.read_csv(in_path, skiprows=1)
     # Extract each device off times:
-    actigraph = generate_off_times(data, 'USC activity', start_date)
-    actiheart = generate_off_times(data, 'heart rate', start_date)
-    apple = generate_off_times(data, 'Apple', start_date)
-    fitbit = generate_off_times(data, 'Fitbit', start_date)
-    garmin = generate_off_times(data, 'Garmin', start_date)
+    actigraph = generate_off_times(data, 'USC activity', a_date)
+    actiheart = generate_off_times(data, 'heart rate', a_date)
+    apple = generate_off_times(data, 'Apple', a_date)
+    fitbit = generate_off_times(data, 'Fitbit', a_date)
+    garmin = generate_off_times(data, 'Garmin', a_date)
     # Extract time the devices were put on the participant and bedtimes
-    wear_start = extract_on_time(data, start_date)
-    bed_times = extract_bed_time(data, start_date)
+    wear_start = extract_on_time(data, a_date)
+    bed_times = extract_bed_time(data, a_date)
     # Generate wear sheet
-    wear_sheet = generate_wearsheet(start_date)
+    wear_sheet = generate_wearsheet(a_date)
     # Add each device's off time to sheet
     wear_sheet = populate_wearsheet(wear_sheet, actigraph, wear_start, 'Actigraph On')
     wear_sheet = populate_wearsheet(wear_sheet, actiheart, wear_start, 'Actiheart On')
@@ -245,7 +249,6 @@ def gen_daily_diary(in_path, a_date, out_path):
     wear_sheet = populate_wearsheet(wear_sheet, garmin, wear_start, 'Garmin On')
     # Add the bedtime to the sheet
     wear_sheet = populate_wearsheet(wear_sheet, bed_times, wear_start, 'In Bed')
-    print(wear_sheet)
     # Save data as a csv
     wear_sheet.to_csv(out_path)
 
@@ -258,5 +261,5 @@ if __name__ == '__main__':
     diary_path = 'V:/ACOI/R01 - W4K/4_Free living/test data/0000/Home/Daily Diary data/0000_diary.csv'
     sheet_path = 'V:/ACOI/R01 - W4K/4_Free living/test data/0000/Home/Daily Diary data/' + participant_num + "_wearsheet.csv"
     start_date = datetime(year=2023, month=3, day=29) # Will pull from tracking sheet in code
-    gen_daily_diary(diary_path, start_date, sheet_path)
+    t1, t2 = process_daily_diary(diary_path, start_date, sheet_path)
 

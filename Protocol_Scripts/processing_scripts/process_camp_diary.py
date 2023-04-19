@@ -26,7 +26,7 @@ def extract_activity(data, category, column_header):
     categ_cols = [x for x in data.columns if column_header in x]
     categ_cols = shared_cols + categ_cols
     categ_data = data.loc[data['activity category'] == category, categ_cols]
-    # Occasionally there the data collecter will make duplicate entries for an activity. These need to be dropped.
+    # Occasionally there the data collector will make duplicate entries for an activity. These need to be dropped.
     categ_data = categ_data.drop(categ_data.loc[categ_data.duplicated(subset=["act_start"])].index)
     return categ_data
     
@@ -76,14 +76,60 @@ def split_obs(data):
     data_act = add_dummy_cols(data_act)
     return data_act
     
-    
+
+def combine_other(col1, col2):
+    col3 = str(col1) + "-" + str(col2)
+    if col3[-3:] == "nan":
+        col3 = col3[:-4]
+    return col3
+
+def combine_phys_activity(col1, col2):
+    col3 = str(col2) + "-" + str(col1)
+    return col3
+
+
+def normalize_cols(a_list):
+    i = 0
+    for df in a_list:
+        if df.shape[0] > 0:
+            cols_to_drop = []
+            # First combine the columns that contain other with their appropriate other text
+            df['Location'] = df['Location'].combine(df['Location_Text'], combine_other)
+            cols_to_drop.append('Location_Text')
+            # Next check if the activity category is other. If it is combine it with it's notes
+            if df.iloc[0, 6].lower() == 'other':
+                df['Activity_Category'] = df['Activity_Category'].combine(df['Activity'], combine_other)
+                df['Activity'] = ""
+            # Move the snack and meal text entry over
+            if df.iloc[0, 6].lower() == 'snack/meal':
+                df['Activity_Notes'] = df['Activity_Text']
+                df['Activity_Text'] = np.nan
+            # Combine activity with activity_text
+            df['Activity'] = df['Activity'].combine(df['Activity_Text'], combine_other)
+            cols_to_drop.append('Activity_Text')
+            # Add staff or children led to physical activity category
+            if df.iloc[0, 6].lower() == 'physical activity':
+                df['Activity_Category'] = df['Activity_Category'].combine(df['Activity_Notes'], combine_phys_activity)
+                df['Activity_Notes'] = df['Activity_Notes_Text']
+            cols_to_drop.append('Activity_Notes_Text')
+            df.drop(columns=cols_to_drop, inplace=True)
+        else:
+            del a_list[i]
+        i += 1
+    # print(a_list)
+    return a_list
 
 
 # In[6]:
 
 
 def convert_to_datetime(a_time, a_date):
-    return datetime(year=a_date.year, month=a_date.month, day=a_date.day, hour=int(a_time.split(':')[0]), minute=int(a_time.split(':')[1]))
+    try :
+        a_datetime = datetime(year=a_date.year, month=a_date.month, day=a_date.day, hour=int(a_time.split(':')[0]), minute=int(a_time.split(':')[1]))
+    except ValueError:
+        a_string = str(a_date.date()) + " " + a_time
+        a_datetime = datetime.strptime(a_string, "%Y-%m-%d %I:%M %p")
+    return a_datetime
 
 
 # In[7]:
@@ -100,8 +146,8 @@ Output:
 def combine_obs(a_list, a_date):
     ob_df = pd.concat(a_list)
     # Convert Activity_Start column to datetime
-    ob_df['Activity_Start'] = ob_df['Activity_Start'].apply(lambda x: convert_to_datetime(x, a_date))
-    ob_df['Activity_End'] = ob_df['Activity_End'].apply(lambda x: convert_to_datetime(x, a_date))
+    ob_df['Activity_Start'] = ob_df['Activity_Start'].apply(lambda x: convert_to_datetime(str(x), a_date))
+    ob_df['Activity_End'] = ob_df['Activity_End'].apply(lambda x: convert_to_datetime(str(x), a_date))
     return ob_df.sort_values('Activity_Start')
 
 
@@ -116,19 +162,21 @@ def process_observations(a_inpath, a_date, a_outpath):
     obs_data = pd.read_csv(a_inpath)
     # Split the data by activity category and make each activity have the same amount of columns
     obs_split = split_obs(obs_data)
+    # Make all of the dataframes have the same number of columns. Combine columns where needed.
+    obs_split = normalize_cols(obs_split)
     # Recombine the data 
     obs_final = combine_obs(obs_split, a_date)
     # Save dataframe to a file
     obs_final.to_csv(a_outpath, index=False)
-
+    #print(a_outpath)
 
 # In[21]:
 
 
 if __name__ == '__main__':
     # Test to make sure everything works
-    in_path = "V:/ACOI/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_program observation.csv"
+    in_path = "V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_program observation.csv"
     some_date = datetime(year=2023, month=3, day=29)
-    out_path = "V:/ACOI/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/000_activity_log.csv"
-    process_observations(in_path, some_date, out_path)
+    out_path = "V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_camp_wear_log.csv"
+    t1, t2 = process_observations(in_path, some_date, out_path)
 

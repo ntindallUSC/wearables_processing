@@ -157,7 +157,7 @@ def agg_to_sec(devices, path, participant_num, protocol="Sleep", activities=None
     if protocol == "PA":
         plot_hr_pa(merged_data, path + "/" + participant_num, activities, path + "/K5 data/Processed Data/" + participant_num + "_v02.png")
     else:
-        plot_hr_sleep(merged_data, path, participant_num)
+        plot_hr(merged_data, path, participant_num, protocol)
 
     if protocol == 'PA':
         merged_data = add_activity_lables(merged_data, activities, flags)

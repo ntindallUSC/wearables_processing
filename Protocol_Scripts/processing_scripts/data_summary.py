@@ -240,16 +240,27 @@ def plot_hr_pa(data, path, activities, k5):
     plt.close('all')
 
 
-def plot_hr_sleep(data, path, part_num):
-    if "Kubios Medium Mean HR" in data.columns:
-        for device in data.columns:
-            if " Mean Heart Rate" in device:
-                hr = data[[device, "Kubios Medium Mean HR"]].dropna()
-                # Plot a bland altman plot
-                fig, ax = plt.subplots(figsize=(10, 8))
-                sm.graphics.mean_diff_plot(hr[device], hr["Kubios Medium Mean HR"], ax=ax)
-                plt.savefig(path + "/" + part_num + "_" + device[:-16] + "_ba.jpg", bbox_inces='tight')
-                plt.close(fig)
+def plot_hr(data, path, part_num, protocol):
+    if protocol == 'Sleep':
+        if "Kubios Medium Mean HR" in data.columns:
+            for device in data.columns:
+                if " Mean Heart Rate" in device:
+                    hr = data[[device, "Kubios Medium Mean HR"]].dropna()
+                    # Plot a bland altman plot
+                    fig, ax = plt.subplots(figsize=(10, 8))
+                    sm.graphics.mean_diff_plot(hr[device], hr["Kubios Medium Mean HR"], ax=ax)
+                    plt.savefig(path + "/" + part_num + "_" + device[:-16] + "_ba.jpg", bbox_inces='tight')
+                    plt.close(fig)
+    elif protocol[:2] == "FL":
+        if "Actiheart Mean Heart Rate" in data.columns:
+            for device in data.columns:
+                if " Mean Heart Rate" in device and "Actiheart" not in device:
+                    hr = data[[device, "Actiheart Mean Heart Rate"]].dropna()
+                    # Plot a bland altman plot
+                    fig, ax = plt.subplots(figsize=(10, 8))
+                    sm.graphics.mean_diff_plot(hr[device], hr["Actiheart Mean Heart Rate"], ax=ax)
+                    plt.savefig(path + "/" + part_num + "_" + device[:-16] + "_ba.jpg", bbox_inces='tight')
+                    plt.close(fig)
 
 
 # This function plots the ENMO and MAD for each wearable device.

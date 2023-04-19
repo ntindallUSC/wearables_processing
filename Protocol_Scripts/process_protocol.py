@@ -56,7 +56,41 @@ def process_participant(in_path, v_drive, protocol='PA'):
             # Grab start and end time of trial
             trial_start = activities['1'][1]
             trial_end = activities[str(len(activities))][2]
+    elif protocol[:2] == 'FL':
+        participant_num = in_path[-4:]
+        print(f'Free Living Participant Number {participant_num}')
+        tracking_sheet = pd.read_excel(v_drive + "Free-living master tracking.xlsx", skiprows=1)
+        # Grab participant age and date of the protocol
+        participant_age = math.floor(tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), "AGE AT PROTOCOL DATE"].iat[0])
+
+        # Define path to the observation form
+        activities = None
+        flags = None
+        if protocol.split("-")[1] == 'camp':
+            print("BEGIN CAMP DATA PROCESSING")
+            protocol_date = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["PROTOCOL DATE"]].iat[
+                0, 0]
+            in_path += "/Camp"
+            observation_path = in_path + "/Survey and Protocol documents/"
+            obs_file = glob.glob(observation_path + "*camp.csv")[0]
+            process_observations(obs_file, protocol_date, observation_path + participant_num + "_activity_log.csv")
+            device_times = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["ALL DEVICES ON: CAMP", "ALL DEVICES OFF: CAMP"]]
+            trial_start = datetime.combine(protocol_date, device_times.iat[0, 0])
+            trial_end = datetime.combine(protocol_date, device_times.iat[0, 1])
         else:
+            print("BEGIN AT HOME DATA PROCESSING")
+            protocol_date = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["NIGHT OF SLEEP"]].iat[
+                0, 0]
+            in_path += "/Home"
+            diary_path = in_path + "/Daily Diary data/"
+            diary_file = glob.glob(diary_path + "*home.csv")[0]
+            process_daily_diary(diary_file, protocol_date, diary_path + participant_num + "_wearsheet.csv")
+            device_times = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["ALL DEVICES ON: HOME", "ALL DEVICES OFF: HOME"]]
+            trial_start = datetime.combine(protocol_date, device_times.iat[0, 0])
+            trial_end = datetime.combine(protocol_date, device_times.iat[0, 1])
+            if 0 < trial_end.hour <= 10:
+                trial_end += timedelta(hours=24)
+    else:
             print("NO ACTIVITY LOG FILE DETECTED. PLEASE MAKE ONE AND THEN PROCESS.")
             return 1
     print(trial_start)
@@ -65,7 +99,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
     # Process Apple Data
     if protocol == "Sleep":
         apple_path = in_path + "/Apple Watch/"
-    elif protocol == "PA":
+    elif protocol == "PA" or protocol[:2] == 'FL':
         apple_path = in_path + "/Apple Data/"
     # Use glob to create a list of paths of all Sensor Log files
     accel_files = glob.glob(apple_path + "*_sl*.csv")
@@ -86,7 +120,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
     # Process Fitbit data
     if protocol == "Sleep":
         fitbit_path = in_path + "/Fitbit/"
-    elif protocol == "PA":
+    elif protocol == "PA" or protocol[:2] == 'FL':
         fitbit_path = in_path + "/Fitbit data/"
     # Use glob to get list of accel and heart rate files
     fb_accel_path = glob.glob(fitbit_path + "/Batch data/Accel*.csv")
@@ -118,7 +152,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
     # Process Garmin Data
     if protocol == "Sleep":
         garmin_path = in_path + "/Garmin/"
-    elif protocol == "PA":
+    elif protocol == "PA" or protocol[:2] == 'FL':
         garmin_path = in_path + "/Garmin data/"
     # First use glob to create a list of all garmin fit files
     fit_files = glob.glob(garmin_path + "*.fit")
@@ -129,6 +163,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
         # Check to see if the FIT Files have already been converted to csv
         csv_files = glob.glob(garmin_path + "*data.csv")
         if len(csv_files) == 0:
+            print("No csv files detected. Converting fit to csv")
             # Convert FIT files to csv using function provided by Garmin
             fit_to_csv(fit_files, garmin_path, participant_num)
             # Create list of paths of CSV files
@@ -143,7 +178,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
     # Process Actigraph
     if protocol == "Sleep":
         actigraph_path = in_path + "/ActiGraph/csv/"
-    elif protocol == "PA":
+    elif protocol == "PA" or protocol[:2] == 'FL':
         actigraph_path = in_path + "/ActiGraph data/csv/"
     # Get list of paths to actigraph
     acti_files = glob.glob(actigraph_path + "*acti.csv")
@@ -162,7 +197,10 @@ def process_participant(in_path, v_drive, protocol='PA'):
         print("Finished")
 
     # Process Actiheart
-    actiheart_path = in_path + "/ActiHeart data/"
+    if protocol == "PA":
+        actiheart_path = in_path + "/ActiHeart data/"
+    else :
+        actiheart_path = in_path[:-4] + "ActiHeart data/"
     actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
     if len(actiheart_files) > 0:
         print("Processing Actiheart")
@@ -220,7 +258,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
 
 def process_sleep():
     root = tk.Tk()
-    root.winfo_toplevel().title("Select csv files")
+    root.winfo_toplevel().title("Select a Participant Folder")
     root.withdraw()
     # Start of dialogue
     print("Please select the folder of the participant you wish to process")
@@ -248,7 +286,7 @@ def process_all_sleep():
 
 def process_pa():
     root = tk.Tk()
-    root.winfo_toplevel().title("Select csv files")
+    root.winfo_toplevel().title("Select a Participant Folder")
     root.withdraw()
     path = filedialog.askdirectory()
     v_dir = "V:/R01 - W4K/3_PA protocol/"
@@ -273,11 +311,24 @@ def process_all_pa():
     for file in files:
         process_participant(file, v_dir, 'PA')
 
+def process_fl():
+    root = tk.Tk()
+    root.winfo_toplevel().title("Select a Participant Folder")
+    root.withdraw()
+    path = filedialog.askdirectory()
+    v_dir = "V:/R01 - W4K/4_Free living/"
+    if not os.path.isdir(v_dir):
+        v_dir = "V:/ACOI/R01 - W4K/4_Free living/"
+    process_participant(path, v_dir, 'FL-camp')
+    process_participant(path, v_dir, 'FL-home')
+
 if __name__ == "__main__":
-    prot = int(input("Press 1 for Sleep. Press 2 for PA: "))
+    prot = int(input("Press 1 for Sleep. Press 2 for PA. Press 3 for Free Living: "))
     if prot == 1:
         process_sleep()
     elif prot == 2:
         process_pa()
+    elif prot == 3:
+        process_fl()
     else:
         print("INVALID INPUT DUMB-DUMB")
