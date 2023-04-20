@@ -199,18 +199,9 @@ def process_participant(in_path, v_drive, protocol='PA'):
         print("Finished")
 
     # Process Actiheart
-    if protocol == "PA":
-        actiheart_path = in_path + "/ActiHeart data/"
-    else :
-        actiheart_path = in_path[:-4] + "ActiHeart data/"
+    actiheart_path = in_path + "/ActiHeart data/"
     actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
-    if len(actiheart_files) == 0 and protocol[:2] == "FL":
-        if protocol.split(('-'))[1] == 'camp':
-            actiheart_path += "/camp/"
-            actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
-        else:
-            actiheart_path += "/home/"
-            actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
+
     if len(actiheart_files) > 0:
         print("Processing Actiheart")
         # For a few of the experients the actiheart clock was off for these experiements a shift file was made
