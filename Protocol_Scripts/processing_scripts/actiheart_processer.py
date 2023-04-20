@@ -43,7 +43,6 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
         # Need to determine when a new day occurs if test runs over night
         midnight = heart_data.iat[0,0].replace(hour=0, minute=0, second=0)
         midnight_idx = heart_data.index[heart_data['Time'] == midnight][0]
-        print(midnight_idx)
         heart_data.iloc[midnight_idx:, 0] = heart_data.iloc[midnight_idx:, 0].apply(lambda x: x + timedelta(hours=24))
     if len(shift_file) > 0:
         file = open(shift_file[0], 'r')
@@ -73,6 +72,21 @@ def plot_actiheart_hr(data, out_path):
     fig.savefig(out_path)
     plt.close('all')
 
+def process_actiheart_sleep(sleep_files, trial_start, trial_end,):
+    sleep_data = []
+    for file in sleep_files:
+        sleep_data.append(pd.read_csv(file, skiplines=14, usecols=['Time', 'EstSleep', 'Comments']))
+    sleep_data = pd.concat(sleep_data)
+    sleep_data.rename({"EstSleep": "Stg"}, inplace=True)
+    sleep_data['Time'] = sleep_data["Time"].apply(
+        lambda x: trial_start.replace(hour=int(x[:2]), minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
+    # Need to determine when a new day occurs if test runs over night
+    midnight = sleep_data.iat[0, 0].replace(hour=0, minute=0, second=0)
+    midnight_idx = sleep_data.index[sleep_data['Time'] == midnight][0]
+    sleep_data.iloc[midnight_idx:, 0] = sleep_data.iloc[midnight_idx:, 0].apply(lambda x: x + timedelta(hours=24))
+    sleep_data = sleep_data.loc[(sleep_data['Time'] >= trial_start) & (sleep_data['Time'] <= trial_end), :]
+    return ["Actiheart Sleep", sleep_data]
+
 if __name__ == "__main__":
     print("Testing Actiheart processing")
     # Initialize parameters for test
@@ -85,7 +99,7 @@ if __name__ == "__main__":
     actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
     shift_files = glob.glob(actiheart_path + "*shift.txt")
     # Call functions
-    test = process_actiheart(actiheart_files, shift_files, actiheart_path, participant_num, participant_age, trial_start, trial_end, protocol)
+    Stest = process_actiheart(actiheart_files, shift_files, actiheart_path, participant_num, participant_age, trial_start, trial_end, protocol)
     print("Plotting results")
     plot_actiheart_hr(test[1], actiheart_path + "/Processed Data/" + participant_num + "_" + protocol.split("-")[1] + '_hr.png')
 

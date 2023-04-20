@@ -140,7 +140,7 @@ def agg_to_sec(devices, path, participant_num, protocol="Sleep", activities=None
             aggregate_data.append(agg_hr(device[1], device[0]))
         elif device[0] in labels:
             aggregate_data.append(agg_labels(device[1]))
-        elif device[0] == 'PSG':
+        elif device[0] == 'PSG' or device[0] == "Actiheart Sleep":
             aggregate_data.append(device[1])
         aggregate_data[-1].columns = add_column_names(aggregate_data[-1], device[0])
 
