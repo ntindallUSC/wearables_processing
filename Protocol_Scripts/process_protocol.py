@@ -208,7 +208,7 @@ def process_participant(in_path, v_drive, protocol='PA'):
         # to be used to align the data
         shift_files = glob.glob(actiheart_path + "*shift.txt")
         devices.append(process_actiheart(actiheart_files, shift_files, actiheart_path, participant_num, participant_age,
-                                         trial_start, trial_end))
+                                         trial_start, trial_end, protocol))
         plot_actiheart_hr(devices[-1][1], actiheart_path + "/Processed Data/" + participant_num + "_" + protocol.split("-")[1] + '_hr.png')
 
     # Process the PSG Files
