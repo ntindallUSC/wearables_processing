@@ -14,14 +14,14 @@
 
 
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+import glob
+from datetime import datetime, timedelta, time
 import os
 from matplotlib import pyplot as plt
 from .data_summary import flag_hr
 
 
-def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_age, trial_start, trial_end):
+def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_age, trial_start, trial_end, protocol):
 
     # # Heart Rate and Rotation
     # The second file output by the actiheart device contains heartrate and rotation data sampled at a frequency of 1 hz.
@@ -38,7 +38,13 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
     # Add date to Time column
     # Add hour, minute and seconds to date
     heart_data['Time'] = heart_data["Time"].apply(lambda x: trial_start.replace(hour=int(x[:2]), minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
-    heart_data.sort_values(by=["Time"])
+    heart_data.to_csv(folder_path + "Processed Data/Test.csv")
+    if protocol[:2] == 'FL':
+        # Need to determine when a new day occurs if test runs over night
+        midnight = heart_data.iat[0,0].replace(hour=0, minute=0, second=0)
+        midnight_idx = heart_data.index[heart_data['Time'] == midnight][0]
+        print(midnight_idx)
+        heart_data.iloc[midnight_idx:, 0] = heart_data.iloc[midnight_idx:, 0].apply(lambda x: x + timedelta(hours=24))
     if len(shift_file) > 0:
         file = open(shift_file[0], 'r')
         shift = file.readline()
@@ -48,8 +54,8 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
         heart_data['Time'] = heart_data['Time'].apply(lambda x: x - shift)
     heart_data = heart_data.loc[(heart_data['Time'] >= trial_start) & (heart_data['Time'] <= trial_end), :]
     heart_data = heart_data.sort_values("Time")
-    heart_data = flag_hr(heart_data, "Actiheart", part_age)
-    heart_data = heart_data.drop_duplicates()
+    flagged_hr = flag_hr(heart_data, "Actiheart", part_age)
+    heart_data = heart_data.merge(flagged_hr, how='left', on=["Time", "Heart Rate"])
 
     # Write output to a csv
     output_path = os.path.join(folder_path, "Processed Data/")
@@ -66,6 +72,22 @@ def plot_actiheart_hr(data, out_path):
     ax.plot(data['Time'], data['Heart Rate'], color='blue')
     fig.savefig(out_path)
     plt.close('all')
+
+if __name__ == "__main__":
+    print("Testing Actiheart processing")
+    # Initialize parameters for test
+    participant_num = "2502"
+    participant_age = 10
+    trial_start = datetime(year=2023, month=4, day=10, hour=9, minute=28)
+    trial_end = datetime(year=2023, month=4, day=10, hour=16, minute=18)
+    protocol= "FL-camp"
+    actiheart_path = "C:/Users/Nick/Watch_Extraction/Free_Living/Test_Data/2502/camp/ActiHeart data/"
+    actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
+    shift_files = glob.glob(actiheart_path + "*shift.txt")
+    # Call functions
+    test = process_actiheart(actiheart_files, shift_files, actiheart_path, participant_num, participant_age, trial_start, trial_end, protocol)
+    print("Plotting results")
+    plot_actiheart_hr(test[1], actiheart_path + "/Processed Data/" + participant_num + "_" + protocol.split("-")[1] + '_hr.png')
 
 
 
