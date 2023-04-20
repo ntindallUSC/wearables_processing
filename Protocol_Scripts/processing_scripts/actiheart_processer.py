@@ -99,7 +99,7 @@ if __name__ == "__main__":
     actiheart_files = glob.glob(actiheart_path + "*_hr*.txt")
     shift_files = glob.glob(actiheart_path + "*shift.txt")
     # Call functions
-    Stest = process_actiheart(actiheart_files, shift_files, actiheart_path, participant_num, participant_age, trial_start, trial_end, protocol)
+    test = process_actiheart(actiheart_files, shift_files, actiheart_path, participant_num, participant_age, trial_start, trial_end, protocol)
     print("Plotting results")
     plot_actiheart_hr(test[1], actiheart_path + "/Processed Data/" + participant_num + "_" + protocol.split("-")[1] + '_hr.png')
 
