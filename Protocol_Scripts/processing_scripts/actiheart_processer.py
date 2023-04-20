@@ -49,6 +49,7 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
     heart_data = heart_data.loc[(heart_data['Time'] >= trial_start) & (heart_data['Time'] <= trial_end), :]
     heart_data = heart_data.sort_values("Time")
     heart_data = flag_hr(heart_data, "Actiheart", part_age)
+    heart_data = heart_data.drop_duplicates()
 
     # Write output to a csv
     output_path = os.path.join(folder_path, "Processed Data/")
