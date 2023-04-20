@@ -38,7 +38,6 @@ def process_actiheart(hr_files, shift_file, folder_path, participant_num, part_a
     # Add date to Time column
     # Add hour, minute and seconds to date
     heart_data['Time'] = heart_data["Time"].apply(lambda x: trial_start.replace(hour=int(x[:2]), minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
-    heart_data.to_csv(folder_path + "Processed Data/Test.csv")
     if protocol[:2] == 'FL':
         # Need to determine when a new day occurs if test runs over night
         midnight = heart_data.iat[0,0].replace(hour=0, minute=0, second=0)
@@ -75,11 +74,10 @@ def plot_actiheart_hr(data, out_path):
 def process_actiheart_sleep(sleep_files, trial_start, trial_end,):
     sleep_data = []
     for file in sleep_files:
-        sleep_data.append(pd.read_csv(file, skiplines=14, usecols=['Time', 'EstSleep', 'Comments']))
+        sleep_data.append(pd.read_excel(file, skiprows=14, usecols=['Time', 'EstSleep', 'Comments']))
     sleep_data = pd.concat(sleep_data)
-    sleep_data.rename({"EstSleep": "Stg"}, inplace=True)
-    sleep_data['Time'] = sleep_data["Time"].apply(
-        lambda x: trial_start.replace(hour=int(x[:2]), minute=int(x[3:5]), second=int(x[6:]), microsecond=0))
+    sleep_data.rename(columns={"EstSleep": "Stg"}, inplace=True)
+    sleep_data['Time'] = sleep_data["Time"].apply(lambda x: datetime.combine(trial_start.date(), x))
     # Need to determine when a new day occurs if test runs over night
     midnight = sleep_data.iat[0, 0].replace(hour=0, minute=0, second=0)
     midnight_idx = sleep_data.index[sleep_data['Time'] == midnight][0]
