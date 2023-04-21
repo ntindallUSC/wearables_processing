@@ -21,6 +21,7 @@ from .processing_scripts.process_home_diary import process_daily_diary
 
 
 def process_participant(in_path, v_drive, protocol='PA'):
+    # Pulls meta data from protocol tracking sheet for particular participant
     # List used to keep track of devices processed
     devices = []
     # This line gets the path of the directory

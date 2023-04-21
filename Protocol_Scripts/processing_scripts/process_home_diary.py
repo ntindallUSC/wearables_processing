@@ -227,6 +227,14 @@ def populate_wearsheet(sheet, device_times, wear_start, device):
 
 # In[47]:
 
+def extract_extra_notes(data, log):
+    col_name = "Is there anything else you would like to share with us about last night? - Yes, please share. - Text"
+    notes = data[col_name].dropna()
+    if notes.shape[0] > 1:
+        log.insert(6, "Notes", "")
+        log.iloc[0, 6] = notes.iloc[1]
+    return log
+
 
 def process_daily_diary(in_path, a_date, out_path):
     data = pd.read_csv(in_path, skiprows=1)
@@ -249,6 +257,8 @@ def process_daily_diary(in_path, a_date, out_path):
     wear_sheet = populate_wearsheet(wear_sheet, garmin, wear_start, 'Garmin On')
     # Add the bedtime to the sheet
     wear_sheet = populate_wearsheet(wear_sheet, bed_times, wear_start, 'In Bed')
+    # Insert notes
+    wear_sheet = extract_extra_notes(data, wear_sheet)
     # Save data as a csv
     wear_sheet.to_csv(out_path)
 
@@ -258,8 +268,10 @@ def process_daily_diary(in_path, a_date, out_path):
 
 if __name__ == '__main__':
     participant_num = '0000'
-    diary_path = 'V:/ACOI/R01 - W4K/4_Free living/test data/0000/Home/Daily Diary data/0000_diary.csv'
-    sheet_path = 'V:/ACOI/R01 - W4K/4_Free living/test data/0000/Home/Daily Diary data/' + participant_num + "_wearsheet.csv"
-    start_date = datetime(year=2023, month=3, day=29) # Will pull from tracking sheet in code
-    t1, t2 = process_daily_diary(diary_path, start_date, sheet_path)
+    # diary_path = 'V:/ACOI/R01 - W4K/4_Free living/test data/0000/Home/Daily Diary data/0000_diary.csv'
+    diary_path = 'C:/Users/Nick/Watch_Extraction/Free_Living/Test_Data/New_diary/new_diary.csv'
+    # sheet_path = 'V:/ACOI/R01 - W4K/4_Free living/test data/0000/Home/Daily Diary data/' + participant_num + "_wearsheet.csv"
+    sheet_path = 'C:/Users/Nick/Watch_Extraction/Free_Living/Test_Data/New_diary/test.csv'
+    start_date = datetime(year=2023, month=4, day=21) # Will pull from tracking sheet in code
+    process_daily_diary(diary_path, start_date, sheet_path)
 

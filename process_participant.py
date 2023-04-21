@@ -29,4 +29,4 @@ elif args.protocol == 'fl':
     process_protocol.process_fl()
 
 else:
-    raise ValueError("INVALID ARGUMENT. python process_participant.py MUST BE FOLLOWED BY sleep OR pa")
+    raise ValueError("INVALID ARGUMENT. python process_participant.py MUST BE FOLLOWED BY sleep OR pa OR fl")
