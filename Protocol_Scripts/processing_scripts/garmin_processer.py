@@ -23,7 +23,7 @@ from .data_summary import calc_enmo, flag_hr
 
 # Convert fit file to csv
 def fit_to_csv(fit_path, out_path, part_num):
-    jar_path = ".Protocol_Scripts/processing_scripts/FitCSVTool.jar"
+    jar_path = "./Protocol_Scripts/processing_scripts/FitCSVTool.jar"
     count = 1
     for file in fit_path:
         csv_path = out_path + "\\" + part_num + "_" + str(count) + "_raw.csv"
