@@ -76,7 +76,8 @@ def process_participant(in_path, v_drive, protocol='PA'):
             in_path += "/Camp"
             observation_path = in_path + "/Survey and Protocol documents/"
             obs_file = glob.glob(observation_path + "*camp.csv")[0]
-            process_observations(obs_file, protocol_date, in_path + "/" + participant_num + "_camp_log.csv")
+            activ_log = glob.glob(observation_path + "Activity*time*log.xlsx")
+            process_observations(obs_file, protocol_date, in_path + "/" + participant_num + "_camp_log.csv", activ_log)
             device_times = tracking_sheet.loc[tracking_sheet["WDID"] == float(participant_num), ["ALL DEVICES ON: CAMP", "ALL DEVICES OFF: CAMP"]]
             trial_start = datetime.combine(protocol_date, device_times.iat[0, 0])
             trial_end = datetime.combine(protocol_date, device_times.iat[0, 1])

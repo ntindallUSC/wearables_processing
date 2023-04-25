@@ -7,6 +7,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from .k5_processer import process_labels
 
 
 # In[13]:
@@ -16,12 +17,12 @@ from datetime import datetime
 This function extracts activity specific columns from the observation diary
 Input:
     data           : A dataframe containing the all columns of the observation diary
-    category       : A string correspodning to on of the six possible activity categories
+    category       : A string corresponding to on of the six possible activity categories
     column_header  : A string containing a key phrase that relates an activity category to columns in the dataframe
 Output:
     categ_data     : A dataframe containing all all columns to a specific activity category
 """
-def extract_activity(data, category, column_header):
+def extract_activity(data, category, column_header, log_path=None):
     shared_cols = ['ID', 'Initials', 'act_start', 'act_end', 'Location','Location_13_TEXT', 'activity category']
     categ_cols = [x for x in data.columns if column_header in x]
     categ_cols = shared_cols + categ_cols
@@ -72,6 +73,7 @@ def split_obs(data):
     data_act.append(extract_activity(data, 'Enrichment or academics ', 'enrichment'))
     data_act.append(extract_activity(data, 'Putting on physical activity monitors', 'activ_monitors'))
     data_act.append(extract_activity(data, 'Other', 'other activity'))
+    data_act.append(extract_activity(data, 'W4Kids PA Protocol', 'pa_protocol'))
     # Ensures that each dataframe has at least 11 columns
     data_act = add_dummy_cols(data_act)
     return data_act
@@ -157,7 +159,7 @@ def combine_obs(a_list, a_date):
 """
 A function that processes the observational dairy for free living protocol
 """
-def process_observations(a_inpath, a_date, a_outpath):
+def process_observations(a_inpath, a_date, a_outpath, pa_obs):
     # Read in data and extract participant id and initials
     obs_data = pd.read_csv(a_inpath)
     # Split the data by activity category and make each activity have the same amount of columns
@@ -165,18 +167,37 @@ def process_observations(a_inpath, a_date, a_outpath):
     # Make all of the dataframes have the same number of columns. Combine columns where needed.
     obs_split = normalize_cols(obs_split)
     # Recombine the data 
-    obs_final = combine_obs(obs_split, a_date)
+    obs_final = combine_obs(obs_split, a_date).reset_index(drop=True)
+    # Check if PA was collected for participant. If it was, then insert activities into observation sheet
+    if len(pa_obs) > 0:
+        pa_labels = process_labels(pa_obs, a_date)
+        pa_list = []
+        pa_row = obs_final.loc[obs_final['Activity_Category'] == 'W4Kids PA Protocol', :]
+        pa_index = obs_final.index[obs_final['Activity_Category'] == 'W4Kids PA Protocol'].tolist()[0]
+
+        for label in pa_labels:
+            temp_row = [pa_row.iat[0,0,], pa_row.iat[0,1], pa_labels[label][1], pa_labels[label][2], pa_row.iat[0, 4],
+                        pa_row.iat[0,5], pa_labels[label][0], pa_row.iat[0, 7]]
+            pa_list.append(temp_row)
+        pa_df = pd.DataFrame(pa_list, columns=obs_final.columns)
+        #print(pa_index)
+        #print(obs_final.iloc[:pa_index, -3:-1])
+        obs_final = pd.concat([obs_final.iloc[:pa_index, :], pa_df, obs_final.iloc[pa_index+1:, :]])
+        #print(obs_final.iloc[:, -3:-1])
+
     # Save dataframe to a file
     obs_final.to_csv(a_outpath, index=False)
     #print(a_outpath)
+
 
 # In[21]:
 
 
 if __name__ == '__main__':
     # Test to make sure everything works
-    in_path = "V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_program observation.csv"
+    in_path = "V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_camp.csv"
     some_date = datetime(year=2023, month=3, day=29)
-    out_path = "V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_camp_wear_log.csv"
-    t1, t2 = process_observations(in_path, some_date, out_path)
+    out_path = "V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/0000_camp_log.csv"
+    log_path = ["V:/R01 - W4K/4_Free living/test data/0000/Camp/Survey and Protocol documents/Activity time log.xlsx"]
+    process_observations(in_path, some_date, out_path, log_path)
 
